@@ -48,7 +48,7 @@ class QuestionOption(ContractModel):
     key: Annotated[str, Field(pattern=r"^[a-z][a-z0-9_]{0,31}$")]
     label: Annotated[str, Field(min_length=1, max_length=80)]
     description: Annotated[str, Field(max_length=160)]
-    answer_patch: AnswerPatch
+    answer_patch: dict[Slot, str | int | None]
 
 
 class QuestionDraft(ContractModel):
@@ -88,6 +88,8 @@ def validate_question(
             content, object_pairs_hook=_unique_object, parse_constant=_invalid_constant,
         )
         draft = QuestionDraft.model_validate(raw)
+        for option in draft.options:
+            AnswerPatch.model_validate(option.answer_patch)
     except (ValueError, TypeError, ValidationError):
         raise QuestionError("invalid_question_json") from None
     target = draft.target_slot
@@ -103,7 +105,7 @@ def validate_question(
     text = [draft.acknowledgement, draft.question, draft.helper_text]
     for option in draft.options:
         text.extend([option.label, option.description])
-        text.extend(value for value in option.answer_patch.model_dump(exclude_unset=True).values()
+        text.extend(value for value in option.answer_patch.values()
                     if isinstance(value, str))
     if any(re.search(r"[a-z][a-z0-9+.-]*://|www\.|<[/!a-z]", value, re.I) for value in text):
         raise QuestionError("forbidden_question_content")
@@ -111,7 +113,7 @@ def validate_question(
     nullable = {"custom_field", "previous_gap", "commute_region", "budget_krw",
                 "goal_text", "constraints_text", "interest_activity"}
     for option in draft.options:
-        patch = option.answer_patch.model_dump(exclude_unset=True)
+        patch = option.answer_patch
         if set(patch) - allowed or set(patch) & blocked:
             raise QuestionError("forbidden_question_patch")
         if target not in patch or patch[target] is None or (

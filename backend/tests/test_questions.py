@@ -33,7 +33,10 @@ def validate(value, **kwargs):
 
 class QuestionValidationTests(unittest.TestCase):
     def test_contract_example(self):
-        self.assertEqual(validate(EXAMPLE).target_slot, "learning_goal")
+        result = validate(EXAMPLE)
+        self.assertEqual(result.target_slot, "learning_goal")
+        # Returning the draft must not insert absent fields as null patches.
+        self.assertEqual(result.model_dump()["options"], EXAMPLE["options"])
 
     def test_schema_and_content_rejections(self):
         for field, value in [("schema_version", "2"), ("selection_mode", "multi"),
