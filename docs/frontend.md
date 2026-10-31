@@ -60,7 +60,7 @@ npm test -- src/Courses.test.tsx src/Intake.test.tsx vitest.config.test.ts
 npm run build
 ```
 
-2026-11-01 macOS의 Node 26.7.0/npm 11.19.0에서 위 검사와 테스트 21개가 통과했다. 저장소 지정 Node 26.5.0에서의 재검증, 실제 서버·DB·브라우저 E2E와 CI는 미실행이다. GPU는 화면 계약 검사 범위 밖이므로 N/A다. 이 변경은 #7의 웹 영역 일부이며 D01·D02·D04·D05 합의나 전체 이슈 완료를 의미하지 않는다.
+2026-11-01 macOS의 Node 26.7.0/npm 11.19.0에서 위 검사와 테스트 21개가 통과했다. 저장소 지정 Node 26.5.0의 [GitHub CI](https://github.com/today-tommorrow/today-tommorrow/actions/runs/41242727869)에서도 Frontend quality와 Real API and database integration이 통과했다. CI는 전체 웹 테스트·기존 Python 검사·실제 Vite→FastAPI→PostgreSQL health 및 DB 장애 복구를 확인했다. 교육 업무 API·OAuth·브라우저 E2E는 미검증이며, 로컬 전체 `./check`는 미실행이다. GPU는 화면 계약 검사 범위 밖이므로 N/A다. 이 변경은 #7의 웹 영역 일부이며 D01·D02·D04·D05 합의나 전체 이슈 완료를 의미하지 않는다.
 
 ## 아직 합의가 필요한 계약
 
