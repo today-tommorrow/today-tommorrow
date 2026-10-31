@@ -71,4 +71,4 @@ npm run build
 | D10 · [관심 교육 #29](https://github.com/today-tommorrow/today-tommorrow/issues/29) | 현재 목록·저장·해제 API 호출 | 카탈로그 버전 교체 시 과거/현재 과정 식별, 목록 cursor, 중복 정책 합의 필요 |
 | D13 · [교육 비교 #28](https://github.com/today-tommorrow/today-tommorrow/issues/28) | 현재 OpenAPI의 2~3개 서로 다른 과정 ID 제약 적용 | 없는 ID·중복 ID·빈 목록의 서버 오류 예시와 상세 UX 합의 필요 |
 
-리뷰는 `xifoxy-ru`, `zxcv718` 중 작성자가 아닌 사람에게 요청한다. 서버와 전체 연동을 확인하기 전에는 관련 시나리오 이슈를 닫지 않는다.
+리뷰어 지정은 [AGENTS.md](../AGENTS.md)를 따른다. 서버와 전체 연동을 확인하기 전에는 관련 시나리오 이슈를 닫지 않는다.
