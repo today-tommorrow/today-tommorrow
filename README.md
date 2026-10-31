@@ -1,5 +1,7 @@
 # today-tommorrow
 
+[프론트엔드 구현 범위·API 주소 설정·GitHub CI 검증](docs/frontend.md)
+
 ## macOS 개발 시작
 
 React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.

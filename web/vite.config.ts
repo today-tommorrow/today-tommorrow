@@ -5,6 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig(({ mode }) => {
   const env = { ...loadEnv(mode, '..', ''), ...process.env }
   return {
+    envDir: '..',
     plugins: [react(), tailwindcss()],
     server: {
       port: Number(env.WEB_PORT || 5173),
