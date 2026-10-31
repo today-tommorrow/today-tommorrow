@@ -2,76 +2,46 @@
 
 ## macOS 개발 시작
 
-React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반을 구현했다. 웹은 실제 `GET /api/health`로 API와 DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포, 샘플 모드와 공통 setup/dev/check 스크립트는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
+React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
 
 ### 다섯 MacBook의 공통 준비
 
-Git, Node/npm, Python/uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. 기준은 `.node-version`의 Node 26.5.0, `.python-version`의 Python 3.14.6이다. Node는 프로젝트 엔진 범위 내에서 사용할 수 있지만 팀은 기준 버전을 우선 맞춘다. uv는 Python 설치·선택을 지원한다. Apple Silicon과 Intel은 같은 잠금 파일을 사용한다. 아키텍처별 실제 실행은 각 환경에서 확인한다.
+Git, Node/npm, Python/uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `node --version`은 `.node-version`의 26.5.0, `python3 --version`은 `.python-version`의 3.14.6과 맞춘다. 다른 버전이면 버전 관리 도구로 전환하고 PATH를 확인한다. uv의 Python 설치 기능을 사용해도 `python3`가 기준 버전을 가리켜야 한다. Docker 엔진은 Docker Desktop 또는 사용하는 로컬 엔진에서 시작한다.
+
+Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다. 두 번째 **물리적 Mac**의 새 클론 검증은 아직 수행하지 않았다. 한 Mac의 격리된 새 복사본 검증을 다른 팀원 Mac 검증으로 표시하지 않는다.
+
+### 준비 → 실행 → 검사
+
+저장소 루트에서 실행한다.
 
 ```sh
-git --version
-node --version
-npm --version
-python3 --version
-uv --version
-docker compose version
-docker info
+./setup
+./dev
+# 별도 터미널에서
+./check
 ```
 
-### 수동 설치와 DB 준비
+`./setup`은 도구·버전·Docker 엔진을 확인하고 `.env`가 없을 때만 `env.example`을 복사한다. `web`에서 `npm ci`, `backend`에서 진입점의 Python 경로를 `--python`으로 명시해 `uv sync --locked --dev`로 설치하고 `.venv`의 버전·실제 실행 경로를 확인한 뒤 Compose PostgreSQL의 healthcheck 성공을 기다리고 `alembic upgrade head`를 적용한다. 실패한 단계에서는 비정상 종료하므로 해당 오류를 해결한 뒤 다시 실행한다. 반복 실행은 기존 `.env`와 DB 데이터를 지우지 않는다. baseline은 업무 테이블 없이 Alembic 버전만 기록한다.
 
-저장소 루트에서 시작한다. 환경 파일은 없을 때만 복사하고 기존 값을 덮지 않는다. 예제 값은 이 컴퓨터의 개발 DB 전용이며 공유 서버에서 쓰지 않는다. `.env`는 커밋하지 않는다.
+`.env`는 줄마다 `KEY=value` 형식이며 공백이 있는 값은 따옴표로 감싼다. 주석을 지원하지만 변수 확장·명령 치환·`export` 문법은 지원하지 않는다. 셸로 source하지 않는다. 호출한 터미널의 환경변수가 파일보다 우선한다. uv의 모든 실행에도 진입점 Python 경로를 명시해 다른 patch 버전으로 자동 전환되지 않게 한다. 예제 계정은 개인 컴퓨터의 개발용이며 공유 서버에는 사용하지 않는다. `.env`를 커밋하지 않는다.
 
-```sh
-test -f .env || cp env.example .env
-cd web
-npm ci
-cd ../backend
-uv sync --locked
-cd ..
-docker compose up -d --wait db
-cd backend
-uv run --locked --env-file ../.env alembic upgrade head
-```
+| 설정 | 기본값과 변경 방법 |
+| --- | --- |
+| `DB_PORT` | `5432`. 변경하면 `DATABASE_URL`의 포트도 함께 맞춘다. |
+| `DATABASE_URL` | 루프백 PostgreSQL 연결 URL. 사용자·비밀번호·DB명은 Compose의 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`와 맞춘다. |
+| `API_TARGET` | `http://127.0.0.1:8000`. `./dev`가 이 주소의 포트에 API를 실행하고 Vite가 같은 대상으로 `/api`를 유지해 프록시한다. |
+| `WEB_PORT` | `5173`. `./dev`가 출력한 실제 웹 URL로 접속한다. |
+| `COMPOSE_PROJECT_NAME` | 필요하면 독립된 DB/볼륨 이름을 선택한다. 같은 이름은 같은 데이터를 사용한다. |
 
-Compose는 `postgres:17.11`을 루프백에만 열고 named volume에 데이터를 보존한다. DB healthcheck 성공 후에만 마이그레이션한다. 현재 baseline은 업무 테이블 없이 Alembic 버전만 기록한다. 재실행해도 `.env`·데이터를 지우지 않는다. DB 계정·비밀번호 변경은 이미 생성된 볼륨에 자동 적용되지 않는다. 연결 오류가 나면 설정을 확인하며 볼륨 삭제로 해결하지 않는다.
+`./dev`는 웹과 API를 한 터미널에서 실행한다. Ctrl-C는 둘 다 종료하며 종료 코드 130을 반환한다. 한 서버가 실패하면 함께 시작한 서버도 종료하고 실패 코드를 반환한다. 포트가 사용 중이면 시작하지 않으며 기존 프로세스를 종료하지 않는다. DB는 종료하지 않으므로 재시작에 재사용할 수 있다. 기본 API 문서는 `http://127.0.0.1:8000/docs`다.
 
-### API와 웹 실행
+웹 연결 확인의 성공은 실제 DB `SELECT 1`의 `200 {"status":"ok"}`, DB 장애는 `503 {"detail":"database_unavailable"}`다. 로딩·성공·실패와 다시 확인을 제공하며 샘플 성공을 사용하지 않는다. Compose는 `postgres:17.11`을 루프백에만 열고 named volume에 보존한다. 기존 볼륨의 계정·비밀번호는 `.env` 변경만으로 바뀌지 않는다. 연결 오류 시 볼륨을 삭제하지 말고 설정을 확인한다.
 
-별도 터미널에서 각각 실행한다. API는 기본 `http://127.0.0.1:8000`, 웹은 Vite가 출력하는 `http://127.0.0.1:5173`에 접속한다.
+`./check`는 TypeScript, ESLint, Prettier, 웹 Vitest, Ruff, API·진입점 unittest, Vite 빌드를 순서대로 검사한다. 첫 실패에서 비정상 종료하며 파일을 자동 수정하지 않는다. 웹/API 단위 테스트는 목을 사용해 성공·장애·재시도 계약을 검증하고 실제 DB/GPU 검증을 대체하지 않는다. 필요하면 `cd web && npx prettier --write src`로 포맷을 수정하고 diff를 확인한다.
 
-```sh
-# 터미널 1: 저장소 루트에서
-cd backend
-uv run --locked --env-file ../.env uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
+본인의 DB를 멈출 때는 기본 설정에서 `docker compose stop db`를 사용한다. `COMPOSE_PROJECT_NAME`을 사용했다면 같은 이름을 명령에 지정한다. 볼륨 삭제는 이 절차에 포함하지 않는다. DB 장애 확인은 본인의 DB에만 수행하고 `./setup`으로 복구한다.
 
-```sh
-# 터미널 2: 저장소 루트에서
-cd web
-npm run dev
-```
-
-웹의 연결 확인은 실제 DB의 `SELECT 1` 성공 시 `200 {"status":"ok"}`, DB 연결 실패 시 `503 {"detail":"database_unavailable"}`를 사용한다. 로딩·성공·실패와 다시 확인을 제공한다. API 문서는 `http://127.0.0.1:8000/docs`에서 볼 수 있다. 샘플 응답으로 성공을 대체하지 않는다.
-
-포트 충돌 시 `.env`의 `DB_PORT`와 `DATABASE_URL` 포트를 함께 바꾼다. API 포트는 uvicorn의 `--port`와 `.env`의 `API_TARGET`을 함께 바꾸고, 웹은 `WEB_PORT`를 바꾼다. 변경 후 서버를 재시작한다. Vite는 `/api`를 유지해 API로 프록시하며 포트가 사용 중이면 임의 포트로 옮기지 않고 실패한다.
-
-### 검사와 종료
-
-```sh
-# 저장소 루트에서
-cd web
-npm run typecheck
-npm run build
-cd ..
-curl --fail http://127.0.0.1:5173/api/health
-# 본인이 실행한 서버는 각 터미널에서 Ctrl-C
-docker compose stop db
-```
-
-DB 장애 검증은 본인의 개발 DB를 중지한 뒤 웹에서 다시 확인해 실패 표시와 503을 확인하고, 다시 `docker compose up -d --wait db`로 복구한다. 다른 팀원의 공유 DB에는 수행하지 않는다. `npm ci`는 `web/package-lock.json`, `uv sync --locked`는 `backend/uv.lock`을 사용한다. 의존성 변경 때만 잠금 파일을 갱신한다. ESLint/Prettier/Ruff와 공통 check는 후속 작업이다.
-
-GPU 비밀은 백엔드 환경에만 둔다. `VITE_`는 공개값이므로 토큰을 넣지 않는다. 샘플·로그·프롬프트에 개인정보를 넣지 않는다. 첫 온보딩의 초기 완료 조건은 구현자 외 팀원 한 명의 두 번째 MacBook 새 클론에서 설치·마이그레이션·웹 연결·검사·재실행 보존을 확인하는 것이다. 다섯 대는 같은 절차를 공유하며, 이 두 번째 Mac 검증은 아직 미수행이다.
+의존성 변경 때만 `web/package-lock.json`과 `backend/uv.lock`을 갱신한다. GPU 비밀은 백엔드 환경에만 두고 공개되는 `VITE_`에 넣지 않는다. 샘플·로그·프롬프트에 개인정보를 넣지 않는다. 초기 온보딩 완료 조건은 구현자 외 팀원 한 명의 Mac 새 클론에서 위 절차·재실행 보존을 확인하는 것이며 아직 미완료다.
 
 ## 해커톤 협업 규칙
 

@@ -42,4 +42,4 @@ FastAPI 라우트는 HTTP 입력·응답을 다루고, 업무 로직은 서비�
 
 npm의 `package-lock.json`과 uv의 `uv.lock`을 저장소에 포함하고 팀이 같은 도구 버전·잠금 파일로 설치한다. 의존성 변경 PR에는 이유와 잠금 파일 변경을 함께 담는다. 웹 명세·잠금 파일은 `web`, API 명세·잠금 파일은 `backend`에 있다. 실행 명령은 README를 따른다.
 
-구현할 공통 check에는 TypeScript 검사, ESLint·Prettier 웹 검사, Ruff Python 검사, 필요한 동작 테스트, 웹 빌드를 포함한다. 현재 TypeScript 검사와 웹 빌드만 제공하며 ESLint·Prettier·Ruff·공통 check는 아직 없다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
+구현할 공통 check에는 TypeScript 검사, ESLint·Prettier 웹 검사, Ruff Python 검사, 필요한 동작 테스트, 웹 빌드를 포함한다. 현재 `./check`가 TypeScript·ESLint·Prettier·Ruff·웹/API/진입점 단위 테스트와 웹 빌드를 실행한다. 단위 테스트의 목 결과와 실제 DB health 실행 증거를 구분한다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
