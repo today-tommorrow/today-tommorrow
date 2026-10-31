@@ -42,6 +42,9 @@ jobs:
       - name: Production build
         if: ${{ !cancelled() }}
         run: npm run build
+      - name: Input preservation and runtime configuration regressions
+        if: ${{ !cancelled() }}
+        run: npm test -- src/Intake.test.tsx vitest.config.test.ts
       - name: Prepare formatting correction artifact
         if: ${{ failure() && steps.formatting.outcome == 'failure' }}
         run: |
@@ -75,7 +78,7 @@ jobs:
     env:
       DATABASE_URL: postgresql+psycopg://today:ci-only@127.0.0.1:5432/today
       API_TARGET: http://127.0.0.1:8000
-      WEB_PORT: '5173'
+      WEB_PORT: "5273"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -85,7 +88,7 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - uses: astral-sh/setup-uv@v6
         with:
-          version: '0.12.5'
+          version: "0.12.5"
           enable-cache: true
           cache-dependency-glob: backend/uv.lock
       - name: Install locked runtimes and dependencies
@@ -96,6 +99,12 @@ jobs:
       - name: Apply actual database migrations
         working-directory: backend
         run: uv run --no-sync alembic upgrade head
+      - name: Python static and unit checks
+        working-directory: backend
+        run: |
+          uv run --no-sync ruff check --config pyproject.toml . ../scripts
+          uv run --no-sync python -m unittest discover -s tests
+          uv run --no-sync python -m unittest discover -s ../scripts -p 'test_*.py'
       - name: Start real API and Vite proxy
         run: |
           (
@@ -109,13 +118,13 @@ jobs:
           ) &
           echo "$!" > "$RUNNER_TEMP/web.pid"
           for attempt in $(seq 1 60); do
-            if curl --fail --silent --connect-timeout 5 --max-time 10 http://127.0.0.1:5173/api/health; then
+            if curl --fail --silent --connect-timeout 5 --max-time 10 "http://127.0.0.1:$WEB_PORT/api/health"; then
               exit 0
             fi
             sleep 1
           done
           exit 1
-      - name: Real frontend HTTP integration tests
+      - name: Full frontend suite including real HTTP integration
         working-directory: web
         run: npm test -- --config vitest.config.ts
       - name: Verify actual database outage and recovery
@@ -123,12 +132,12 @@ jobs:
           POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         run: |
           docker stop "$POSTGRES_CONTAINER"
-          status=$(curl --silent --connect-timeout 5 --max-time 10 --output "$RUNNER_TEMP/db-outage.json" --write-out '%{http_code}' http://127.0.0.1:5173/api/health)
+          status=$(curl --silent --connect-timeout 5 --max-time 10 --output "$RUNNER_TEMP/db-outage.json" --write-out '%{http_code}' "http://127.0.0.1:$WEB_PORT/api/health")
           test "$status" = 503
           jq -e '.detail == "database_unavailable"' "$RUNNER_TEMP/db-outage.json"
           docker start "$POSTGRES_CONTAINER"
           for attempt in $(seq 1 60); do
-            if curl --fail --silent --connect-timeout 5 --max-time 10 http://127.0.0.1:5173/api/health; then
+            if curl --fail --silent --connect-timeout 5 --max-time 10 "http://127.0.0.1:$WEB_PORT/api/health"; then
               exit 0
             fi
             sleep 1
@@ -163,10 +172,10 @@ jobs:
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
           Real services: Vite proxy → FastAPI → PostgreSQL 17.11, migrations, database outage/recovery.
-          No mock responses, sample courses, generated profiles or authentication credentials are used.
+          App.test.tsx uses real HTTP responses. Intake and configuration regressions use isolated synthetic fixtures and do not verify model/API integration.
           OAuth, profile, question, document and recommendation endpoints are not implemented in this baseline backend.
           Their complete UI/API/OAuth/GPU integration remains unverified. GPU: N/A for this CI job.
-          Existing mocked backend and launcher unit suites are intentionally not executed by this workflow.
+          Python static checks and backend/launcher unit suites also run; their doubles do not verify real database/model integration.
           SUMMARY
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}

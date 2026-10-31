@@ -134,6 +134,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   })
   const active = useRef<AbortController | null>(null)
   const keys = useRef(new Map<string, string>())
+  const interpretationInput = useRef<{
+    jobId: string
+    interpretationId: string | null
+    text: string
+  } | null>(null)
   const latest = useRef(profile)
   latest.current = profile
   const callbacks = useRef({ onProfile, onRun })
@@ -236,6 +241,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   ) {
     if (signal.aborted) return
     rememberJob(id)
+    let terminalFailure = false
     const result = await waitForJob(
       id,
       signal,
@@ -245,12 +251,18 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           throw new Error('현재 입력의 작업이 아니에요.')
         setJob(update)
         if (['failed', 'cancelled', 'superseded'].includes(update.status)) {
-          rememberJob(null)
+          terminalFailure = true
           keys.current.clear()
         }
       },
       pollAfterMs,
-    )
+    ).catch(async (cause: unknown) => {
+      if (terminalFailure && !signal.aborted) {
+        await refresh(signal)
+        if (!signal.aborted) rememberJob(null)
+      }
+      throw cause
+    })
     if (signal.aborted) return
     if (result.profile_id !== latest.current.id)
       throw new Error('현재 입력의 작업이 아니에요.')
@@ -304,6 +316,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         found.base_revision === latest.current.revision &&
         found.status !== 'applied'
       ) {
+        if (interpretationInput.current?.jobId === id)
+          interpretationInput.current.interpretationId = found.id
         setInterpretation(found)
         setDecisions({})
       } else
@@ -440,6 +454,12 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       },
       signal,
     )
+    if (signal.aborted) return
+    interpretationInput.current = {
+      jobId: accepted.job_id,
+      interpretationId: null,
+      text,
+    }
     await finishJob(accepted.job_id, signal, accepted.poll_after_ms)
   }
 
@@ -449,6 +469,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       interpretation.base_revision !== latest.current.revision
     )
       throw new Error('입력이 변경됐어요. 해석을 다시 요청해 주세요.')
+    const input = interpretationInput.current
     const next = await mutate<Profile>(
       `${path}/interpretations/${encodeURIComponent(interpretation.id)}/apply`,
       {
@@ -465,7 +486,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     if (!signal.aborted) {
       applyProfile(next)
       setInterpretation(null)
-      setText('')
+      if (input?.interpretationId === interpretation.id)
+        setText((current) => (current === input.text ? '' : current))
+      interpretationInput.current = null
     }
   }
 
@@ -506,10 +529,12 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       { method: 'POST', body, signal },
     )
     if (signal.aborted) return
-    setDocumentText('')
-    setDocumentUrl('')
-    setFile(null)
-    setFileInputKey((value) => value + 1)
+    if (source === 'texts') setDocumentText('')
+    if (source === 'links') setDocumentUrl('')
+    if (source === 'files') {
+      setFile(null)
+      setFileInputKey((value) => value + 1)
+    }
     await refresh(signal)
     if (accepted.document.job_id)
       await finishJob(accepted.document.job_id, signal)

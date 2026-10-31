@@ -32,18 +32,19 @@
 
 ## GitHub CI 검증 범위
 
-이 작업에서는 로컬 코드·테스트·빌드·포매터를 실행하지 않는다. [Frontend CI](../.github/workflows/frontend-ci.yml)는 push, pull request, 수동 실행으로 동작한다. 자동 배포·자동 승인·자동 병합은 수행하지 않는다.
+리뷰 수정의 회귀 테스트·타입·린트·포맷·빌드는 로컬에서도 확인한다. [Frontend CI](../.github/workflows/frontend-ci.yml)는 push, pull request, 수동 실행으로 동작한다. 자동 배포·자동 승인·자동 병합은 수행하지 않는다.
 
 | 작업 | 실행하는 검사 | 범위의 한계 |
 | --- | --- | --- |
-| Frontend quality | 잠금 파일 설치, TypeScript, ESLint, Prettier, production build | 정적 검사·빌드 성공만으로 사용자 시나리오를 완료 처리하지 않음 |
-| Real API and database integration | 정확한 Node/Python 버전과 잠금 파일 설치, PostgreSQL 17.11, 실제 Alembic 적용, 실제 Vite → FastAPI → DB 요청 | 외부 운영 서버를 사용하는 테스트가 아님 |
+| Frontend quality | 잠금 파일 설치, TypeScript, ESLint, Prettier, production build, 입력·설정 회귀 테스트 | 정적 검사·대역 테스트·빌드 성공만으로 사용자 시나리오를 완료 처리하지 않음 |
+| Real API and database integration | 정확한 Node/Python 버전과 잠금 파일 설치, Python 정적·API/진입점 단위 검사, 전체 웹 테스트, PostgreSQL 17.11, 실제 Alembic 적용, 실제 Vite → FastAPI → DB 요청 | 실제 HTTP 검사는 기본값과 다른 `WEB_PORT=5273`을 사용. 단위 검사에는 대역 사용. 외부 운영 서버를 사용하는 테스트가 아님 |
 | 프론트 테스트 4개 | 실제 health 성공, 실제 auth 404, 화면의 인증 오류·로그인 링크 숨김, 연결 확인 버튼 성공 | jsdom 렌더 테스트. 실제 브라우저 OAuth·E2E·시각 검증을 대신하지 않음 |
+| 입력·설정 회귀 테스트 | 등록한 종류만 초기화, 해석 전후 입력 보존, 실패 문서의 재시도 표시, 조회 오류 시 작업 ID 보존, 루트 `.env`·환경변수·API 경로 | 합성 계약 응답과 임시 설정을 사용. 실제 업무 API·모델 검증을 대신하지 않음 |
 | DB 장애·복구 | 실제 DB 컨테이너 중지 후 health 503 확인, 재시작 후 성공 확인 | 업무 데이터 저장·재조회 및 개인정보 삭제 검증은 미수행 |
 
-프론트 테스트의 fetch mock을 제거했다. 이 workflow는 mock 기반 기존 백엔드·진입점 unittest를 실행하지 않는다. 실제 사용자 데이터·가짜 계정·샘플 과정·추천 fixture를 만들지 않는다. 포맷 검사에 실패하면 CI runner에서 만든 `formatting-correction` 패치 아티팩트를 제공하며 저장소에 자동 커밋하지 않는다. 실패 로그는 `real-integration-logs`에서 확인한다.
+`App.test.tsx`는 실제 HTTP 응답을 사용한다. `Intake.test.tsx`는 요청 경계에서 합성 계약 응답을 제공하고 실제 요청 처리·작업 polling·React 화면 동작을 검증한다. 설정 회귀 테스트는 실제 저장소 `.env`를 수정하지 않고 임시 디렉터리에서 Vite 설정을 로드한다. 실제 사용자 데이터·계정·추천 결과를 만들지 않는다. 포맷 검사에 실패하면 CI runner에서 만든 `formatting-correction` 패치 아티팩트를 제공하며 저장소에 자동 커밋하지 않는다. 실패 로그는 `real-integration-logs`에서 확인한다.
 
-검증 완료 여부는 해당 커밋의 실제 Actions 결과로 확인한다. OAuth 전체 흐름, 입력 저장·복원, 문서 처리, 실제 모델 질문·추천, 교육 상세·비교·관심 저장은 서버 구현과 실제 통합 후 별도 증거가 필요하다. GPU는 이 CI 작업에서 N/A이며 실제 GPU 검증 완료로 표시하지 않는다. 기존 `./check`의 mock 테스트 포함 범위와 이 workflow의 범위는 다르다.
+검증 완료 여부는 해당 커밋의 실제 Actions 결과로 확인한다. OAuth 전체 흐름, 입력 저장·복원, 문서 처리, 실제 모델 질문·추천, 교육 상세·비교·관심 저장은 서버 구현과 실제 통합 후 별도 증거가 필요하다. GPU는 이 CI 작업에서 N/A이며 실제 GPU 검증 완료로 표시하지 않는다.
 
 ## 아직 합의가 필요한 계약
 

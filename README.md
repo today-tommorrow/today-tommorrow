@@ -41,9 +41,9 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 
 웹 연결 확인의 성공은 실제 DB `SELECT 1`의 `200 {"status":"ok"}`, DB 장애는 `503 {"detail":"database_unavailable"}`다. 로딩·성공·실패와 다시 확인을 제공하며 샘플 성공을 사용하지 않는다. Compose는 `postgres:17.11`을 루프백에만 열고 named volume에 보존한다. 기존 볼륨의 계정·비밀번호는 `.env` 변경만으로 바뀌지 않는다. 연결 오류 시 볼륨을 삭제하지 말고 설정을 확인한다.
 
-`./check`는 TypeScript, ESLint, Prettier, 웹 Vitest, Ruff, API·진입점 unittest, Vite 빌드를 순서대로 검사한다. 첫 실패에서 비정상 종료하며 파일을 자동 수정하지 않는다. 웹 Vitest는 mock 없이 실제 `127.0.0.1:5173`의 Vite 프록시·FastAPI·PostgreSQL이 실행 중이어야 한다. 기존 API·진입점 unittest에는 mock이 남아 있으며 실제 DB·모델·GPU 검증을 대체하지 않는다.
+`./check`는 TypeScript, ESLint, Prettier, 웹 Vitest, Ruff, API·진입점 unittest, Vite 빌드를 순서대로 검사한다. 첫 실패에서 비정상 종료하며 파일을 자동 수정하지 않는다. 웹 전체 테스트에는 실제 Vite 프록시·FastAPI·PostgreSQL이 필요하다. 테스트도 루트 `.env`의 `WEB_PORT`(기본 `5173`)와 공개 API 경로를 사용한다. 입력 보존 회귀 테스트는 합성 응답으로 화면을 검증하며, 기존 API·진입점 unittest도 대역을 사용한다. 이 결과는 실제 DB·모델·GPU 검증을 대체하지 않는다.
 
-이번 프론트엔드 작업은 로컬 코드·테스트·빌드·포매터를 실행하지 않고 [GitHub CI](.github/workflows/frontend-ci.yml)에서 검증한다. CI는 실제 서비스를 시작해 웹 연동·DB 장애 복구를 확인하고 기존 mock 기반 API·진입점 unittest는 실행하지 않는다. 포맷 실패 시 CI가 수정 패치 아티팩트를 제공한다. [검증 범위와 미검증 항목](docs/frontend.md#github-ci-검증-범위)을 확인한다.
+리뷰 수정은 로컬에서 회귀 테스트·타입·린트·포맷·빌드를 확인하고, [GitHub CI](.github/workflows/frontend-ci.yml)에서 전체 웹 테스트와 Python 검사를 실행한다. CI는 기본값과 다른 웹 포트에서 실제 서비스를 시작해 웹 연동·DB 장애 복구도 확인한다. 포맷 실패 시 CI가 수정 패치 아티팩트를 제공한다. [검증 범위와 미검증 항목](docs/frontend.md#github-ci-검증-범위)을 확인한다.
 
 본인의 DB를 멈출 때는 기본 설정에서 `docker compose stop db`를 사용한다. `COMPOSE_PROJECT_NAME`을 사용했다면 같은 이름을 명령에 지정한다. 볼륨 삭제는 이 절차에 포함하지 않는다. DB 장애 확인은 본인의 DB에만 수행하고 `./setup`으로 복구한다.
 
