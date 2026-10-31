@@ -103,6 +103,25 @@ const phases: Record<Job['phase'], string> = {
   validating_question: '질문과 선택지를 확인하고 있어요',
 }
 
+function jobMessage(job: Job) {
+  switch (job.status) {
+    case 'queued':
+      return '작업을 기다리고 있어요'
+    case 'succeeded':
+      return '처리를 마쳤어요'
+    case 'failed':
+      return '처리에 실패했어요'
+    case 'cancelled':
+      return '서버 작업이 취소됐어요'
+    case 'superseded':
+      return '입력이 바뀌어 이전 작업이 만료됐어요'
+    case 'running':
+      return job.phase === 'completed'
+        ? '작업의 최종 완료를 확인하고 있어요'
+        : phases[job.phase]
+  }
+}
+
 export function Intake({ profile, onProfile, onRun }: Props) {
   const [options, setOptions] = useState<OnboardingOptions | null>(null)
   const [question, setQuestion] = useState<IntakeQuestion | null>(null)
@@ -705,7 +724,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         {notice && <p role="status">{notice}</p>}
         {job && (
           <p role="status">
-            {phases[job.phase]}
+            {jobMessage(job)}
             {job.error ? ` · ${job.error.message}` : ''}
           </p>
         )}
