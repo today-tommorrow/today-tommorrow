@@ -4,7 +4,7 @@
 
 26개 시나리오 이슈: 제품 사용자뿐 아니라 개발자·운영자의 준비/검증 시나리오도 포함합니다. 내부 S0–S9를 별도 이슈로 중복 생성하지 않고 T20의 영역별 작업/PR로 나눕니다. CI는 필수이며 자동 배포·자동 승인은 범위 밖입니다.
 
-| Phase / 마일스톤 제안 | 수 | 완료 기준 |
+| Phase / 마일스톤 | 수 | 완료 기준 |
 | --- | ---: | --- |
 | P0 계약·실현 가능성 | 4 | 공통 계약·실제 모델 기본 실행·원천 배치·다른 실제 Mac 확인 |
 | P1 공통 실행 기반 | 4 | 인증·프로필·작업 큐·CI |
@@ -45,6 +45,6 @@
 ## GitHub 관리 구조
 
 - 마일스톤은 위 6개 Phase. 날짜는 미지정.
-- 라벨 제안: area:web/api/ai/data/infra/docs, type:feature/enabler/validation, priority:P0/P1/P2.
-- Project 제안: `다음 v0.8 개발 공정`, 상태 Backlog/Ready/In progress/In review/Blocked/Done; Phase·주담당·참여 영역·Size·검증 환경·선행 이슈.
+- 등록한 라벨: area:web/api/ai/data/infra/docs, type:feature/enabler/validation, priority:P0/P1/P2.
+- Project: [다음 v0.8 개발 공정](https://github.com/orgs/today-tommorrow/projects/1), 상태 Backlog/Ready/In Progress/In review/Blocked/Done; 26개 이슈를 Backlog로 연결했습니다. Phase는 이슈 마일스톤, 참여 영역은 라벨, 주담당·검증 환경·선행 이슈는 본문에서 확인합니다. Size는 아직 산정하지 않았습니다.
 - 이슈 수만으로 완료율을 단정하지 않습니다. 크기·차단 의존성과 실제 완료 검증을 함께 봅니다. 이슈 본문에 실제 선행 이슈 링크와 관련 명세 고정 커밋 링크를 기록합니다.

@@ -31,7 +31,9 @@
       "D02",
       "D04",
       "D05"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/7",
+    "github_issue_number": 7
   },
   {
     "id": "T02",
@@ -58,7 +60,9 @@
       "API": "실제 DB health 성공·장애 응답 확인"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/8",
+    "github_issue_number": 8
   },
   {
     "id": "T03",
@@ -86,7 +90,9 @@
     "gpu": "필수 — 실제 L4 장치·모델·런타임·원 출력 검증 결과 기록",
     "decisions": [
       "D03"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/9",
+    "github_issue_number": 9
   },
   {
     "id": "T04",
@@ -111,7 +117,9 @@
       "AI": "내용·근거·NCS 연결에 필요한 필드 확인"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/10",
+    "github_issue_number": 10
   },
   {
     "id": "T05",
@@ -140,7 +148,9 @@
       "인프라/데이터": "OAuth redirect URI·서버 환경 설정"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/11",
+    "github_issue_number": 11
   },
   {
     "id": "T06",
@@ -173,7 +183,9 @@
     "decisions": [
       "D02",
       "D06"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/12",
+    "github_issue_number": 12
   },
   {
     "id": "T07",
@@ -208,7 +220,9 @@
     "gpu": "공유 GPU 동시성·대기 검증 필요; 상태 전이 단위 검사는 목과 별도 기록",
     "decisions": [
       "D05"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/13",
+    "github_issue_number": 13
   },
   {
     "id": "T08",
@@ -236,7 +250,9 @@
       "API": "Python·DB 검사"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/14",
+    "github_issue_number": 14
   },
   {
     "id": "T09",
@@ -275,7 +291,9 @@
       "D02",
       "D03",
       "D05"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/15",
+    "github_issue_number": 15
   },
   {
     "id": "T10",
@@ -304,7 +322,9 @@
       "AI": "변경된 확인 문맥만 사용"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/16",
+    "github_issue_number": 16
   },
   {
     "id": "T11",
@@ -338,7 +358,9 @@
     "decisions": [
       "D04",
       "D05"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/17",
+    "github_issue_number": 17
   },
   {
     "id": "T12",
@@ -374,7 +396,9 @@
     "decisions": [
       "D09",
       "D11"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/18",
+    "github_issue_number": 18
   },
   {
     "id": "T13",
@@ -406,7 +430,9 @@
     "gpu": "수집 자체 N/A; 전체 자료 의미 추출은 T12의 실제 모델 경로로 검증",
     "decisions": [
       "D09"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/19",
+    "github_issue_number": 19
   },
   {
     "id": "T14",
@@ -441,7 +467,9 @@
     "decisions": [
       "D07",
       "D11"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/20",
+    "github_issue_number": 20
   },
   {
     "id": "T15",
@@ -469,7 +497,9 @@
       "API": "모델/migration 연결 순서 검토"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/21",
+    "github_issue_number": 21
   },
   {
     "id": "T16",
@@ -497,7 +527,9 @@
       "API": "모델/migration 연결 순서 검토"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/22",
+    "github_issue_number": 22
   },
   {
     "id": "T17",
@@ -525,7 +557,9 @@
       "AI": "참조 ID·학습 용어 계약 확인"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/23",
+    "github_issue_number": 23
   },
   {
     "id": "T18",
@@ -555,7 +589,9 @@
       "API": "원자적 pointer 교체·버전 참조 검증"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/24",
+    "github_issue_number": 24
   },
   {
     "id": "T19",
@@ -588,7 +624,9 @@
       "AI": "목표/학습 필요 질의 계약·근거 있는 확장"
     },
     "gpu": "FTS/RRF는 N/A; Gemma 질의 확장을 채택하면 실제 GPU 결과 별도 기록",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/25",
+    "github_issue_number": 25
   },
   {
     "id": "T20",
@@ -634,7 +672,9 @@
     ],
     "completion_deps": [
       "T14"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/26",
+    "github_issue_number": 26
   },
   {
     "id": "T21",
@@ -662,7 +702,9 @@
       "API": "과정 상세·회차·근거 응답"
     },
     "gpu": "N/A — 모델 실행을 포함하지 않음",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/27",
+    "github_issue_number": 27
   },
   {
     "id": "T22",
@@ -691,7 +733,9 @@
     "gpu": "N/A — 모델 실행을 포함하지 않음",
     "decisions": [
       "D13"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/28",
+    "github_issue_number": 28
   },
   {
     "id": "T23",
@@ -724,7 +768,9 @@
     "gpu": "N/A — 모델 실행을 포함하지 않음",
     "decisions": [
       "D10"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/29",
+    "github_issue_number": 29
   },
   {
     "id": "T24",
@@ -758,7 +804,9 @@
       "AI": "모델 상주·장치 버전"
     },
     "gpu": "필수 — 실제 배포 서버의 모델 실행까지 확인",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/30",
+    "github_issue_number": 30
   },
   {
     "id": "T25",
@@ -796,7 +844,9 @@
       "인프라/데이터": "환경·장애·복구 재현"
     },
     "gpu": "필수 — 실제 GPU 전체 흐름, 목·CPU와 별도 증거",
-    "decisions": []
+    "decisions": [],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/31",
+    "github_issue_number": 31
   },
   {
     "id": "T26",
@@ -833,6 +883,8 @@
     "gpu": "필수 — 실제 L4 장치와 고정 모델 버전",
     "decisions": [
       "D12"
-    ]
+    ],
+    "github_issue_url": "https://github.com/today-tommorrow/today-tommorrow/issues/32",
+    "github_issue_number": 32
   }
 ]
