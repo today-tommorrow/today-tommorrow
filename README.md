@@ -4,6 +4,8 @@
 
 [실제 고용24 데이터·벡터를 사용하는 로컬 DB 초기화](docs/local-database.md)
 
+[사용자·세션·OAuth 상태 저장 기반](backend/app/auth/README.md)
+
 ## macOS 개발 시작
 
 React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.

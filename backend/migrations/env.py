@@ -4,7 +4,8 @@ from alembic import context
 from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
-from app.db import Base, include_migration_name, include_migration_object
+from app.auth.models import Base
+from app.db import include_migration_name, include_migration_object
 
 migration_engine = create_engine(
     os.environ.get(
