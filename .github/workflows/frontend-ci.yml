@@ -1,0 +1,188 @@
+name: Frontend CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: frontend-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Frontend quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - name: TypeScript
+        run: npm run typecheck
+      - name: ESLint
+        if: ${{ !cancelled() }}
+        run: npm run lint
+      - name: Formatting
+        id: formatting
+        if: ${{ !cancelled() }}
+        run: |
+          npm run format:check
+          npx --no-install prettier --check vitest.config.ts
+      - name: Production build
+        if: ${{ !cancelled() }}
+        run: npm run build
+      - name: Input preservation and runtime configuration regressions
+        if: ${{ !cancelled() }}
+        run: npm test -- src/Intake.test.tsx vitest.config.test.ts
+      - name: Prepare formatting correction artifact
+        if: ${{ failure() && steps.formatting.outcome == 'failure' }}
+        run: |
+          npx --no-install prettier --write src index.html vite.config.ts vitest.config.ts tsconfig.json package.json eslint.config.js .prettierrc.json
+          git diff -- src index.html vite.config.ts vitest.config.ts tsconfig.json package.json eslint.config.js .prettierrc.json > formatting.patch
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() && steps.formatting.outcome == 'failure' }}
+        with:
+          name: formatting-correction
+          path: web/formatting.patch
+          retention-days: 3
+
+  integration:
+    name: Real API and database integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.11
+        env:
+          POSTGRES_USER: today
+          POSTGRES_PASSWORD: ci-only
+          POSTGRES_DB: today
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U today -d today"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgresql+psycopg://today:ci-only@127.0.0.1:5432/today
+      API_TARGET: http://127.0.0.1:8000
+      WEB_PORT: "5273"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.5"
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+      - name: Install locked runtimes and dependencies
+        run: |
+          uv python install "$(cat .python-version)"
+          uv sync --project backend --locked --dev --python "$(cat .python-version)"
+          npm ci --prefix web
+      - name: Apply actual database migrations
+        working-directory: backend
+        run: uv run --no-sync alembic upgrade head
+      - name: Python static and unit checks
+        working-directory: backend
+        run: |
+          uv run --no-sync ruff check --config pyproject.toml . ../scripts
+          uv run --no-sync python -m unittest discover -s tests
+          uv run --no-sync python -m unittest discover -s ../scripts -p 'test_*.py'
+      - name: Start real API and Vite proxy
+        run: |
+          (
+            cd backend
+            exec .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 > "$RUNNER_TEMP/api.log" 2>&1
+          ) &
+          echo "$!" > "$RUNNER_TEMP/api.pid"
+          (
+            cd web
+            exec node node_modules/vite/bin/vite.js --host 127.0.0.1 > "$RUNNER_TEMP/web.log" 2>&1
+          ) &
+          echo "$!" > "$RUNNER_TEMP/web.pid"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --connect-timeout 5 --max-time 10 "http://127.0.0.1:$WEB_PORT/api/health"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Full frontend suite including real HTTP integration
+        working-directory: web
+        run: npm test -- --config vitest.config.ts
+      - name: Verify actual database outage and recovery
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: |
+          docker stop "$POSTGRES_CONTAINER"
+          status=$(curl --silent --connect-timeout 5 --max-time 10 --output "$RUNNER_TEMP/db-outage.json" --write-out '%{http_code}' "http://127.0.0.1:$WEB_PORT/api/health")
+          test "$status" = 503
+          jq -e '.detail == "database_unavailable"' "$RUNNER_TEMP/db-outage.json"
+          docker start "$POSTGRES_CONTAINER"
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --connect-timeout 5 --max-time 10 "http://127.0.0.1:$WEB_PORT/api/health"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Stop integration servers
+        if: ${{ always() }}
+        timeout-minutes: 1
+        run: |
+          for service in api web; do
+            pid_file="$RUNNER_TEMP/$service.pid"
+            if [ ! -f "$pid_file" ]; then
+              continue
+            fi
+            server_pid=$(cat "$pid_file")
+            if [[ ! "$server_pid" =~ ^[0-9]+$ ]]; then
+              continue
+            fi
+            kill "$server_pid" 2>/dev/null || true
+            for attempt in $(seq 1 10); do
+              if ! kill -0 "$server_pid" 2>/dev/null; then
+                break
+              fi
+              sleep 1
+            done
+            if kill -0 "$server_pid" 2>/dev/null; then
+              kill -KILL "$server_pid" 2>/dev/null || true
+            fi
+          done
+      - name: Record verification boundaries
+        if: ${{ always() }}
+        run: |
+          cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
+          Real services: Vite proxy → FastAPI → PostgreSQL 17.11, migrations, database outage/recovery.
+          App.test.tsx uses real HTTP responses. Intake and configuration regressions use isolated synthetic fixtures and do not verify model/API integration.
+          OAuth, profile, question, document and recommendation endpoints are not implemented in this baseline backend.
+          Their complete UI/API/OAuth/GPU integration remains unverified. GPU: N/A for this CI job.
+          Python static checks and backend/launcher unit suites also run; their doubles do not verify real database/model integration.
+          SUMMARY
+      - uses: actions/upload-artifact@v4
+        if: ${{ failure() }}
+        with:
+          name: real-integration-logs
+          path: |
+            ${{ runner.temp }}/api.log
+            ${{ runner.temp }}/web.log
+            ${{ runner.temp }}/db-outage.json
+          retention-days: 3
