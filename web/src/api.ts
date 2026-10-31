@@ -20,7 +20,11 @@ export class ApiError extends Error {
 export function apiUrl(path: string) {
   const base = import.meta.env.VITE_API_BASE_URL || '/api'
   const url = new URL(base.replace(/\/$/, '') + path, window.location.origin)
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) {
+  if (
+    !['http:', 'https:'].includes(url.protocol) ||
+    url.username ||
+    url.password
+  ) {
     throw new Error('API 주소 설정을 확인해주세요.')
   }
   return url.href
@@ -44,18 +48,25 @@ function assertRealData(value: unknown): void {
   for (const child of Object.values(value)) assertRealData(child)
 }
 
-export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+export async function request<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
   const method = options.method || 'GET'
   const headers = new Headers({ Accept: 'application/json' })
   if (method !== 'GET' && method !== 'HEAD') {
     if (!csrfToken) throw new ApiError('다시 로그인해주세요.', 401)
     headers.set('X-CSRF-Token', csrfToken)
   }
-  if (options.idempotencyKey) headers.set('Idempotency-Key', options.idempotencyKey)
+  if (options.idempotencyKey)
+    headers.set('Idempotency-Key', options.idempotencyKey)
   const form = options.body instanceof FormData
-  if (options.body !== undefined && !form) headers.set('Content-Type', 'application/json')
+  if (options.body !== undefined && !form)
+    headers.set('Content-Type', 'application/json')
   const timeout = AbortSignal.timeout(30000)
-  const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout
+  const signal = options.signal
+    ? AbortSignal.any([options.signal, timeout])
+    : timeout
   let response: Response
   try {
     response = await fetch(apiUrl(path), {
@@ -64,11 +75,19 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       credentials: 'include',
       cache: 'no-store',
       signal,
-      body: options.body === undefined ? undefined : form ? options.body as FormData : JSON.stringify(options.body),
+      body:
+        options.body === undefined
+          ? undefined
+          : form
+            ? (options.body as FormData)
+            : JSON.stringify(options.body),
     })
   } catch (error) {
     if (options.signal?.aborted) throw error
-    throw new ApiError('서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.', 0)
+    throw new ApiError(
+      '서버에 연결하지 못했습니다. 잠시 후 다시 시도해주세요.',
+      0,
+    )
   }
   signal.throwIfAborted()
   if (response.status === 401) {
@@ -79,8 +98,16 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
     let requestId: string | undefined
     try {
       const error: unknown = await response.json()
-      if (error && typeof error === 'object' && 'request_id' in error && typeof error.request_id === 'string') requestId = error.request_id
-    } catch { /* An error response need not have a JSON body. */ }
+      if (
+        error &&
+        typeof error === 'object' &&
+        'request_id' in error &&
+        typeof error.request_id === 'string'
+      )
+        requestId = error.request_id
+    } catch {
+      /* An error response need not have a JSON body. */
+    }
     const messages: Record<number, string> = {
       401: '로그인이 필요합니다.',
       403: '요청 권한을 확인할 수 없습니다. 로그인 상태를 다시 확인해주세요.',
@@ -91,11 +118,19 @@ export async function request<T>(path: string, options: RequestOptions = {}): Pr
       429: '요청이 많습니다. 잠시 후 다시 시도해주세요.',
       503: '현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
     }
-    throw new ApiError(messages[response.status] || '요청을 처리하지 못했습니다.', response.status, requestId)
+    throw new ApiError(
+      messages[response.status] || '요청을 처리하지 못했습니다.',
+      response.status,
+      requestId,
+    )
   }
   if (response.status === 204) return undefined as T
   let data: unknown
-  try { data = await response.json() } catch { throw new ApiError('서버 응답을 읽을 수 없습니다.', 502) }
+  try {
+    data = await response.json()
+  } catch {
+    throw new ApiError('서버 응답을 읽을 수 없습니다.', 502)
+  }
   signal.throwIfAborted()
   assertRealData(data)
   return data as T
@@ -109,17 +144,32 @@ export async function waitForJob(
 ): Promise<Job> {
   const delay = Math.max(1000, Math.min(pollAfterMs || 1500, 15000))
   while (!signal.aborted) {
-    const job = await request<Job>(`/jobs/${encodeURIComponent(id)}`, { signal })
-    if (!job || job.id !== id || typeof job.status !== 'string') throw new ApiError('작업 상태 응답이 올바르지 않습니다.', 502)
+    const job = await request<Job>(`/jobs/${encodeURIComponent(id)}`, {
+      signal,
+    })
+    if (!job || job.id !== id || typeof job.status !== 'string')
+      throw new ApiError('작업 상태 응답이 올바르지 않습니다.', 502)
     onUpdate(job)
     if (job.status === 'succeeded') return job
     if (['failed', 'cancelled', 'superseded'].includes(job.status)) {
-      throw new ApiError(job.status === 'superseded' ? '입력 변경으로 작업이 만료되었습니다.' : '작업이 완료되지 않았습니다. 현재 입력을 확인해주세요.', job.status === 'superseded' ? 409 : 503)
+      throw new ApiError(
+        job.status === 'superseded'
+          ? '입력 변경으로 작업이 만료되었습니다.'
+          : '작업이 완료되지 않았습니다. 현재 입력을 확인해주세요.',
+        job.status === 'superseded' ? 409 : 503,
+      )
     }
-    if (!['queued', 'running'].includes(job.status)) throw new ApiError('알 수 없는 작업 상태입니다.', 502)
+    if (!['queued', 'running'].includes(job.status))
+      throw new ApiError('알 수 없는 작업 상태입니다.', 502)
     await new Promise<void>((resolve, reject) => {
-      const abort = () => { clearTimeout(timer); reject(new DOMException('Aborted', 'AbortError')) }
-      const timer = window.setTimeout(() => { signal.removeEventListener('abort', abort); resolve() }, delay)
+      const abort = () => {
+        clearTimeout(timer)
+        reject(new DOMException('Aborted', 'AbortError'))
+      }
+      const timer = window.setTimeout(() => {
+        signal.removeEventListener('abort', abort)
+        resolve()
+      }, delay)
       signal.addEventListener('abort', abort, { once: true })
       if (signal.aborted) abort()
     })

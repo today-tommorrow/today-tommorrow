@@ -10,7 +10,7 @@ Python은 PEP8을 기준으로 공백 4칸 들여쓰기, 이항 연산자 양쪽
 
 프런트엔드는 ESLint의 JavaScript·typescript-eslint 권장 규칙과 Prettier를 사용한다. TypeScript `strict` 타입 검사는 별도 `tsc --noEmit`으로 수행한다. ESLint 통과를 타입 검사나 React 동작 검증으로 대신하지 않는다. Prettier는 형식을 맞추고, 의미·상태 책임·연동 계약은 테스트와 리뷰로 확인한다.
 
-준비가 끝났으면 저장소 루트에서 `./check`로 타입·린트·포맷·테스트·빌드를 함께 검사한다. 개별 검사는 다음 실제 명령을 쓴다. npm 명령은 정확한 Node/npm이 터미널 PATH에 있을 때 `web`에서 실행하며, 프로젝트 캐시를 사용하는 경우에는 루트 `./check`를 사용한다.
+일반 개발 환경에서는 저장소 루트의 `./check`로 타입·린트·포맷·테스트·빌드를 함께 검사한다. 웹 테스트에는 실제 `127.0.0.1:5173`의 Vite 프록시·FastAPI·PostgreSQL이 필요하다. 이번 프론트엔드 작업은 로컬 실행 없이 [GitHub CI](../.github/workflows/frontend-ci.yml)에서 서비스를 시작하고 검증한다. 아래 명령은 기존 개발 환경의 검사 참조이며 이 작업에서 실행한 증거가 아니다. npm 명령은 정확한 Node/npm이 터미널 PATH에 있을 때 `web`에서 실행하며, 프로젝트 캐시를 사용하는 경우에는 루트 `./check`를 사용한다.
 
 ```sh
 # 저장소 루트: 전체 검사와 Python 린트만 따로 확인
@@ -25,7 +25,7 @@ npm run lint
 npm run format:check
 ```
 
-기본 검사는 파일을 자동 수정하지 않는다. 포맷 수정이 필요하면 `web`에서 `npx prettier --write src`를 실행한 뒤 diff와 검사를 다시 확인한다. PR에는 실제 명령·환경·결과와 실행하지 못한 항목을 남긴다. PR 작성·승인·squash와 커밋 제목은 [README 협업 규칙](../README.md#pr과-병합)을 따른다.
+기본 검사는 파일을 자동 수정하지 않는다. 이번 작업의 포맷 수정은 CI가 제공하는 패치 아티팩트로 반영하고 CI에서 다시 확인한다. PR에는 실제 명령·환경·결과와 실행하지 못한 항목을 남긴다. PR 작성·승인·squash와 커밋 제목은 [README 협업 규칙](../README.md#pr과-병합)을 따른다.
 
 ## 웹: 화면 흐름과 상태
 
@@ -67,7 +67,7 @@ FastAPI 라우트는 HTTP 입력·응답을 다루고, 업무 로직은 서비�
 
 npm의 `package-lock.json`과 uv의 `uv.lock`을 저장소에 포함하고 팀이 같은 도구 버전·잠금 파일로 설치한다. 의존성 변경 PR에는 이유와 잠금 파일 변경을 함께 담는다. 웹 명세·잠금 파일은 `web`, API 명세·잠금 파일은 `backend`에 있다. 실행 명령은 README를 따른다.
 
-구현할 공통 check에는 TypeScript 검사, ESLint·Prettier 웹 검사, Ruff Python 검사, 필요한 동작 테스트, 웹 빌드를 포함한다. 현재 `./check`가 TypeScript·ESLint·Prettier·Ruff·웹/API/진입점 단위 테스트와 웹 빌드를 실행한다. 단위 테스트의 목 결과와 실제 DB health 실행 증거를 구분한다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
+현재 `./check`가 TypeScript·ESLint·Prettier·Ruff·웹 실제 연동 테스트·API/진입점 unittest와 웹 빌드를 실행한다. 웹 테스트는 mock 없이 실제 서비스에 요청한다. 기존 API·진입점 unittest의 mock 결과와 실제 DB health 실행 증거를 구분한다. 이번 작업의 GitHub CI는 기존 mock 기반 unittest를 실행하지 않으며 [별도 검증 범위](frontend.md#github-ci-검증-범위)를 따른다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
 
 세 로컬 진입점은 공통 POSIX launcher에서 `.python-version`의 정확한 Python을 uv로 선택한다. setup만 누락된 버전을 `uv python install --no-bin`으로 준비하며 dev/check는 setup을 안내한다. 호출 터미널의 Python 버전이나 작업 디렉터리에 의존하지 않고 uv sync/run에도 선택된 실행 경로를 명시한다. 시스템 Python·PATH는 바꾸지 않는다.
 

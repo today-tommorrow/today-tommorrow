@@ -290,7 +290,9 @@ function SaveCourse({
       })
       if (!controller.signal.aborted) {
         setSaved(!saved)
-        setNotice(saved ? '관심 교육에서 해제했습니다.' : '관심 교육에 저장했습니다.')
+        setNotice(
+          saved ? '관심 교육에서 해제했습니다.' : '관심 교육에 저장했습니다.',
+        )
         onChange?.()
       }
     } catch (error: unknown) {
@@ -351,7 +353,10 @@ function DetailBody({ course }: { course: CourseDetail }) {
 }
 
 export function CourseDetails({ courseId }: { courseId: string }) {
-  const remote = useRemote(`/courses/${encodeURIComponent(courseId)}`, courseDetail)
+  const remote = useRemote(
+    `/courses/${encodeURIComponent(courseId)}`,
+    courseDetail,
+  )
   return (
     <section className="panel stack" aria-label="교육 상세">
       <h2>교육 상세</h2>
@@ -379,7 +384,9 @@ function CompareCourses({ ids }: { ids: string[] }) {
     <section className="panel stack" aria-label="교육 비교 결과">
       <h2>선택한 교육 비교</h2>
       <LoadMessage {...remote} />
-      {data && !matches && <p role="alert">선택한 교육과 비교 결과가 다릅니다.</p>}
+      {data && !matches && (
+        <p role="alert">선택한 교육과 비교 결과가 다릅니다.</p>
+      )}
       {matches && data && (
         <div className="comparison-grid">
           {data.items.map((course) => (
@@ -398,7 +405,10 @@ export function Results({ runId }: { runId: string }) {
 }
 
 function ResultContent({ runId }: { runId: string }) {
-  const remote = useRemote(`/recommendations/${encodeURIComponent(runId)}`, realRun)
+  const remote = useRemote(
+    `/recommendations/${encodeURIComponent(runId)}`,
+    realRun,
+  )
   const [detailId, setDetailId] = useState<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [compareIds, setCompareIds] = useState<string[]>([])
@@ -421,7 +431,9 @@ function ResultContent({ runId }: { runId: string }) {
     <section className="stack" aria-label="추천 결과">
       <h1>나에게 맞는 다음 배움</h1>
       <LoadMessage {...remote} />
-      {run && run.id !== runId && <p role="alert">요청한 추천 결과와 다릅니다.</p>}
+      {run && run.id !== runId && (
+        <p role="alert">요청한 추천 결과와 다릅니다.</p>
+      )}
       {run && run.id === runId && (
         <>
           <section className="panel">
@@ -445,8 +457,13 @@ function ResultContent({ runId }: { runId: string }) {
           {!run.items.length && <p>표시할 추천 교육이 없습니다.</p>}
           <div className="stack">
             {run.items.map((item) => (
-              <article className="panel stack" key={`${item.course.id}-${item.rank}`}>
-                <p>{item.course.source_system === 'kmooc' ? 'K-MOOC' : '고용24'}</p>
+              <article
+                className="panel stack"
+                key={`${item.course.id}-${item.rank}`}
+              >
+                <p>
+                  {item.course.source_system === 'kmooc' ? 'K-MOOC' : '고용24'}
+                </p>
                 <h2>{item.course.name}</h2>
                 <p>{item.course.provider_name ?? '교육기관 미확인'}</p>
                 <p>
@@ -470,7 +487,10 @@ function ResultContent({ runId }: { runId: string }) {
                   <EvidenceList items={item.evidence} />
                 </details>
                 <div className="actions">
-                  <button type="button" onClick={() => setDetailId(item.course.id)}>
+                  <button
+                    type="button"
+                    onClick={() => setDetailId(item.course.id)}
+                  >
                     교육 상세
                   </button>
                   <SaveCourse courseId={item.course.id} />
@@ -478,8 +498,13 @@ function ResultContent({ runId }: { runId: string }) {
                     <input
                       type="checkbox"
                       checked={selected.includes(item.course.id)}
-                      disabled={selected.length >= 3 && !selected.includes(item.course.id)}
-                      onChange={(event) => select(item.course.id, event.target.checked)}
+                      disabled={
+                        selected.length >= 3 &&
+                        !selected.includes(item.course.id)
+                      }
+                      onChange={(event) =>
+                        select(item.course.id, event.target.checked)
+                      }
                     />
                     비교에 추가
                   </label>
