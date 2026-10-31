@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0",
+  "target_slot": "learning_goal",
+  "acknowledgement": "파이썬 기초와 예제 경험을 알려주셨어요.",
+  "question": "배운 내용을 활용해서, 이번에는 무엇을 완성하고 싶나요?",
+  "helper_text": "마음에 가까운 결과를 골라주세요.",
+  "selection_mode": "single",
+  "options": [
+    {
+      "key": "analysis_project",
+      "label": "직접 고른 데이터로 분석 결과물 만들기",
+      "description": "질문을 정하고 분석 결과를 설명하는 경험",
+      "answer_patch": {
+        "learning_goal": "portfolio",
+        "goal_text": "직접 고른 데이터로 분석 결과물을 만들고 싶다"
+      }
+    },
+    {
+      "key": "foundation",
+      "label": "예제를 보지 않고 기초 코드를 작성하기",
+      "description": "아직 헷갈리는 기초를 내 것으로 정리",
+      "answer_patch": {
+        "learning_goal": "foundation",
+        "goal_text": "예제 없이 기초 코드를 작성하고 싶다"
+      }
+    },
+    {
+      "key": "team_project",
+      "label": "다른 사람과 역할을 나눠 프로젝트 완성하기",
+      "description": "코드와 결과를 함께 정리하는 경험",
+      "answer_patch": {
+        "learning_goal": "collaboration",
+        "goal_text": "역할을 나눠 데이터 프로젝트를 완성하고 싶다"
+      }
+    }
+  ]
+}

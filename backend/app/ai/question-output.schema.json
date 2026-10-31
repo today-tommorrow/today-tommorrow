@@ -1,0 +1,259 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "target_slot": {
+      "type": "string",
+      "enum": [
+        "entry_intent",
+        "field_code",
+        "custom_field",
+        "experience",
+        "previous_gap",
+        "learning_goal",
+        "availability",
+        "delivery_mode",
+        "commute_region",
+        "budget_status",
+        "budget_krw",
+        "start_timing",
+        "document_decision",
+        "goal_text",
+        "constraints_text",
+        "interest_activity"
+      ]
+    },
+    "acknowledgement": {
+      "type": "string",
+      "maxLength": 180
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 180
+    },
+    "helper_text": {
+      "type": "string",
+      "maxLength": 240
+    },
+    "selection_mode": {
+      "type": "string",
+      "const": "single"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,31}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "answer_patch": {
+            "type": "object",
+            "properties": {
+              "entry_intent": {
+                "type": "string",
+                "enum": [
+                  "goal_known",
+                  "explore",
+                  "advance"
+                ]
+              },
+              "field_code": {
+                "type": "string",
+                "enum": [
+                  "ai_data",
+                  "software_cloud",
+                  "security_network",
+                  "robotics_manufacturing",
+                  "semiconductor",
+                  "digital_content",
+                  "other",
+                  "undecided"
+                ]
+              },
+              "custom_field": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "experience": {
+                "type": "string",
+                "enum": [
+                  "beginner",
+                  "basic",
+                  "project",
+                  "work",
+                  "unknown"
+                ]
+              },
+              "previous_gap": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "application",
+                      "depth",
+                      "collaboration",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "learning_goal": {
+                "type": "string",
+                "enum": [
+                  "foundation",
+                  "portfolio",
+                  "collaboration",
+                  "unknown"
+                ]
+              },
+              "availability": {
+                "type": "string",
+                "enum": [
+                  "weekday_day",
+                  "evening_weekend",
+                  "flexible",
+                  "unknown"
+                ]
+              },
+              "delivery_mode": {
+                "type": "string",
+                "enum": [
+                  "online",
+                  "offline",
+                  "hybrid",
+                  "any",
+                  "unknown"
+                ]
+              },
+              "commute_region": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "budget_status": {
+                "type": "string",
+                "enum": [
+                  "amount",
+                  "no_limit",
+                  "unknown"
+                ]
+              },
+              "budget_krw": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "start_timing": {
+                "type": "string",
+                "enum": [
+                  "soon",
+                  "one_to_three_months",
+                  "browse",
+                  "unknown"
+                ]
+              },
+              "document_decision": {
+                "type": "string",
+                "enum": [
+                  "provided",
+                  "none"
+                ]
+              },
+              "goal_text": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "constraints_text": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 2000
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "interest_activity": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [],
+            "additionalProperties": false,
+            "description": "내부 모델 계약. primary target_slot과 서버가 허용한 companion slot만 포함. 선택 문구에 드러나지 않은 값, 이미 확정된 값, 서버 상태 필드 수정 금지. 클라이언트는 이 patch를 제출하지 않는다."
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description",
+          "answer_patch"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 2,
+      "maxItems": 5
+    }
+  },
+  "required": [
+    "schema_version",
+    "target_slot",
+    "acknowledgement",
+    "question",
+    "helper_text",
+    "selection_mode",
+    "options"
+  ],
+  "additionalProperties": false,
+  "description": "local Gemma의 내부 구조화 출력. 프롬프트와 JSON schema를 함께 전달. 서버 검증 전 공개하거나 답변에 적용하지 않는다. 2~5 선택지/단일 선택은 초기 구현안이며 총 질문 수 제한이 아니다."
+}
