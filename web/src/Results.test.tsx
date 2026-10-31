@@ -213,6 +213,19 @@ describe('추천 결과와 참여 조건 표시', () => {
 })
 
 describe('모순·실패 응답과 재조회', () => {
+  it('미확인 조건이 있는 항목을 확인된 조건 일치로 표시하지 않는다', async () => {
+    respond({
+      ...run,
+      result_state: 'matches',
+      items: [{ ...item, match_state: 'verified_conditions' }],
+    })
+    render(<Results runId={runId} />)
+    await screen.findByRole('alert')
+    expect(screen.queryByText('확인된 조건 일치')).toBeNull()
+    expect(screen.queryByRole('heading', { name: item.course.name })).toBeNull()
+    expect(screen.getByRole('button', { name: '다시 불러오기' })).toBeTruthy()
+  })
+
   it.each([
     { ...run, result_state: 'empty' },
     { ...run, result_state: 'unsupported_field' },

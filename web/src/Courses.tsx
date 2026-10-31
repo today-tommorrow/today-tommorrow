@@ -128,6 +128,8 @@ function realRun(run: RecommendationRun) {
           !Object.hasOwn(conditionNames, check.field) ||
           !Object.hasOwn(conditionStates, check.status) ||
           check.status === 'fail' ||
+          (item.match_state === 'verified_conditions' &&
+            check.status === 'unknown') ||
           !Array.isArray(check.evidence_ids) ||
           typeof check.reason_code !== 'string',
       )
