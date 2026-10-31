@@ -163,6 +163,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   cleanup()
+  vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.unstubAllEnvs()
   setCsrfToken(null)
@@ -566,6 +567,45 @@ describe('파일·텍스트 자료 등록', () => {
     expect(changed).not.toHaveBeenCalled()
     expect(fetch.mock.calls).toHaveLength(2)
     expect(sessionStorage.getItem(storageKey)).toBeNull()
+  })
+
+  it('접수 확인 중인 자료 삭제가 성공하면 등록 대기 상태도 해제한다', async () => {
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    let reads = 0
+    let deleted = false
+    const fetch = serve((path, init) => {
+      if (path === `${profilePath}/documents/texts`)
+        return Response.json(accepted({ ...document, job_id: jobId }), {
+          status: 202,
+        })
+      if (init.method === 'DELETE') {
+        deleted = true
+        return new Response(null, { status: 204 })
+      }
+      if (path === profilePath)
+        return ++reads === 1
+          ? new Response(null, { status: 503 })
+          : Response.json(deleted ? { ...profile, revision: 3 } : registered())
+      throw new Error(`Unexpected ${path}`)
+    })
+    render(<Harness />)
+    await ready()
+    typeText()
+    fireEvent.click(button())
+    await screen.findByRole('alert')
+    fireEvent.click(button('최신 입력 확인'))
+    await screen.findByText(document.display_name)
+    fireEvent.click(button('자료 삭제'))
+    await waitFor(() =>
+      expect(screen.queryByText(document.display_name)).toBeNull(),
+    )
+    typeText('다음 자료')
+    expect(button().disabled).toBe(false)
+    expect(
+      screen.queryByRole('button', { name: '등록한 자료 다시 확인' }),
+    ).toBeNull()
+    expect(sessionStorage.getItem(storageKey)).toBeNull()
+    expect(posts(fetch)).toHaveLength(1)
   })
 
   it('접수 후 목록 대기를 중지해도 같은 자료와 job을 조회로 복구한다', async () => {

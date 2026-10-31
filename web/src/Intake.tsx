@@ -1315,6 +1315,12 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                           `/documents/${encodeURIComponent(document.id)}?expected_revision=${latest.current.revision}`,
                           { method: 'DELETE', signal },
                         )
+                        if (signal.aborted) return
+                        if (pendingDocument?.document.id === document.id) {
+                          setPendingDocument(null)
+                          if (pendingJob === pendingDocument.document.job_id)
+                            rememberJob(null)
+                        }
                         await refresh(signal)
                       })
                   }}
