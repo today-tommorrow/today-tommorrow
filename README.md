@@ -2,13 +2,11 @@
 
 ## macOS 개발 시작
 
-현재 저장소에는 협업 문서와 이슈 양식만 있다. 앱, 의존성 명세·잠금 파일, 환경변수 예제, PostgreSQL Compose 설정과 실행 스크립트는 아직 없다. 아래 실행 체계는 **구현 예정**이며 지금 앱을 실행할 수 있다는 뜻이 아니다. 코드 작성 규칙은 [개발 가이드](docs/development.md), 작업 책임과 리뷰 규칙은 [AGENTS.md](AGENTS.md)를 따른다.
+React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반을 구현했다. 웹은 실제 `GET /api/health`로 API와 DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포, 샘플 모드와 공통 setup/dev/check 스크립트는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
 
 ### 다섯 MacBook의 공통 준비
 
-각 팀원은 macOS에서 Git, Node.js와 npm, Python과 uv, Docker Compose v2를 사용할 수 있게 준비한다. Docker Desktop을 사용하면 먼저 실행하고 엔진이 준비됐는지 확인한다. Apple Silicon과 Intel 모두 같은 잠금 파일과 진입 절차를 사용하되, 지원 아키텍처는 실제 설치·컨테이너 실행으로 확인한다.
-
-다음은 설치 여부를 확인하는 명령이다. 앱 실행 명령은 아니다.
+Git, Node/npm, Python/uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. 기준은 `.node-version`의 Node 26.5.0, `.python-version`의 Python 3.14.6이다. Node는 프로젝트 엔진 범위 내에서 사용할 수 있지만 팀은 기준 버전을 우선 맞춘다. uv는 Python 설치·선택을 지원한다. Apple Silicon과 Intel은 같은 잠금 파일을 사용한다. 아키텍처별 실제 실행은 각 환경에서 확인한다.
 
 ```sh
 git --version
@@ -16,27 +14,64 @@ node --version
 npm --version
 python3 --version
 uv --version
-docker --version
 docker compose version
 docker info
 ```
 
-팀이 앱 초기화 시 도구의 지원 버전을 합의해 저장소에 기록한다. 지금 특정 버전 번호를 확정하지 않는다. Node/npm과 Python/uv의 기준 버전 및 버전 선언 파일 위치는 해당 구현 PR에서 정하고, 다섯 대가 같은 기준을 사용한다. npm은 `package-lock.json`, uv는 `uv.lock`을 커밋하며 담당자가 의존성 변경 때만 갱신한다. 잠금 파일이 생긴 뒤에는 합의한 작업 디렉터리에서 npm의 `npm ci`, uv의 `uv sync --locked`로 고정 설치한다. 현재는 파일과 작업 디렉터리가 없으므로 실행하지 않는다.
+### 수동 설치와 DB 준비
 
-### 구현 후 제공할 공통 진입 절차
+저장소 루트에서 시작한다. 환경 파일은 없을 때만 복사하고 기존 값을 덮지 않는다. 예제 값은 이 컴퓨터의 개발 DB 전용이며 공유 서버에서 쓰지 않는다. `.env`는 커밋하지 않는다.
 
-| 순서 | 구현할 동작과 완료 조건 |
-| --- | --- |
-| setup (예정) | 정해진 버전 확인 → 잠금 파일 기준 의존성 설치 → 환경변수 예제에서 없는 로컬 값만 생성 → 개발 DB 준비. 재실행해도 기존 `.env`와 데이터는 보존한다. |
-| DB 준비 (예정) | Compose로 개발 PostgreSQL을 시작하고 실제 연결 가능 상태를 기다린 뒤 Alembic 마이그레이션을 적용한다. DB 생성·샘플 입력도 중복 없이 재실행 가능해야 한다. 실패하면 멈추고 원인을 표시하며 DB 초기화·삭제를 자동 수행하지 않는다. |
-| dev (예정) | 웹과 API를 함께 실행하고 접속 URL을 출력한다. 예정된 `/api/health`의 성공 응답(예: `200 {"status":"ok"}`, 구현 시 확정)을 확인하고 공개 샘플로 정상·빈 결과·오류 화면을 확인한다. GPU 접속 없이 시작할 수 있는 로컬 샘플 모드를 제공하고 화면·로그에 샘플임을 표시한다. |
-| check (예정) | 타입·린트·필요한 테스트와 웹 빌드를 한 절차로 확인한다. 실제 모델·GPU 검증은 해당 이슈의 완료 조건에 따라 별도로 기록한다. |
+```sh
+test -f .env || cp env.example .env
+cd web
+npm ci
+cd ../backend
+uv sync --locked
+cd ..
+docker compose up -d --wait db
+cd backend
+uv run --locked --env-file ../.env alembic upgrade head
+```
 
-`setup`·`dev`·`check`는 앞으로 만들 진입점의 목적을 가리킨다. 현재 실행 가능한 명령 이름이 아니다. 구현 PR에서 실제 명령, 작업 디렉터리, 포트, 필수 환경변수와 오류 해결 절차를 이 표에 연결한다. 그 전에는 임의 경로나 포트를 사용해 실행하지 않는다.
+Compose는 `postgres:17.11`을 루프백에만 열고 named volume에 데이터를 보존한다. DB healthcheck 성공 후에만 마이그레이션한다. 현재 baseline은 업무 테이블 없이 Alembic 버전만 기록한다. 재실행해도 `.env`·데이터를 지우지 않는다. DB 계정·비밀번호 변경은 이미 생성된 볼륨에 자동 적용되지 않는다. 연결 오류가 나면 설정을 확인하며 볼륨 삭제로 해결하지 않는다.
 
-로컬 `.env`는 커밋하지 않고 예제에는 키 이름과 안전한 기본값만 둔다. GPU 서버 주소·토큰 등 비밀값은 백엔드 환경에만 둔다. `VITE_` 값은 브라우저에 공개되므로 비밀을 넣지 않는다. 샘플·로그·에이전트 프롬프트에 개인정보나 실제 사용자 원본을 넣지 않는다.
+### API와 웹 실행
 
-첫 실행 체계의 초기 완료 조건은 구현자 외 다른 팀원 한 명의 두 번째 MacBook에서 새 클론으로 위 공통 경로를 검증하는 것이다. 다섯 대 모두 같은 절차를 사용하되 초기 승인에 다섯 번의 실행을 요구하지 않는다. macOS·CPU 아키텍처와 도구 버전, 실제 명령·결과를 남기고 setup 재실행 시 `.env`·기존 데이터 보존, DB 준비 대기, 마이그레이션, 샘플 모드와 check 성공을 확인한다. 이 새 클론 검증은 **아직 수행하지 않았다**.
+별도 터미널에서 각각 실행한다. API는 기본 `http://127.0.0.1:8000`, 웹은 Vite가 출력하는 `http://127.0.0.1:5173`에 접속한다.
+
+```sh
+# 터미널 1: 저장소 루트에서
+cd backend
+uv run --locked --env-file ../.env uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+```sh
+# 터미널 2: 저장소 루트에서
+cd web
+npm run dev
+```
+
+웹의 연결 확인은 실제 DB의 `SELECT 1` 성공 시 `200 {"status":"ok"}`, DB 연결 실패 시 `503 {"detail":"database_unavailable"}`를 사용한다. 로딩·성공·실패와 다시 확인을 제공한다. API 문서는 `http://127.0.0.1:8000/docs`에서 볼 수 있다. 샘플 응답으로 성공을 대체하지 않는다.
+
+포트 충돌 시 `.env`의 `DB_PORT`와 `DATABASE_URL` 포트를 함께 바꾼다. API 포트는 uvicorn의 `--port`와 `.env`의 `API_TARGET`을 함께 바꾸고, 웹은 `WEB_PORT`를 바꾼다. 변경 후 서버를 재시작한다. Vite는 `/api`를 유지해 API로 프록시하며 포트가 사용 중이면 임의 포트로 옮기지 않고 실패한다.
+
+### 검사와 종료
+
+```sh
+# 저장소 루트에서
+cd web
+npm run typecheck
+npm run build
+cd ..
+curl --fail http://127.0.0.1:5173/api/health
+# 본인이 실행한 서버는 각 터미널에서 Ctrl-C
+docker compose stop db
+```
+
+DB 장애 검증은 본인의 개발 DB를 중지한 뒤 웹에서 다시 확인해 실패 표시와 503을 확인하고, 다시 `docker compose up -d --wait db`로 복구한다. 다른 팀원의 공유 DB에는 수행하지 않는다. `npm ci`는 `web/package-lock.json`, `uv sync --locked`는 `backend/uv.lock`을 사용한다. 의존성 변경 때만 잠금 파일을 갱신한다. ESLint/Prettier/Ruff와 공통 check는 후속 작업이다.
+
+GPU 비밀은 백엔드 환경에만 둔다. `VITE_`는 공개값이므로 토큰을 넣지 않는다. 샘플·로그·프롬프트에 개인정보를 넣지 않는다. 첫 온보딩의 초기 완료 조건은 구현자 외 팀원 한 명의 두 번째 MacBook 새 클론에서 설치·마이그레이션·웹 연결·검사·재실행 보존을 확인하는 것이다. 다섯 대는 같은 절차를 공유하며, 이 두 번째 Mac 검증은 아직 미수행이다.
 
 ## 해커톤 협업 규칙
 
