@@ -180,6 +180,33 @@ describe('작업 상태와 복구 UI', () => {
 })
 
 describe('요청 timeout·취소 계약', () => {
+  it.each(['timeout', 'caller'] as const)(
+    '오류 응답 본문에서도 %s 중단 원인을 보존한다',
+    async (source) => {
+      const timeout = new AbortController()
+      const caller = new AbortController()
+      vi.spyOn(AbortSignal, 'timeout').mockReturnValue(timeout.signal)
+      const response = Response.json({}, { status: 503 })
+      vi.spyOn(response, 'json').mockImplementation(async () => {
+        if (source === 'timeout') {
+          timeout.abort(new DOMException('synthetic timeout', 'TimeoutError'))
+          throw timeout.signal.reason
+        }
+        caller.abort()
+        throw caller.signal.reason
+      })
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(() => Promise.resolve(response)),
+      )
+      await expect(
+        request('/jobs/synthetic-job', { signal: caller.signal }),
+      ).rejects.toMatchObject(
+        source === 'timeout' ? { status: 408 } : { name: 'AbortError' },
+      )
+    },
+  )
+
   it('응답 본문을 읽는 중 timeout도 408로 안내한다', async () => {
     const controller = new AbortController()
     vi.spyOn(AbortSignal, 'timeout').mockReturnValue(controller.signal)

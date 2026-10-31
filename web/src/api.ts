@@ -115,6 +115,7 @@ export async function request<T>(
     } catch {
       /* An error response need not have a JSON body. */
     }
+    checkAborted()
     const messages: Record<number, string> = {
       401: '로그인이 필요합니다.',
       403: '요청 권한을 확인할 수 없습니다. 로그인 상태를 다시 확인해주세요.',
