@@ -56,7 +56,7 @@ def load_environment(path):
 def require_python():
     expected = (ROOT / ".python-version").read_text().strip()
     if sys.version.split()[0] != expected:
-        raise ValueError(f"Python {expected}가 필요합니다. python3의 PATH를 전환해주세요.")
+        raise ValueError(f"Python {expected}가 필요합니다. 저장소의 ./setup을 실행해주세요.")
 
 
 def verify_backend_python(env):
