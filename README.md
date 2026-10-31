@@ -6,7 +6,7 @@ React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다
 
 ### 다섯 MacBook의 공통 준비
 
-Git, Node/npm, uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `node --version`은 `.node-version`의 26.5.0과 맞춘다. Node가 다르면 버전 관리 도구로 전환한다. Node 자동 설치는 제공하지 않는다. `docker info`로 엔진 연결을 확인한다.
+Git, uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `docker info`로 엔진 연결을 확인한다. Node/npm은 미리 설치하지 않아도 된다. 세 진입점은 `.node-version`의 정확한 Node(현재 26.5.0)와 같은 설치의 작동하는 npm을 PATH에서 먼저 찾고, 없으면 Git에서 제외한 프로젝트 `.local/node` 캐시를 사용한다. setup만 nodejs.org의 공식 macOS arm64/x64 archive를 받아 공식 manifest의 SHA256을 확인한 뒤 설치한다. 지원 빌드가 없거나 검증에 실패하면 중단하며 다른 도구로 대체하지 않는다. 다시 `./setup`을 실행해 재시도할 수 있다. Node 캐시 설치는 잠금과 임시 디렉터리를 사용해 완성된 설치만 공개한다. dev/check는 다운로드 없이 setup을 안내한다. 선택한 Node와 npm의 PATH는 자식 명령에만 적용하고 시스템 기본값·셸 프로필은 바꾸지 않는다.
 
 Python을 미리 설치하거나 `python3`의 PATH를 바꿀 필요는 없다. 세 진입점은 호출 위치와 관계없이 저장소의 `.python-version`(현재 3.14.6)을 읽고 uv로 정확한 기존 설치를 먼저 찾는다. `./setup`만 누락된 Python을 uv 관리 디렉터리에 설치하며 기본 명령 링크를 만들지 않는다(`--no-bin`). 시스템 기본 Python·PATH·셸 프로필은 변경하지 않는다. 첫 설치에는 인터넷이 필요하고 이미 있으면 오프라인 재사용할 수 있다. 새 Python 다운로드를 검증한 uv 버전은 0.12.5다. 이전 uv에서 `No download found`가 나오면 uv를 업데이트한 뒤 재시도한다. 기존 정확한 Python은 이전 uv에서도 재사용할 수 있다. uv가 없거나 다운로드가 실패하면 안내와 함께 비정상 종료한다. uv 설치·네트워크 문제를 해결한 뒤 `./setup`을 다시 실행한다. `./dev`·`./check`는 Python을 다운로드하지 않으며 없으면 setup을 안내한다.
 

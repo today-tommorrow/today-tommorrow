@@ -45,3 +45,5 @@ npm의 `package-lock.json`과 uv의 `uv.lock`을 저장소에 포함하고 팀�
 구현할 공통 check에는 TypeScript 검사, ESLint·Prettier 웹 검사, Ruff Python 검사, 필요한 동작 테스트, 웹 빌드를 포함한다. 현재 `./check`가 TypeScript·ESLint·Prettier·Ruff·웹/API/진입점 단위 테스트와 웹 빌드를 실행한다. 단위 테스트의 목 결과와 실제 DB health 실행 증거를 구분한다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
 
 세 로컬 진입점은 공통 POSIX launcher에서 `.python-version`의 정확한 Python을 uv로 선택한다. setup만 누락된 버전을 `uv python install --no-bin`으로 준비하며 dev/check는 setup을 안내한다. 호출 터미널의 Python 버전이나 작업 디렉터리에 의존하지 않고 uv sync/run에도 선택된 실행 경로를 명시한다. 시스템 Python·PATH는 바꾸지 않는다.
+
+Node/npm은 PATH의 정확한 버전·동일 설치를 우선 사용하고 프로젝트 전용 `.local/node` 캐시를 재사용한다. setup만 공식 macOS arm64/x64 archive의 SHA256 검증 후 설치하고 dev/check는 같은 선택을 사용한다. 캐시·임시 설치는 Git에서 제외하며 시스템 PATH·설정은 변경하지 않는다.

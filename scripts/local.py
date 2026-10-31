@@ -12,6 +12,8 @@ import time
 from pathlib import Path
 from urllib.parse import urlparse
 
+from node_runtime import node_environment
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -72,34 +74,34 @@ def verify_backend_python(env):
     print(f"backend Python {actual[0]} · {actual[1]}", flush=True)
 
 
-def tools():
+def tools(env):
     for name in ("git", "node", "npm", "uv", "docker"):
-        if not shutil.which(name):
+        if not shutil.which(name, path=env["PATH"]):
             raise ValueError(f"{name}를 찾을 수 없습니다. README의 공통 준비를 확인해주세요.")
-    node = subprocess.check_output(["node", "--version"], text=True).strip().lstrip("v")
+    node = subprocess.check_output(["node", "--version"], env=env, text=True).strip().lstrip("v")
     if node != (ROOT / ".node-version").read_text().strip():
         raise ValueError("Node 버전이 다릅니다. .node-version에 기록된 버전으로 전환해주세요.")
     for name in ("git", "npm", "uv"):
-        run([name, "--version"])
-    compose = subprocess.check_output(["docker", "compose", "version", "--short"], text=True).strip()
+        run([name, "--version"], env=env)
+    compose = subprocess.check_output(["docker", "compose", "version", "--short"], env=env, text=True).strip()
     if int(compose.split(".")[0].lstrip("v")) < 2:
         raise ValueError("Docker Compose v2 이상이 필요합니다. Docker 설치를 업데이트해주세요.")
     print(f"Docker Compose {compose}", flush=True)
     try:
-        subprocess.run(["docker", "info"], check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.run(["docker", "info"], env=env, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except subprocess.CalledProcessError:
-        raise ValueError("Docker 엔진에 연결할 수 없습니다. Docker Desktop 또는 로컬 엔진을 시작해주세요.") from None
+        raise ValueError("Docker 엔진에 연결할 수 없습니다. 로컬 엔진을 시작한 뒤 docker info를 확인해주세요.") from None
 
 
-def setup():
-    tools()
+def setup(node_env):
+    tools(node_env)
     path = ROOT / ".env"
     try:
         with path.open("x") as output:
             output.write((ROOT / "env.example").read_text())
     except FileExistsError:
         pass
-    env = load_environment(path)
+    env = {**load_environment(path), **node_env}
     run(["npm", "ci"], ROOT / "web", env)
     run(["uv", "sync", "--python", sys.executable, "--locked", "--dev"], ROOT / "backend", env)
     verify_backend_python(env)
@@ -137,8 +139,8 @@ def stop_children(children):
             child.wait()
 
 
-def dev():
-    env = load_environment(ROOT / ".env")
+def dev(node_env):
+    env = {**load_environment(ROOT / ".env"), **node_env}
     target = urlparse(env.get("API_TARGET", "http://127.0.0.1:8000"))
     if target.scheme != "http" or target.hostname != "127.0.0.1" or target.path not in ("", "/") or target.query or target.fragment or target.username:
         raise ValueError("API_TARGET은 http://127.0.0.1:<포트> 형식이어야 합니다.")
@@ -178,9 +180,9 @@ def dev():
             signal.signal(sig, handler)
 
 
-def check():
+def check(node_env):
     # Tests use dependency overrides/mocks, never a developer's live database.
-    env = {**os.environ, "CI": "1"}
+    env = {**node_env, "CI": "1"}
     for command in (["npm", "run", "typecheck"], ["npm", "run", "lint"], ["npm", "run", "format:check"], ["npm", "test"]):
         run(command, ROOT / "web", env)
     run(["uv", "run", "--python", sys.executable, "--locked", "ruff", "check", "--config", "pyproject.toml", ".", "../scripts"], ROOT / "backend", env)
@@ -193,7 +195,8 @@ if __name__ == "__main__":
     try:
         require_python()
         action = {"setup": setup, "dev": dev, "check": check}[sys.argv[1]]
-        sys.exit(action() or 0)
+        node_env = node_environment(ROOT, allow_download=sys.argv[1] == "setup")
+        sys.exit(action(node_env) or 0)
     except (ValueError, OSError) as error:
         print(f"오류: {error}", file=sys.stderr)
         sys.exit(1)
