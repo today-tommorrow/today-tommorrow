@@ -38,7 +38,7 @@ PATCH의 `answers`는 일부 필드를 합치는 patch가 아니라 **현재까�
 | 목표 | learning_goal | goal_known 진입은 goal_text |
 | 조건 | availability, delivery_mode, budget_status, start_timing | offline/hybrid는 commute_region, amount는 budget_krw(0 허용) |
 
-비적용 하위 슬롯은 완료 판정에서 제외한다. 문서 선택은 별도로 필요하며 `document_decision:none`은 자료 없는 경로다. 자료를 제공한다고 선택해도 실제 처리 완료로 표시하지 않는다.
+비적용 하위 슬롯은 완료 판정과 응답의 `unresolved_conflicts`에서 제외한다. 예를 들어 경험을 beginner로 바꾸면 previous_gap의 기존 재확인은 현재 진행을 막지 않는다. 답변과 재확인 이력은 DB에 보존하며, 부모 답변을 다시 바꿔 해당 슬롯이 적용되면 아직 확인하지 않은 재확인이 다시 나타난다. 문서 선택은 별도로 필요하며 `document_decision:none`은 자료 없는 경로다. 자료를 제공한다고 선택해도 실제 처리 완료로 표시하지 않는다.
 
 분야를 바꾸면 기존 경험·목표 답변을 보존하고 `unresolved_conflicts`로 재확인을 요구한다. 같은 전체 답변을 다시 보내는 것으로 재확인을 해제하지 않는다. 관련 키를 제거해 다시 선택하거나 다른 값을 명시하면 해당 재확인이 해제된다. 질문 생성·선택 적용은 L2에서 연결한다.
 

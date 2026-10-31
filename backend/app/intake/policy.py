@@ -5,7 +5,7 @@ from typing import Any
 SECTIONS = ("direction", "experience", "goal", "conditions")
 
 
-def evaluate(answers: dict[str, Any], conflicts: list[str]) -> dict[str, Any]:
+def _section_slots(answers: dict[str, Any]) -> dict[str, list[str]]:
     groups = {
         "direction": ["entry_intent", "field_code"],
         "experience": ["experience"],
@@ -27,6 +27,18 @@ def evaluate(answers: dict[str, Any], conflicts: list[str]) -> dict[str, Any]:
         groups["conditions"].append("commute_region")
     if answers.get("budget_status") == "amount":
         groups["conditions"].append("budget_krw")
+
+    return groups
+
+
+def active_conflicts(answers: dict[str, Any], conflicts: list[str]) -> list[str]:
+    slots = {key for keys in _section_slots(answers).values() for key in keys}
+    return [key for key in conflicts if key in slots]
+
+
+def evaluate(answers: dict[str, Any], conflicts: list[str]) -> dict[str, Any]:
+    groups = _section_slots(answers)
+    conflicts = active_conflicts(answers, conflicts)
 
     def answered(key):
         value = answers.get(key)

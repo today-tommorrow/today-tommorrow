@@ -34,6 +34,35 @@ class IntakePolicyTests(unittest.TestCase):
             ["direction", "experience", "goal", "conditions"],
         )
 
+    def test_inapplicable_conflicts_do_not_block_completed_sections(self):
+        answers = {
+            "entry_intent": "explore",
+            "field_code": "software_cloud",
+            "experience": "beginner",
+            "learning_goal": "foundation",
+            "availability": "unknown",
+            "delivery_mode": "online",
+            "budget_status": "no_limit",
+            "start_timing": "unknown",
+            "document_decision": "none",
+        }
+        for slot, value in (
+            ("custom_field", "Synthetic field"),
+            ("previous_gap", "depth"),
+            ("goal_text", "Synthetic goal"),
+            ("commute_region", "Synthetic region"),
+            ("budget_krw", 0),
+        ):
+            with self.subTest(slot=slot):
+                state = self.state({**answers, slot: value}, [slot])
+                self.assertEqual(state["missing_slots"], [])
+                self.assertEqual(state["section"], "review")
+                self.assertEqual(state["next_action"], "review")
+                self.assertEqual(
+                    state["completed_sections"],
+                    ["direction", "experience", "goal", "conditions"],
+                )
+
     def test_conditional_fields_and_zero_budget(self):
         state = self.state(
             {

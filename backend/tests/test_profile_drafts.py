@@ -278,6 +278,79 @@ class ProfileDraftTests(unittest.TestCase):
         self.assertEqual(reopened["unresolved_conflicts"], [])
         self.assertIn("experience", reopened["intake_state"]["missing_slots"])
 
+    def test_inapplicable_conflicts_are_hidden_and_reactivate_with_the_parent(self):
+        from app.intake.models import IntakeProfile
+
+        profile = self.create()
+        answers = {
+            "entry_intent": "goal_known",
+            "field_code": "ai_data",
+            "experience": "basic",
+            "previous_gap": "depth",
+            "learning_goal": "portfolio",
+            "goal_text": "Synthetic goal",
+            "availability": "unknown",
+            "delivery_mode": "online",
+            "budget_status": "no_limit",
+            "start_timing": "unknown",
+            "document_decision": "none",
+        }
+        current = self.save(profile, answers).json()
+        changed = self.save(current, {**answers, "field_code": "software_cloud"}).json()
+        self.assertEqual(
+            set(changed["unresolved_conflicts"]),
+            {"experience", "previous_gap", "learning_goal", "goal_text"},
+        )
+        inactive_answers = {
+            **changed["answers"],
+            "entry_intent": "explore",
+            "experience": "beginner",
+            "learning_goal": "foundation",
+        }
+        inactive = self.save(changed, inactive_answers).json()
+        self.assertEqual(inactive["answers"], inactive_answers)
+        self.assertEqual(inactive["unresolved_conflicts"], [])
+        self.assertEqual(inactive["intake_state"]["missing_slots"], [])
+        self.assertEqual(inactive["intake_state"]["next_action"], "review")
+        self.assertEqual(
+            inactive["completed_sections"],
+            ["direction", "experience", "goal", "conditions"],
+        )
+        self.assertEqual(
+            self.client.get("/api/profiles/" + profile["id"]).json(), inactive
+        )
+        # Resaving must preserve the latent recheck instead of acknowledging it.
+        repeated = self.save(inactive, inactive_answers).json()
+        self.assertEqual(repeated["unresolved_conflicts"], [])
+        self.assertEqual(repeated["intake_state"]["next_action"], "review")
+        with Session(self.engine) as db:
+            row = db.scalar(
+                select(IntakeProfile).where(IntakeProfile.user_id == self.user_id)
+            )
+            assert row is not None
+            self.assertEqual(
+                set(row.unresolved_conflicts_json), {"previous_gap", "goal_text"}
+            )
+            self.assertEqual(row.answers_json, inactive_answers)
+        reactivated = self.save(
+            repeated,
+            {**inactive_answers, "entry_intent": "goal_known", "experience": "basic"},
+        ).json()
+        self.assertEqual(
+            set(reactivated["unresolved_conflicts"]), {"previous_gap", "goal_text"}
+        )
+        self.assertEqual(reactivated["answers"]["previous_gap"], "depth")
+        self.assertEqual(reactivated["answers"]["goal_text"], "Synthetic goal")
+        self.assertEqual(reactivated["intake_state"]["section"], "experience")
+        self.assertEqual(reactivated["intake_state"]["next_action"], "resolve_conflict")
+        self.assertEqual(
+            set(reactivated["intake_state"]["missing_slots"]),
+            {"previous_gap", "goal_text"},
+        )
+        self.assertEqual(
+            self.client.get("/api/profiles/" + profile["id"]).json(), reactivated
+        )
+
     def test_options_report_only_supported_capabilities(self):
         response = self.client.get("/api/onboarding/options")
         self.assertEqual(response.status_code, 200)

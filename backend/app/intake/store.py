@@ -6,7 +6,7 @@ from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 from app.intake.models import IntakeProfile
-from app.intake.policy import evaluate
+from app.intake.policy import active_conflicts, evaluate
 
 
 class ProfileNotFound(Exception):
@@ -111,7 +111,9 @@ def profile_response(row: IntakeProfile) -> dict[str, Any]:
         "review_token": None,
         "updated_at": row.updated_at.isoformat(),
         "slot_origins": row.slot_origins_json,
-        "unresolved_conflicts": row.unresolved_conflicts_json,
+        "unresolved_conflicts": active_conflicts(
+            row.answers_json, row.unresolved_conflicts_json
+        ),
         "latest_interpretation_id": None,
         "selection_summaries": [],
         "intake_state": state,
