@@ -2,6 +2,8 @@
 
 [프론트엔드 구현 범위·API 주소 설정·GitHub CI 검증](docs/frontend.md)
 
+[실제 고용24 데이터·벡터를 사용하는 로컬 DB 초기화](docs/local-database.md)
+
 ## macOS 개발 시작
 
 React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
@@ -25,23 +27,25 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 ./check
 ```
 
-`./setup`은 도구·버전·Docker 엔진을 확인하고 `.env`가 없을 때만 `env.example`을 복사한다. `web`에서 `npm ci`, `backend`에서 진입점의 Python 경로를 `--python`으로 명시해 `uv sync --locked --dev`로 설치하고 `.venv`의 버전·실제 실행 경로를 확인한 뒤 Compose PostgreSQL의 healthcheck 성공을 기다리고 `alembic upgrade head`를 적용한다. 실패한 단계에서는 비정상 종료하므로 해당 오류를 해결한 뒤 다시 실행한다. 반복 실행은 기존 `.env`와 DB 데이터를 지우지 않는다. baseline은 업무 테이블 없이 Alembic 버전만 기록한다.
+`./setup`은 도구·버전·Docker 엔진을 확인하고 `.env`가 없을 때만 `env.example`을 복사한다. 웹·API와 별도 loader 환경을 잠금 파일로 설치하고 PostgreSQL 16.14 + pgvector 0.6.0 개발 이미지를 빌드한다. 실제 고정 교육 데이터 406개 과정·6,099개 단위를 적재·검증한 뒤 `today_app`의 앱 migration을 적용한다. 모든 uv 실행은 진입점 Python을 사용한다. 실패하면 해당 단계를 해결해 재실행하며 기존 `.env`·앱 입력·이전 PostgreSQL 17 볼륨은 보존한다. [데이터 출처·역할·검증 범위](docs/local-database.md)를 따른다.
 
 `.env`는 줄마다 `KEY=value` 형식이며 공백이 있는 값은 따옴표로 감싼다. 주석을 지원하지만 변수 확장·명령 치환·`export` 문법은 지원하지 않는다. 셸로 source하지 않는다. 호출한 터미널의 환경변수가 파일보다 우선한다. uv의 모든 실행에도 진입점 Python 경로를 명시해 다른 patch 버전으로 자동 전환되지 않게 한다. 예제 계정은 개인 컴퓨터의 개발용이며 공유 서버에는 사용하지 않는다. `.env`를 커밋하지 않는다.
 
 | 설정 | 기본값과 변경 방법 |
 | --- | --- |
-| `DB_PORT` | `5432`. 변경하면 `DATABASE_URL`의 포트도 함께 맞춘다. |
-| `DATABASE_URL` | 루프백 PostgreSQL 연결 URL. 사용자·비밀번호·DB명은 Compose의 `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`와 맞춘다. |
+| `DB_PORT` | `55432`. 변경하면 세 DB URL의 포트도 함께 맞춘다. |
+| `DATABASE_URL` | `today_app` runtime 계정. `work24_dev`에서 교육 읽기·앱 업무 테이블 DML만 수행한다. |
+| `MIGRATION_DATABASE_URL` | `today_migrator` 계정. `today_app`의 앱 migration만 수행한다. |
+| `CATALOG_DATABASE_URL` | Compose의 `POSTGRES_USER`/`POSTGRES_PASSWORD`에 맞춘 로컬 `today_bootstrap` 계정. 교육 초기화 전용이다. |
 | `API_TARGET` | `http://127.0.0.1:8000`. `./dev`가 이 주소의 포트에 API를 실행하고 Vite가 같은 대상으로 `/api`를 유지해 프록시한다. |
 | `WEB_PORT` | `5173`. `./dev`가 출력한 실제 웹 URL로 접속한다. |
 | `COMPOSE_PROJECT_NAME` | 필요하면 독립된 DB/볼륨 이름을 선택한다. 같은 이름은 같은 데이터를 사용한다. |
 
 `./dev`는 웹과 API를 한 터미널에서 실행한다. Ctrl-C는 둘 다 종료하며 종료 코드 130을 반환한다. 한 서버가 실패하면 함께 시작한 서버도 종료하고 실패 코드를 반환한다. 포트가 사용 중이면 시작하지 않으며 기존 프로세스를 종료하지 않는다. DB는 종료하지 않으므로 재시작에 재사용할 수 있다. 기본 API 문서는 `http://127.0.0.1:8000/docs`다.
 
-웹 연결 확인의 성공은 실제 DB `SELECT 1`의 `200 {"status":"ok"}`, DB 장애는 `503 {"detail":"database_unavailable"}`다. 로딩·성공·실패와 다시 확인을 제공하며 샘플 성공을 사용하지 않는다. Compose는 `postgres:17.11`을 루프백에만 열고 named volume에 보존한다. 기존 볼륨의 계정·비밀번호는 `.env` 변경만으로 바뀌지 않는다. 연결 오류 시 볼륨을 삭제하지 말고 설정을 확인한다.
+웹 연결 확인의 성공은 실제 DB `SELECT 1`의 `200 {"status":"ok"}`, DB 장애는 `503 {"detail":"database_unavailable"}`다. 로딩·성공·실패와 다시 확인을 제공하며 샘플 성공을 사용하지 않는다. Compose는 DB를 루프백에만 열고 새 `postgres16_data` 볼륨을 사용한다. 기존 PostgreSQL 17 볼륨은 연결·삭제하지 않는다. 기존 역할의 비밀번호는 `.env` 변경만으로 바뀌지 않으므로 오류 시 설정을 확인한다.
 
-`./check`는 TypeScript, ESLint, Prettier, 웹 Vitest, Ruff, API·진입점 unittest, Vite 빌드를 순서대로 검사한다. 첫 실패에서 비정상 종료하며 파일을 자동 수정하지 않는다. 웹 전체 테스트에는 실제 Vite 프록시·FastAPI·PostgreSQL이 필요하다. 테스트도 루트 `.env`의 `WEB_PORT`(기본 `5173`)와 공개 API 경로를 사용한다. 입력 보존 회귀 테스트는 합성 응답으로 화면을 검증하며, 기존 API·진입점 unittest도 대역을 사용한다. 이 결과는 실제 DB·모델·GPU 검증을 대체하지 않는다.
+`./check`는 교육 DB의 읽기 전용 검증, TypeScript, ESLint, Prettier, 웹 Vitest, Ruff, API·진입점·loader unittest, Vite 빌드를 검사한다. 첫 실패에서 종료하며 소스를 자동 수정하지 않는다. 웹 전체 테스트에는 실행 중인 Vite·FastAPI·PostgreSQL이 필요하다. 루트 `.env`의 `WEB_PORT`와 API 경로를 사용한다. 일부 UI/API 단위 검사는 합성 대역을 쓰며, DB 경계·재적재 보존 검사는 실제 개발 DB를 사용한다. 모델·GPU 검증을 대체하지 않는다.
 
 리뷰 수정은 로컬에서 회귀 테스트·타입·린트·포맷·빌드를 확인하고, [GitHub CI](.github/workflows/frontend-ci.yml)에서 전체 웹 테스트와 Python 검사를 실행한다. CI는 기본값과 다른 웹 포트에서 실제 서비스를 시작해 웹 연동·DB 장애 복구도 확인한다. 포맷 실패 시 CI가 수정 패치 아티팩트를 제공한다. [검증 범위와 미검증 항목](docs/frontend.md#github-ci-검증-범위)을 확인한다.
 
@@ -90,7 +94,7 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 ### PR과 병합
 
 - 기본 PR 대상은 `main`이며, 임시 통합에 참여하는 작업 PR만 해당 통합 브랜치를 대상으로 한다. PR 본문에 변경 목적, 영향받는 영역, 실행한 검증과 결과를 적는다.
-- `main` 변경은 관리자도 PR을 거친다. 작성자 외 리뷰어 **1명 이상 승인**이 필요하다. 리뷰어는 변경 범위·연동 계약·검증 결과를 확인하고, 계약 변경은 관련 영역 담당자에게 리뷰를 요청한다.
+- `main` 변경은 관리자도 PR을 거친다. 작성자 외 리뷰어 **1명 이상 승인**이 필요하다. 리뷰어 지정은 [AGENTS.md](AGENTS.md)를 따른다. [.github/CODEOWNERS](.github/CODEOWNERS)가 대상 브랜치에 반영되면 자동 리뷰 요청에 적용된다. 리뷰어는 변경 범위·연동 계약·검증 결과를 확인하고, 계약 변경은 관련 영역 담당자에게 영향 확인을 받는다.
 - PR 제목은 아래 Conventional Commit 형식을 사용하고, [PR 양식](.github/pull_request_template.md)에 목적·영향·이슈 연결·실행한 검사와 미검증 항목을 적는다. 목·실제 모델·GPU 결과를 구분한다.
 - 병합은 **Squash and merge**를 사용한다. squash 커밋 제목도 PR 제목의 Conventional Commit 형식을 유지한다. 병합 후 작업 브랜치는 자동 삭제된다. `main`의 강제 푸시와 삭제는 차단한다.
 - 초기에는 필수 CI 검사를 지정하지 않는다. 팀의 검사 워크플로가 실제 PR에서 한 번 이상 성공한 뒤 해당 검사를 필수로 지정한다.

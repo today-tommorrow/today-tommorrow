@@ -37,7 +37,7 @@
 | 작업 | 실행하는 검사 | 범위의 한계 |
 | --- | --- | --- |
 | Frontend quality | 잠금 파일 설치, TypeScript, ESLint, Prettier, production build, 입력·설정 회귀 테스트 | 정적 검사·대역 테스트·빌드 성공만으로 사용자 시나리오를 완료 처리하지 않음 |
-| Real API and database integration | 정확한 Node/Python 버전과 잠금 파일 설치, Python 정적·API/진입점 단위 검사, 전체 웹 테스트, PostgreSQL 17.11, 실제 Alembic 적용, 실제 Vite → FastAPI → DB 요청 | 실제 HTTP 검사는 기본값과 다른 `WEB_PORT=5273`을 사용. 단위 검사에는 대역 사용. 외부 운영 서버를 사용하는 테스트가 아님 |
+| Real API and database integration | 정확한 Node/Python·잠금 설치, PostgreSQL 16.14+pgvector 0.6.0, 고정 교육 데이터 적재·검증, 앱 migration, Python 검사·전체 웹 테스트·실제 HTTP 요청 | `WEB_PORT=5273` 사용. 단위 대역과 실제 DB 검사를 구분. [교육 DB 범위](local-database.md)를 따르며 외부 운영 서버를 사용하지 않음 |
 | 프론트 테스트 4개 | 실제 health 성공, 실제 auth 404, 화면의 인증 오류·로그인 링크 숨김, 연결 확인 버튼 성공 | jsdom 렌더 테스트. 실제 브라우저 OAuth·E2E·시각 검증을 대신하지 않음 |
 | 입력·설정 회귀 테스트 | 등록한 종류만 초기화, 해석 전후 입력 보존, 실패 문서의 재시도 표시, 조회 오류 시 작업 ID 보존, 루트 `.env`·환경변수·API 경로 | 합성 계약 응답과 임시 설정을 사용. 실제 업무 API·모델 검증을 대신하지 않음 |
 | DB 장애·복구 | 실제 DB 컨테이너 중지 후 health 503 확인, 재시작 후 성공 확인 | 업무 데이터 저장·재조회 및 개인정보 삭제 검증은 미수행 |
@@ -71,4 +71,4 @@ npm run build
 | D10 · [관심 교육 #29](https://github.com/today-tommorrow/today-tommorrow/issues/29) | 현재 목록·저장·해제 API 호출 | 카탈로그 버전 교체 시 과거/현재 과정 식별, 목록 cursor, 중복 정책 합의 필요 |
 | D13 · [교육 비교 #28](https://github.com/today-tommorrow/today-tommorrow/issues/28) | 현재 OpenAPI의 2~3개 서로 다른 과정 ID 제약 적용 | 없는 ID·중복 ID·빈 목록의 서버 오류 예시와 상세 UX 합의 필요 |
 
-리뷰는 `xifoxy-ru`, `zxcv718` 중 작성자가 아닌 사람에게 요청한다. 서버와 전체 연동을 확인하기 전에는 관련 시나리오 이슈를 닫지 않는다.
+리뷰어 지정은 [AGENTS.md](../AGENTS.md)를 따른다. 서버와 전체 연동을 확인하기 전에는 관련 시나리오 이슈를 닫지 않는다.

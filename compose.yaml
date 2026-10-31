@@ -1,18 +1,21 @@
+name: today-tommorrow-local16
+
 services:
   db:
-    image: postgres:17.11
+    build: ./docker/postgres16
+    image: today-tommorrow-postgres:16.14-vector0.6.0
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-today}
+      POSTGRES_USER: ${POSTGRES_USER:-today_bootstrap}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-localdev}
-      POSTGRES_DB: ${POSTGRES_DB:-today}
+      POSTGRES_DB: ${POSTGRES_DB:-work24_dev}
     ports:
-      - "127.0.0.1:${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT:-55432}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres16_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 2s
       timeout: 3s
       retries: 15
 volumes:
-  postgres_data:
+  postgres16_data:
