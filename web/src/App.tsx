@@ -325,6 +325,7 @@ export function App() {
                   setCsrfToken(null)
                   setSession(null)
                   setState('anonymous')
+                  setMessage('')
                   window.history.replaceState(null, '', '/login')
                 } catch (e) {
                   setMessage(
