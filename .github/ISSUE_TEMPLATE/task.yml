@@ -1,0 +1,31 @@
+name: 작업 시나리오
+description: 사용자 시나리오 하나의 범위와 완료 조건을 정합니다.
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 목표
+      description: 사용자가 할 행동과 확인할 결과를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: 범위와 담당자
+      description: 포함·제외 범위와 웹·API·AI·인프라별 담당자를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: interfaces
+    attributes:
+      label: 연동 계약
+      description: 공통 샘플 입력, 성공·오류 응답, 데이터·모델 계약을 적어주세요. 해당 없으면 이유를 적어주세요.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 완료 조건과 검증
+      description: 확인할 결과와 검증 방법을 적어주세요. 목·CPU·GPU 결과를 구분하고, GPU가 범위에 없으면 N/A와 이유를 적어주세요.
+    validations:
+      required: true
