@@ -22,6 +22,40 @@ type Props = {
 
 type ReviewEdit = { label: string; state: ReviewedItem['state'] }
 
+function interpretationMatches(
+  value: Interpretation,
+  id: string,
+  profile: Profile,
+) {
+  return (
+    !!value &&
+    value.id === id &&
+    value.profile_id === profile.id &&
+    Number.isInteger(value.base_revision) &&
+    value.base_revision >= 0 &&
+    ['ready', 'stale', 'failed', 'applied'].includes(value.status) &&
+    typeof value.assistant_text === 'string' &&
+    Array.isArray(value.proposals) &&
+    value.proposals.every(
+      (proposal) =>
+        proposal &&
+        typeof proposal.id === 'string' &&
+        proposal.id.trim().length > 0 &&
+        typeof proposal.label === 'string' &&
+        proposal.label.trim().length > 0 &&
+        typeof proposal.quote === 'string' &&
+        ['proposed', 'conflict'].includes(proposal.status) &&
+        proposal.value &&
+        ((proposal.value.kind === 'text' &&
+          typeof proposal.value.text === 'string') ||
+          (proposal.value.kind === 'integer' &&
+            Number.isInteger(proposal.value.integer))),
+    ) &&
+    new Set(value.proposals.map((proposal) => proposal.id)).size ===
+      value.proposals.length
+  )
+}
+
 function questionMatches(value: IntakeQuestion, id: string, profile: Profile) {
   return (
     !!value &&
@@ -157,6 +191,10 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const [interpretation, setInterpretation] = useState<Interpretation | null>(
     null,
   )
+  const [interpretationLoading, setInterpretationLoading] = useState(false)
+  const [interpretationError, setInterpretationError] = useState('')
+  const [interpretationAttempt, setInterpretationAttempt] = useState(0)
+  const interpretationLoad = useRef<AbortController | null>(null)
   const [decisions, setDecisions] = useState<
     Record<string, 'accept' | 'reject'>
   >({})
@@ -367,8 +405,17 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         { signal },
       )
       if (signal.aborted) return
-      if (found.profile_id !== latest.current.id)
-        throw new Error('현재 입력의 해석이 아니에요.')
+      if (
+        !interpretationMatches(
+          found,
+          result.result.interpretation_id,
+          latest.current,
+        )
+      )
+        throw new Error('해석 응답이 요청한 입력과 맞지 않아요.')
+      interpretationLoad.current?.abort()
+      setInterpretationLoading(false)
+      setInterpretationError('')
       if (
         found.base_revision === latest.current.revision &&
         found.status !== 'applied'
@@ -447,36 +494,46 @@ export function Intake({ profile, onProfile, onRun }: Props) {
 
   useEffect(() => {
     const controller = new AbortController()
+    interpretationLoad.current = controller
     const id = profile.latest_interpretation_id
     setInterpretation(null)
     setDecisions({})
+    setInterpretationLoading(!!id)
+    setInterpretationError('')
     if (id) {
       void request<Interpretation>(
         `/interpretations/${encodeURIComponent(id)}`,
         { signal: controller.signal },
       )
         .then((value) => {
+          if (controller.signal.aborted) return
+          if (!interpretationMatches(value, id, latest.current))
+            throw new Error('해석 응답이 요청한 입력과 맞지 않아요.')
           if (
-            !controller.signal.aborted &&
-            value.profile_id === latest.current.id &&
             value.base_revision === latest.current.revision &&
             value.status !== 'applied'
           ) {
             setInterpretation(value)
             setDecisions({})
-          }
+          } else if (value.status !== 'applied')
+            setInterpretationError(
+              '입력이 바뀌어 이전 해석을 표시하지 않았어요. 필요한 경우 다시 해석해 주세요.',
+            )
         })
         .catch((cause: unknown) => {
           if (!controller.signal.aborted)
-            setError(
+            setInterpretationError(
               cause instanceof Error
                 ? cause.message
                 : '입력 해석을 불러오지 못했어요.',
             )
         })
+        .finally(() => {
+          if (!controller.signal.aborted) setInterpretationLoading(false)
+        })
     }
     return () => controller.abort()
-  }, [profile.id, profile.latest_interpretation_id])
+  }, [profile.id, profile.latest_interpretation_id, interpretationAttempt])
 
   async function generate(signal: AbortSignal) {
     const response = await mutate<JobAccepted | IntakeState>(
@@ -508,6 +565,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   }
 
   async function interpret(signal: AbortSignal) {
+    interpretationLoad.current?.abort()
+    setInterpretationLoading(false)
+    setInterpretationError('')
     const accepted = await mutate<JobAccepted>(
       `${path}/interpretations`,
       {
@@ -532,9 +592,16 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   async function acceptInterpretation(signal: AbortSignal) {
     if (
       !interpretation ||
+      interpretation.profile_id !== latest.current.id ||
+      interpretation.status !== 'ready' ||
       interpretation.base_revision !== latest.current.revision
     )
       throw new Error('입력이 변경됐어요. 해석을 다시 요청해 주세요.')
+    if (
+      interpretation.proposals.length === 0 ||
+      interpretation.proposals.some((item) => !decisions[item.id])
+    )
+      throw new Error('각 제안을 확인한 뒤 수락 또는 거절을 선택해 주세요.')
     const input = interpretationInput.current
     const next = await mutate<Profile>(
       `${path}/interpretations/${encodeURIComponent(interpretation.id)}/apply`,
@@ -550,8 +617,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       signal,
     )
     if (!signal.aborted) {
-      applyProfile(next)
+      applyProfile(next, interpretation.base_revision + 1)
+      interpretationLoad.current?.abort()
+      setInterpretationLoading(false)
       setInterpretation(null)
+      setNotice('제안 확인 결과를 저장했어요.')
       if (input?.interpretationId === interpretation.id)
         setText((current) => (current === input.text ? '' : current))
       interpretationInput.current = null
@@ -919,6 +989,22 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               </div>
             </details>
           )}
+        {interpretationLoading && (
+          <p role="status">저장된 해석을 불러오고 있어요…</p>
+        )}
+        {interpretationError && (
+          <div className="stack">
+            <p role="alert" className="error">
+              {interpretationError}
+            </p>
+            <button
+              disabled={busy || interpretationLoading}
+              onClick={() => setInterpretationAttempt((value) => value + 1)}
+            >
+              저장된 해석 다시 불러오기
+            </button>
+          </div>
+        )}
         {interpretation && (
           <section className="stack" aria-label="입력 해석 확인">
             <h2>내 뜻과 맞는지 확인해 주세요</h2>
@@ -926,6 +1012,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             {!interpretationReady && (
               <p role="alert">
                 이 해석은 현재 입력에 적용할 수 없어요. 다시 해석해 주세요.
+              </p>
+            )}
+            {interpretation.proposals.length === 0 && (
+              <p>
+                반영할 해석 제안이 없어요. 내용을 보완해 다시 해석해 주세요.
               </p>
             )}
             {interpretation.proposals.map((proposal) => (
@@ -977,6 +1068,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               disabled={
                 busy ||
                 !interpretationReady ||
+                interpretation.proposals.length === 0 ||
                 interpretation.proposals.some((item) => !decisions[item.id])
               }
               onClick={() => void perform(acceptInterpretation)}
