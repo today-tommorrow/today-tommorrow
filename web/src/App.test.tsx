@@ -19,27 +19,36 @@ describe('실제 API 연결', () => {
     expect(response.status).toBe('ok')
   })
 
-  it('현재 서버에 없는 인증 API를 로그인 성공으로 바꾸지 않는다', async () => {
+  it('실제 인증 API가 세션 없는 요청에 401을 반환한다', async () => {
     try {
       await request('/auth/me')
-      throw new Error('The baseline server must not return a session')
+      throw new Error('An unauthenticated request must not return a session')
     } catch (error) {
       expect(error).toBeInstanceOf(ApiError)
-      expect((error as ApiError).status).toBe(404)
+      expect((error as ApiError).status).toBe(401)
     }
   })
 
-  it('인증 API의 실제 404를 안내하고 로그인 링크를 노출하지 않는다', async () => {
+  it('인증 API의 실제 401에서는 Google 로그인 링크를 제공한다', async () => {
     render(<App />)
     await waitFor(
       () => {
-        expect(screen.getByRole('alert').textContent).toContain(
-          '요청한 기능이나 자료를 서버에서 찾을 수 없습니다.',
-        )
+        expect(
+          screen.getByRole('link', { name: 'Google로 시작하기' }),
+        ).toBeTruthy()
       },
       { timeout: 10000 },
     )
-    expect(screen.queryByRole('link', { name: 'Google로 시작하기' })).toBeNull()
+    expect(
+      new URL(
+        screen
+          .getByRole('link', { name: 'Google로 시작하기' })
+          .getAttribute('href')!,
+      ).pathname,
+    ).toBe('/api/auth/google/start')
+    expect(screen.getByRole('alert').textContent).toBe(
+      '로그인이 필요합니다. 저장한 입력은 로그인 후 다시 확인할 수 있어요.',
+    )
     expect(screen.queryByRole('button', { name: '로그아웃' })).toBeNull()
   })
 

@@ -175,8 +175,8 @@ jobs:
           Real services: Vite proxy → FastAPI → PostgreSQL 16.14 + pgvector 0.6.0, migrations, database outage/recovery.
           Pinned real education data: 406 courses, 6099 units; vector round-trip, stored-query exact/HNSW, reimport preservation and app/catalog permission boundaries.
           App.test.tsx uses real HTTP responses. Intake and configuration regressions use isolated synthetic fixtures and do not verify model/API integration.
-          OAuth, profile, question, document and recommendation endpoints are not implemented in this baseline backend.
-          Their complete UI/API/OAuth/GPU integration remains unverified. GPU: N/A for this CI job.
+          Auth checks cover real unauthenticated /auth/me 401 and its login link, plus synthetic Google responses/tokens and local database tests.
+          Actual Google browser login remains unverified. Profile, question, document and recommendation endpoints are not implemented; their complete integration remains unverified. GPU: N/A for this CI job.
           Python static checks and backend/launcher unit suites also run; their doubles do not verify real database/model integration.
           SUMMARY
       - uses: actions/upload-artifact@v4

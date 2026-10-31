@@ -1,6 +1,6 @@
 # 인증 저장 기반
 
-`AuthStore`는 `today_app`의 사용자, 세션, OAuth 로그인 state만 저장한다. Google HTTP 요청, ID 토큰 검증, API 라우트, 쿠키 설정은 아직 포함하지 않는다.
+`AuthStore`는 `today_app`의 사용자, 세션, OAuth 로그인 state만 저장한다. Google 요청·토큰 검증은 `google.py`, API·트랜잭션·쿠키는 `routes.py`가 맡는다. 로컬 설정과 재현 절차는 [Google 로그인 가이드](../../../docs/google-login.md)를 따른다.
 
 - `save_google_identity`를 호출하기 전에 호출자가 Google 서명, `iss`, `aud`, `exp`, `nonce`를 검증해야 한다. 사용자 식별자는 Google `sub`이며 같은 이메일로 다른 `sub`를 합치지 않는다.
 - 생성·조회·소비 시각은 호출자가 timezone-aware `datetime`으로 전달한다. 유효 범위는 `created_at <= now < expires_at`이다. 생성 시 만료는 현재 시각보다 늦어야 한다.

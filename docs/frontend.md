@@ -2,16 +2,16 @@
 
 [프로젝트 안내](../README.md) · [개발 가이드](development.md) · [개발 공정](https://github.com/orgs/today-tommorrow/projects/1)
 
-이 변경은 v0.8 HTTP 계약을 사용하는 화면과 요청 흐름을 구현한다. 현재 백엔드는 `GET /api/health`만 제공한다. OAuth, 입력·자료·작업·교육·추천 API는 아직 없으므로 로그인 이후 전체 시나리오 완료를 의미하지 않는다. 서버가 없거나 API가 미구현이면 실제 오류를 표시하며 임의 사용자·질문·과정·추천 결과를 생성하지 않는다.
+이 변경은 v0.8 HTTP 계약을 사용하는 화면과 요청 흐름을 구현한다. 현재 백엔드는 health와 [Google 로그인·세션·로그아웃 API](google-login.md)를 제공한다. 입력·자료·작업·교육·추천 API는 아직 없으므로 로그인 이후 전체 시나리오 완료를 의미하지 않는다. 서버가 없거나 API가 미구현이면 실제 오류를 표시하며 임의 사용자·질문·과정·추천 결과를 생성하지 않는다.
 
 ## 화면과 코드 범위
 
 | 코드 | 구현한 프론트엔드 흐름 | 실제 서버 연동 상태 |
 | --- | --- | --- |
-| `web/src/App.tsx` | 세션 확인, Google 로그인 시작, 로그아웃, 초안 생성·재조회, 결과·관심 교육 이동, 연결 확인 | health 이외의 API 미구현. 인증 404를 로그인 성공이나 익명 세션으로 바꾸지 않는다. |
+| `web/src/App.tsx` | 세션 확인, Google 로그인 시작, 로그아웃, 초안 생성·재조회, 결과·관심 교육 이동, 연결 확인 | 실제 인증 401에서는 로그인 링크를 표시한다. 실제 Google 브라우저 로그인은 별도 검증 필요. 초안 API는 미구현. |
 | `web/src/Intake.tsx` | 서버 질문·선택지 표시, 답변·수정, 자유 입력 해석 수락/거절, 파일·링크·텍스트 자료, 자료 확인, 전체 확인·제출, 실제 job 조회 | 입력·자료·job·모델 서버 구현 후 검증 필요 |
 | `web/src/Courses.tsx` | 추천 결과 상태·근거·출처, 상세, 2~3개 과정 비교, 관심 교육 저장·해제·조회 | 카탈로그·추천·상세·비교·관심 교육 서버 구현 후 검증 필요 |
-| `web/src/api.ts` | 쿠키 포함 요청, CSRF, 요청 제한 시간·중단, HTTP 오류 안내, job polling, 샘플 응답 거부 | 실제 health와 인증 404만 CI 통합 검증 대상으로 삼음 |
+| `web/src/api.ts` | 쿠키 포함 요청, CSRF, 요청 제한 시간·중단, HTTP 오류 안내, job polling, 샘플 응답 거부 | 실제 health와 비로그인 인증 401을 CI 통합 검증 대상으로 삼음 |
 | `web/src/types.ts` | v0.8 응답·요청 타입 | 정적 타입은 서버 JSON 검증이나 연동 완료의 증거가 아님 |
 
 추천 결과는 `runtime_mode=real_model`, 과정은 `is_demo=false`인 서버 응답을 요구한다. 이 표시는 모델 실행·데이터 출처의 독립적인 검증을 대신하지 않는다. 빈 목록과 미확인 정보는 서버 응답대로 표시하고 성공 결과로 채우지 않는다. 입력의 `revision`, 서버의 `review_token`, 선택지 ID를 사용하며 서버 검증을 프론트에서 대신하지 않는다.
@@ -24,9 +24,11 @@
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | `/api` | 브라우저가 요청할 API 경로. `health` 요청은 `/api/health`가 된다. 별도 API 서버를 연결할 때는 공개 HTTPS 주소에 `/api`까지 포함한다. |
 | `API_TARGET` | `http://127.0.0.1:8000` | Vite 개발 서버가 `/api` 요청을 전달할 대상. 요청 경로의 `/api`를 제거하지 않는다. 배포된 정적 파일의 요청 주소를 바꾸는 값은 아니다. |
-| `WEB_PORT` | `5173` | Vite 개발 서버 포트 |
+| `WEB_PORT` | `5173` | Google 로컬 로그인은 두 사람 모두 이 포트와 `http://127.0.0.1:5173` 주소를 사용 |
 
 현재 별도 서버가 없어도 기본값을 유지할 수 있다. GitHub CI는 runner 안에서 실제 API·DB·Vite를 시작하므로 외부 서버 주소나 PAT가 필요하지 않다. 사용자 환경에 서버가 없다면 화면은 연결 오류를 표시한다.
+
+Google 콘솔에 등록한 콜백은 `http://127.0.0.1:5173/api/auth/google/callback`이다. 로컬 로그인에서는 `localhost`나 다른 웹 포트와 혼용하지 않는다. 백엔드 포트가 다르면 각 PC의 `API_TARGET`만 맞춘다. [Google 로그인 설정](google-login.md)을 따른다.
 
 `VITE_API_BASE_URL`은 **공개되는 빌드 시점 값**이다. 변경하면 개발 서버를 재시작하고 배포용 파일은 CI에서 다시 빌드해야 한다. PAT, OAuth client secret, DB 비밀번호, 모델 키를 `VITE_` 변수에 넣지 않는다. 서버와 웹을 다른 origin으로 구성하면 서버의 쿠키·CORS·OAuth callback 설정까지 함께 맞춰야 한다. 같은 origin의 `/api` 구성은 운영 서버의 프록시 설정이 필요하다. [Vite 환경변수 문서](https://vite.dev/guide/env-and-mode)와 [envDir 설정](https://vite.dev/config/shared-options#envdir)을 따른다.
 
@@ -38,7 +40,7 @@
 | --- | --- | --- |
 | Frontend quality | 잠금 파일 설치, TypeScript, ESLint, Prettier, production build, 입력·설정 회귀 테스트 | 정적 검사·대역 테스트·빌드 성공만으로 사용자 시나리오를 완료 처리하지 않음 |
 | Real API and database integration | 정확한 Node/Python·잠금 설치, PostgreSQL 16.14+pgvector 0.6.0, 고정 교육 데이터 적재·검증, 앱 migration, Python 검사·전체 웹 테스트·실제 HTTP 요청 | `WEB_PORT=5273` 사용. 단위 대역과 실제 DB 검사를 구분. [교육 DB 범위](local-database.md)를 따르며 외부 운영 서버를 사용하지 않음 |
-| 프론트 테스트 4개 | 실제 health 성공, 실제 auth 404, 화면의 인증 오류·로그인 링크 숨김, 연결 확인 버튼 성공 | jsdom 렌더 테스트. 실제 브라우저 OAuth·E2E·시각 검증을 대신하지 않음 |
+| 프론트 테스트 4개 | 실제 health 성공, 비로그인 auth 401, 화면의 Google 로그인 링크 표시, 연결 확인 버튼 성공 | jsdom 렌더 테스트. 실제 브라우저 OAuth·E2E·시각 검증을 대신하지 않음 |
 | 입력·설정 회귀 테스트 | 등록한 종류만 초기화, 해석 전후 입력 보존, 실패 문서의 재시도 표시, 조회 오류 시 작업 ID 보존, 루트 `.env`·환경변수·API 경로 | 합성 계약 응답과 임시 설정을 사용. 실제 업무 API·모델 검증을 대신하지 않음 |
 | DB 장애·복구 | 실제 DB 컨테이너 중지 후 health 503 확인, 재시작 후 성공 확인 | 업무 데이터 저장·재조회 및 개인정보 삭제 검증은 미수행 |
 
