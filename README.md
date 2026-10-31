@@ -6,11 +6,11 @@ React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다
 
 ### 다섯 MacBook의 공통 준비
 
-Git, Node/npm, uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `node --version`은 `.node-version`의 26.5.0과 맞춘다. Node가 다르면 버전 관리 도구로 전환한다. Node 자동 설치는 제공하지 않는다. OrbStack을 사용한다면 앱을 열어 엔진을 시작하고 `docker info` 성공을 확인한다. Docker Desktop 등 다른 엔진도 사용할 수 있다.
+Git, Node/npm, uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `node --version`은 `.node-version`의 26.5.0과 맞춘다. Node가 다르면 버전 관리 도구로 전환한다. Node 자동 설치는 제공하지 않는다. `docker info`로 엔진 연결을 확인한다.
 
 Python을 미리 설치하거나 `python3`의 PATH를 바꿀 필요는 없다. 세 진입점은 호출 위치와 관계없이 저장소의 `.python-version`(현재 3.14.6)을 읽고 uv로 정확한 기존 설치를 먼저 찾는다. `./setup`만 누락된 Python을 uv 관리 디렉터리에 설치하며 기본 명령 링크를 만들지 않는다(`--no-bin`). 시스템 기본 Python·PATH·셸 프로필은 변경하지 않는다. 첫 설치에는 인터넷이 필요하고 이미 있으면 오프라인 재사용할 수 있다. 새 Python 다운로드를 검증한 uv 버전은 0.12.5다. 이전 uv에서 `No download found`가 나오면 uv를 업데이트한 뒤 재시도한다. 기존 정확한 Python은 이전 uv에서도 재사용할 수 있다. uv가 없거나 다운로드가 실패하면 안내와 함께 비정상 종료한다. uv 설치·네트워크 문제를 해결한 뒤 `./setup`을 다시 실행한다. `./dev`·`./check`는 Python을 다운로드하지 않으며 없으면 setup을 안내한다.
 
-Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다. M5 Pro의 실제 온보딩은 기존 진입점의 Python 버전 요구에서 중단됐고 전체 성공을 확인하지 못했다. 이번 수정 후 해당 기기에서 재시도해야 한다. Node 버전 맞추기와 OrbStack 시작도 남아 있다. 두 번째 **물리적 Mac**의 완료 검증은 아직 미수행이며, 한 Mac의 격리된 복사본 검증으로 대신 완료 처리하지 않는다.
+Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다. 두 번째 **물리적 Mac**의 완료 검증은 아직 미수행이며, 한 Mac의 격리된 복사본 검증으로 대신 완료 처리하지 않는다.
 
 ### 준비 → 실행 → 검사
 
