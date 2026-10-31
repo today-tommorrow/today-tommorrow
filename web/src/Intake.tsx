@@ -193,12 +193,25 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   callbacks.current = { onProfile, onRun }
   const path = `/profiles/${encodeURIComponent(profile.id)}`
 
-  function applyProfile(next: Profile) {
+  function applyProfile(
+    next: Profile,
+    minimumRevision = latest.current.revision,
+  ) {
     if (
+      !next ||
       next.id !== latest.current.id ||
-      next.revision < latest.current.revision
+      !Number.isInteger(next.revision) ||
+      next.revision < 0
     )
-      return
+      throw new ApiError('현재 입력의 응답을 확인할 수 없어요.', 502)
+    if (
+      next.revision < latest.current.revision ||
+      next.revision < minimumRevision
+    )
+      throw new ApiError(
+        '입력 응답의 버전이 최신 상태와 맞지 않아요. 다시 확인해 주세요.',
+        409,
+      )
     latest.current = next
     callbacks.current.onProfile(next)
     setQuestion((current) =>
@@ -594,18 +607,21 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   }
 
   async function editAnswer(slot: string, signal: AbortSignal) {
+    const expectedRevision = latest.current.revision
     const answers: Answers = { ...latest.current.answers }
     delete answers[slot as keyof Answers]
     const next = await request<Profile>(path, {
       method: 'PATCH',
-      body: { expected_revision: latest.current.revision, answers },
+      body: { expected_revision: expectedRevision, answers },
       signal,
     })
     if (!signal.aborted) {
-      applyProfile(next)
+      applyProfile(next, expectedRevision + 1)
       setInterpretation(null)
       setNotice(
-        '해당 답변을 다시 선택할 수 있도록 저장했어요. 다음 질문을 요청해 주세요.',
+        next.intake_state.next_action === 'generate_question'
+          ? '해당 답변을 다시 선택할 수 있도록 저장했어요. 다음 질문을 요청해 주세요.'
+          : '수정한 입력을 저장했어요. 화면의 다음 단계를 확인해 주세요.',
       )
     }
   }
