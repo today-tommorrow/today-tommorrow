@@ -74,3 +74,7 @@ npm run build
 | D13 · [교육 비교 #28](https://github.com/today-tommorrow/today-tommorrow/issues/28) | 현재 OpenAPI의 2~3개 서로 다른 과정 ID 제약 적용 | 없는 ID·중복 ID·빈 목록의 서버 오류 예시와 상세 UX 합의 필요 |
 
 리뷰어 지정은 [AGENTS.md](../AGENTS.md)를 따른다. 서버와 전체 연동을 확인하기 전에는 관련 시나리오 이슈를 닫지 않는다.
+
+## 초안 API 연동 범위
+
+[초안 저장 계약](profile-drafts.md)의 POST/GET/PATCH와 onboarding/options를 제공한다. 저장은 전체 answers 교체이며 stale revision은 409다. 현재 URL·계정별 sessionStorage로 복원하고 기기 간 최근 초안 자동 조회는 제공하지 않는다. 질문 생성·해석·업로드 옵션은 비활성화되어 있으며 기존 질문 화면의 전체 입력은 L2 이후 연결한다. 실제 DB API 시험과 기존 웹 fixture 시험은 실제 Google 브라우저 재현을 대신하지 않는다.
