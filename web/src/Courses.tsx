@@ -1,12 +1,29 @@
 import { useEffect, useRef, useState } from 'react'
 import { request } from './api'
 import type {
+  ConstraintCheck,
   CourseDetail,
   CourseSummary,
   Evidence,
   Offering,
   RecommendationRun,
 } from './types'
+
+const conditionNames: Record<ConstraintCheck['field'], string> = {
+  recruitment: '모집',
+  schedule: '수업 시간',
+  mode: '교육 방식',
+  region: '통학 지역',
+  budget: '예산',
+  eligibility: '참여 자격',
+  start_timing: '시작 시점',
+}
+const conditionStates: Record<ConstraintCheck['status'], string> = {
+  pass: '충족',
+  fail: '불충족',
+  unknown: '미확인',
+  not_applicable: '해당 없음',
+}
 
 function message(error: unknown) {
   return error instanceof Error
@@ -76,14 +93,48 @@ function realRun(run: RecommendationRun) {
   ) {
     throw new Error('실제 모델의 추천 결과로 확인되지 않은 응답입니다.')
   }
+  const expectsItems = ['matches', 'unknown_conditions'].includes(
+    run.result_state,
+  )
+  const hasItems = run.items.length > 0
+  if (
+    expectsItems !== hasItems ||
+    (run.model_outcome === 'not_needed' &&
+      (hasItems || run.explanation_mode !== 'none'))
+  ) {
+    throw new Error(
+      '추천 상태와 교육 목록이 일치하지 않습니다. 결과를 다시 확인해주세요.',
+    )
+  }
   run.items.forEach((item) => {
-    realCourse(item.course)
     if (
+      !item ||
       !Array.isArray(item.reasons) ||
       !Array.isArray(item.evidence) ||
-      !Array.isArray(item.missing_fields)
+      !Array.isArray(item.missing_fields) ||
+      !['verified_conditions', 'unknown_conditions'].includes(
+        item.match_state,
+      ) ||
+      !item.rank_breakdown ||
+      !Array.isArray(item.rank_breakdown.constraint_checks)
     ) {
       throw new Error('추천 근거 응답 형식을 확인할 수 없습니다.')
+    }
+    realCourse(item.course)
+    if (
+      item.rank_breakdown.constraint_checks.some(
+        (check) =>
+          !check ||
+          !Object.hasOwn(conditionNames, check.field) ||
+          !Object.hasOwn(conditionStates, check.status) ||
+          check.status === 'fail' ||
+          !Array.isArray(check.evidence_ids) ||
+          typeof check.reason_code !== 'string',
+      )
+    ) {
+      throw new Error(
+        '추천의 참여 조건을 확인할 수 없습니다. 결과를 다시 확인해주세요.',
+      )
     }
   })
   return run
@@ -283,6 +334,29 @@ function EvidenceList({ items }: { items: Evidence[] }) {
   )
 }
 
+function ConditionChecks({ checks }: { checks: ConstraintCheck[] }) {
+  return (
+    <section aria-label="참여 조건 확인">
+      <h3>참여 조건 확인</h3>
+      {checks.length ? (
+        <dl className="facts">
+          {checks.map((check, index) => (
+            <div key={`${check.field}-${index}`}>
+              <dt>{conditionNames[check.field]}</dt>
+              <dd>{conditionStates[check.status]}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : (
+        <p>제공된 조건 확인 정보가 없습니다.</p>
+      )}
+      {checks.some((check) => check.status === 'unknown') && (
+        <p className="muted">미확인 조건은 교육 원문에서 확인해 주세요.</p>
+      )}
+    </section>
+  )
+}
+
 function SaveCourse({
   courseId,
   initiallySaved = false,
@@ -460,10 +534,13 @@ function ResultContent({ runId }: { runId: string }) {
   return (
     <section className="stack" aria-label="추천 결과">
       <h1>나에게 맞는 다음 배움</h1>
-      <LoadMessage {...remote} />
-      {run && run.id !== runId && (
-        <p role="alert">요청한 추천 결과와 다릅니다.</p>
-      )}
+      <LoadMessage
+        {...remote}
+        error={
+          remote.error ||
+          (run && run.id !== runId ? '요청한 추천 결과와 다릅니다.' : null)
+        }
+      />
       {run && run.id === runId && (
         <>
           <section className="panel">
@@ -512,6 +589,9 @@ function ResultContent({ runId }: { runId: string }) {
                 {item.missing_fields.length > 0 && (
                   <p>미확인 항목: {item.missing_fields.join(', ')}</p>
                 )}
+                <ConditionChecks
+                  checks={item.rank_breakdown.constraint_checks}
+                />
                 <details>
                   <summary>추천 근거 확인</summary>
                   <EvidenceList items={item.evidence} />
