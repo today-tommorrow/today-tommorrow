@@ -6,6 +6,8 @@
 
 [사용자·세션·OAuth 상태 저장 기반](backend/app/auth/README.md)
 
+[두 사람의 로컬 Google 로그인 주소·설정·재현](docs/google-login.md)
+
 ## macOS 개발 시작
 
 React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
@@ -40,7 +42,9 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 | `MIGRATION_DATABASE_URL` | `today_migrator` 계정. `today_app`의 앱 migration만 수행한다. |
 | `CATALOG_DATABASE_URL` | Compose의 `POSTGRES_USER`/`POSTGRES_PASSWORD`에 맞춘 로컬 `today_bootstrap` 계정. 교육 초기화 전용이다. |
 | `API_TARGET` | `http://127.0.0.1:8000`. `./dev`가 이 주소의 포트에 API를 실행하고 Vite가 같은 대상으로 `/api`를 유지해 프록시한다. |
-| `WEB_PORT` | `5173`. `./dev`가 출력한 실제 웹 URL로 접속한다. |
+| `WEB_PORT` | Google 로컬 로그인은 두 사람 모두 `5173`, 브라우저 주소는 `http://127.0.0.1:5173`으로 맞춘다. |
+| `PUBLIC_ORIGIN` / `GOOGLE_REDIRECT_URI` | 등록한 원본 `http://127.0.0.1:5173`과 콜백 `http://127.0.0.1:5173/api/auth/google/callback`. [로그인 설정](docs/google-login.md)을 따른다. |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `SESSION_SECRET` | 로컬 `.env`에 직접 설정하는 백엔드 전용 값. 예제에는 비워 두며 `VITE_`로 공개하지 않는다. |
 | `COMPOSE_PROJECT_NAME` | 필요하면 독립된 DB/볼륨 이름을 선택한다. 같은 이름은 같은 데이터를 사용한다. |
 
 `./dev`는 웹과 API를 한 터미널에서 실행한다. Ctrl-C는 둘 다 종료하며 종료 코드 130을 반환한다. 한 서버가 실패하면 함께 시작한 서버도 종료하고 실패 코드를 반환한다. 포트가 사용 중이면 시작하지 않으며 기존 프로세스를 종료하지 않는다. DB는 종료하지 않으므로 재시작에 재사용할 수 있다. 기본 API 문서는 `http://127.0.0.1:8000/docs`다.
