@@ -41,7 +41,8 @@ function realCourse(course: CourseSummary) {
     course.is_demo !== false ||
     typeof course.id !== 'string' ||
     typeof course.name !== 'string' ||
-    !['kmooc', 'work24'].includes(course.source_system)
+    !['kmooc', 'work24'].includes(course.source_system) ||
+    !['listing_only', 'detail_verified'].includes(course.evidence_level)
   ) {
     throw new Error('실제 교육 데이터로 확인되지 않은 응답입니다.')
   }
@@ -189,9 +190,24 @@ function OfferingInfo({ offering }: { offering: Offering }) {
         <dd>{deliveryNames[offering.delivery_mode]}</dd>
       </div>
       <div>
-        <dt>기간</dt>
+        <dt>교육 기간</dt>
         <dd>
           {offering.start_date ?? '미확인'} ~ {offering.end_date ?? '미확인'}
+        </dd>
+      </div>
+      <div>
+        <dt>신청 기간</dt>
+        <dd>
+          {offering.enrollment_start ?? '미확인'} ~{' '}
+          {offering.enrollment_end ?? '미확인'}
+        </dd>
+      </div>
+      <div>
+        <dt>총 교육 시간</dt>
+        <dd>
+          {offering.training_hours === null
+            ? '미확인'
+            : `${offering.training_hours.toLocaleString('ko-KR')}시간`}
         </dd>
       </div>
       <div>
@@ -201,7 +217,13 @@ function OfferingInfo({ offering }: { offering: Offering }) {
       <div>
         <dt>교육비 / 공시 자부담</dt>
         <dd>
-          {money(offering.tuition_krw)} / {money(offering.listed_self_pay_krw)}
+          <span>
+            {money(offering.tuition_krw)} /{' '}
+            {money(offering.listed_self_pay_krw)}
+          </span>
+          <p className="muted">
+            공시 자부담은 개인별 최종 부담금과 다를 수 있습니다.
+          </p>
         </dd>
       </div>
       <div>
@@ -227,7 +249,7 @@ function OfferingInfo({ offering }: { offering: Offering }) {
         </dd>
       </div>
       <div>
-        <dt>모집 상태</dt>
+        <dt>모집 상태 (확인 시점 기준)</dt>
         <dd>
           {offering.recruitment_status === 'open'
             ? '모집 중'
@@ -316,7 +338,15 @@ function SaveCourse({
 function DetailBody({ course }: { course: CourseDetail }) {
   return (
     <div className="stack">
+      <p className="eyebrow">
+        {course.source_system === 'work24' ? '고용24' : 'K-MOOC'}
+      </p>
       <h3>{course.name}</h3>
+      <p className="muted">
+        {course.evidence_level === 'listing_only'
+          ? '목록 정보 기준 · 상세 확인 필요'
+          : '상세 정보 확인 자료'}
+      </p>
       <p>{course.provider_name ?? '교육기관 미확인'}</p>
       <p>{course.description ?? '교육 설명 미확인'}</p>
       <h4>선수 지식</h4>
