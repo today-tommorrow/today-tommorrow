@@ -46,6 +46,22 @@
 
 검증 완료 여부는 해당 커밋의 실제 Actions 결과로 확인한다. OAuth 전체 흐름, 입력 저장·복원, 문서 처리, 실제 모델 질문·추천, 교육 상세·비교·관심 저장은 서버 구현과 실제 통합 후 별도 증거가 필요하다. GPU는 이 CI 작업에서 N/A이며 실제 GPU 검증 완료로 표시하지 않는다.
 
+## #7 프론트엔드 공통 샘플 확인
+
+[`Courses.fixtures.ts`](../web/src/Courses.fixtures.ts)는 v0.8 타입을 사용하는 합성 HTTP 응답 후보 샘플이다. 교육 상세 성공(200), 관심 교육 성공·빈 목록(200), 교육 없음(404)을 포함한다. 테스트에서만 가져오며 운영 화면의 대체 데이터로 사용하지 않는다. `is_demo=false`도 합성 계약 필드이며 실제 교육 원천을 검증했다는 뜻이 아니다. 오류 code를 포함한 샘플의 서버 채택은 API 담당자와 확인해야 한다.
+
+[`Courses.test.tsx`](../web/src/Courses.test.tsx)는 실제 요청 함수의 fetch 경계에 이 응답을 제공한다. 공개 `/api` 경로·쿠키 포함 요청, 출처 보존, null 비용과 0원 구분, 온라인과 자율 수강 구분, 빈 목록, 404 재시도, 다른 교육 ID·가상 데이터 거부를 확인한다. 다음 명령은 `web` 디렉터리에서 실행한다.
+
+```sh
+npm run typecheck
+npm run lint
+npm run format:check
+npm test -- src/Courses.test.tsx src/Intake.test.tsx vitest.config.test.ts
+npm run build
+```
+
+2026-11-01 macOS의 Node 26.7.0/npm 11.19.0에서 위 검사와 테스트 21개가 통과했다. 저장소 지정 Node 26.5.0에서의 재검증, 실제 서버·DB·브라우저 E2E와 CI는 미실행이다. GPU는 화면 계약 검사 범위 밖이므로 N/A다. 이 변경은 #7의 웹 영역 일부이며 D01·D02·D04·D05 합의나 전체 이슈 완료를 의미하지 않는다.
+
 ## 아직 합의가 필요한 계약
 
 | 결정 | 현재 프론트 처리 | 남은 계약 |
