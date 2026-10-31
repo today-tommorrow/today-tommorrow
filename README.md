@@ -86,6 +86,13 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 ### PR과 병합
 
 - 기본 PR 대상은 `main`이며, 임시 통합에 참여하는 작업 PR만 해당 통합 브랜치를 대상으로 한다. PR 본문에 변경 목적, 영향받는 영역, 실행한 검증과 결과를 적는다.
-- `main` 변경은 관리자도 PR을 거친다. 필수 승인 수는 0명이며, 계약 변경 리뷰 요청은 팀의 협업 규칙이다.
-- 병합은 **Squash and merge**를 사용한다. 병합 후 작업 브랜치는 자동 삭제된다. `main`의 강제 푸시와 삭제는 차단한다.
+- `main` 변경은 관리자도 PR을 거친다. 작성자 외 리뷰어 **1명 이상 승인**이 필요하다. 리뷰어는 변경 범위·연동 계약·검증 결과를 확인하고, 계약 변경은 관련 영역 담당자에게 리뷰를 요청한다.
+- PR 제목은 아래 Conventional Commit 형식을 사용하고, [PR 양식](.github/pull_request_template.md)에 목적·영향·이슈 연결·실행한 검사와 미검증 항목을 적는다. 목·실제 모델·GPU 결과를 구분한다.
+- 병합은 **Squash and merge**를 사용한다. squash 커밋 제목도 PR 제목의 Conventional Commit 형식을 유지한다. 병합 후 작업 브랜치는 자동 삭제된다. `main`의 강제 푸시와 삭제는 차단한다.
 - 초기에는 필수 CI 검사를 지정하지 않는다. 팀의 검사 워크플로가 실제 PR에서 한 번 이상 성공한 뒤 해당 검사를 필수로 지정한다.
+
+### 커밋과 코드 규칙
+
+로컬 커밋과 PR 제목은 `type[(scope)]: summary` 형식으로 쓴다. `feat(web): show health status`, `fix(api): sanitize database error`, `docs: clarify onboarding`처럼 동작·변경 목적을 짧게 적는다. 종류는 `feat`, `fix`, `docs`, `refactor`, `test`, `chore` 등을 사용하고 scope는 필요할 때만 붙인다.
+
+호환성을 깨는 변경은 `feat(api)!: change response format`처럼 `!`를 붙이거나 footer에 `BREAKING CHANGE: ...`와 영향·이전 방법을 적는다. 한 커밋은 한 목적을 담고 관련 없는 정리와 섞지 않는다. [Python·프런트엔드 코드 규칙과 검사](docs/development.md#코드-규칙과-검사)를 따르고, 검사를 통과해도 사람이 읽기·계약·완료 조건을 리뷰한다.
