@@ -1,5 +1,9 @@
 # today-tommorrow
 
+## 제품 명세와 작업 계획
+
+교육 추천 서비스의 명세는 [문서 안내](docs/README.md)에서 시작한다. [최신 코드 기준](docs/planning/baseline.md), [영역별 Phase](docs/planning/phases.md), [이슈 목록과 본문](docs/planning/issues.md), [결정할 사항](docs/planning/decisions.md)을 함께 확인한다. `.docs.local`은 개인 원본 보관용이며 공유 개발에서는 `docs`를 참조한다. 아래 이미지 판정 예시는 협업 설명용이며 제품 요구사항이 아니다.
+
 ## macOS 개발 시작
 
 React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 추천·이미지 판정, GPU, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
@@ -89,7 +93,8 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 - `main` 변경은 관리자도 PR을 거친다. 작성자 외 리뷰어 **1명 이상 승인**이 필요하다. 리뷰어는 변경 범위·연동 계약·검증 결과를 확인하고, 계약 변경은 관련 영역 담당자에게 리뷰를 요청한다.
 - PR 제목은 아래 Conventional Commit 형식을 사용하고, [PR 양식](.github/pull_request_template.md)에 목적·영향·이슈 연결·실행한 검사와 미검증 항목을 적는다. 목·실제 모델·GPU 결과를 구분한다.
 - 병합은 **Squash and merge**를 사용한다. squash 커밋 제목도 PR 제목의 Conventional Commit 형식을 유지한다. 병합 후 작업 브랜치는 자동 삭제된다. `main`의 강제 푸시와 삭제는 차단한다.
-- 초기에는 필수 CI 검사를 지정하지 않는다. 팀의 검사 워크플로가 실제 PR에서 한 번 이상 성공한 뒤 해당 검사를 필수로 지정한다.
+- CI는 필수 도입한다. 검사 워크플로가 실제 PR에서 한 번 이상 성공한 뒤 해당 검사를 필수로 지정한다. 자동 배포와 자동 승인 워크플로는 도입하지 않는다. 지정 서버의 수동 배포·복구 검증은 수행한다.
+- 기본 리뷰어는 `xifoxy-ru`, `zxcv718`이며 작성자를 제외하고 리뷰를 요청한다. 작성자 외 사람 1명 이상의 승인을 받는다.
 
 ### 커밋과 코드 규칙
 

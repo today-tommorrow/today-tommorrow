@@ -1,0 +1,29 @@
+sequenceDiagram
+  participant UI as 기존 선택형 UI
+  participant API as FastAPI
+  participant W as Worker
+  participant DB as PostgreSQL
+  participant L as local Gemma
+  UI->>API: POST questions expected_revision
+  API->>DB: 답변·미완료 슬롯·질문 이력 확인
+  API-->>UI: 202 job_id 또는 200 IntakeState
+  W->>DB: job 선점·문맥 조회, 트랜잭션 종료
+  W->>L: 문맥 + 허용 슬롯 + JSON schema
+  L-->>W: QuestionDraft
+  W->>W: 구조·슬롯·중복·내용 검증
+  alt 유효하고 최신 입력
+    W->>DB: 질문·선택지 바인딩 저장
+    UI->>API: GET question
+    API-->>UI: 기존 UI에 표시할 질문과 선택지
+  else 검증 실패
+    W->>L: 제한된 수정 요청
+    W->>DB: 재실패 시 표시된 기본 질문 또는 failed
+  end
+  UI->>API: POST answer selected_option_id + revision
+  alt 버전·소유권 일치
+    API->>DB: 저장된 patch 적용·답변 이력·revision+1
+    API-->>UI: Profile + intake_state
+  else 오래된 질문
+    API-->>UI: 409 최신 입력 유지
+  end
+  Note over UI,API: 미완료면 다음 질문, 완료면 전체 확인. 교육은 최종 제출 이후.

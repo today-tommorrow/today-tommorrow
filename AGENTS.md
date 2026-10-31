@@ -1,5 +1,11 @@
 # 팀 작업 가이드
 
+## 문서 탐색
+
+작업 전에 [docs/README.md](docs/README.md)에서 담당 영역 명세를 찾고 [최신 코드 기준](docs/planning/baseline.md), [Phase와 파일 소유 경계](docs/planning/phases.md), [이슈 목록](docs/planning/issues.md), [미결정 계약](docs/planning/decisions.md)을 확인한다. `.docs.local`이나 보존된 v0.8 원문의 과거 실행 설명을 최신 README보다 우선하지 않는다. 명세의 구현 제안·미검증 항목을 완료된 기능으로 표시하지 않는다.
+
+CI는 필수이며 자동 배포·자동 승인은 제외한다. 리뷰어는 `xifoxy-ru`, `zxcv718` 중 작성자가 아닌 사람에게 요청한다. 사람 1명 이상 승인·Conventional Commit·Squash and merge 규칙은 최신 README를 따른다.
+
 ## 이슈와 담당자
 
 사용자 시나리오 하나에 이슈 하나를 만든다. 이슈에 목표, 포함·제외 범위, 웹·API·AI·인프라별 담당자, 연동 계약과 완료 조건을 적고 영역별 작업을 표시한다. 에이전트가 만든 변경도 담당 팀원이 이해하고 검증하며 책임진다. 다른 팀원의 진행 중인 변경은 보존하고, 겹치는 파일을 수정하기 전에 담당자와 범위를 맞춘다. 협업 흐름과 브랜치 예시는 [README.md](README.md)를 따른다.

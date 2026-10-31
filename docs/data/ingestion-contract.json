@@ -1,0 +1,138 @@
+{
+  "contract_version": "source-import-0.7.0",
+  "scope": "Only K-MOOC, Work24 and NCS catalog batches. User documents are separate private inputs.",
+  "manifest_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "required": [
+      "source_system",
+      "source_schema_version",
+      "adapter_version",
+      "file_name",
+      "sha256",
+      "batch_mode",
+      "coverage",
+      "collected_at"
+    ],
+    "properties": {
+      "source_system": {
+        "enum": [
+          "kmooc",
+          "work24",
+          "ncs"
+        ]
+      },
+      "source_schema_version": {
+        "type": "string"
+      },
+      "adapter_version": {
+        "type": "string"
+      },
+      "file_name": {
+        "type": "string"
+      },
+      "sha256": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "batch_mode": {
+        "enum": [
+          "full",
+          "partial"
+        ]
+      },
+      "coverage": {
+        "type": "string"
+      },
+      "collected_at": {
+        "type": [
+          "string",
+          "null"
+        ],
+        "format": "date-time"
+      }
+    },
+    "additionalProperties": false
+  },
+  "adapters": [
+    {
+      "source": "kmooc",
+      "shape_version": "provided-sample-v1",
+      "list_path": "response.items",
+      "detail_path": "response.results",
+      "join_key": "id",
+      "mappings": {
+        "id": "courses.external_id",
+        "name": "courses.name",
+        "org_name": "courses.provider_name",
+        "url": "courses.detail_url",
+        "enrollment_start/end": "offerings.enrollment_start/end after verified unit conversion",
+        "study_start/end": "offerings.start_date/end after verified unit conversion",
+        "summary": "raw HTML plus sanitized evidence; media is not curriculum proof",
+        "classfy_name/middle_classfy_name": "classification metadata",
+        "week/course_playtime/vod_playtime": "raw values until source units are verified"
+      },
+      "ignored_as_success_guarantee": [
+        "rating",
+        "public_yn",
+        "is_auditor"
+      ],
+      "id_policy": "Keep source id, shortname and source occurrence identity; do not infer cross-cohort course equivalence. Detail enriches matching list item. Orphan detail is quarantined until a list match or validated standalone normalization."
+    },
+    {
+      "source": "work24",
+      "shape_version": "provided-sample-v1",
+      "records_path": "records",
+      "mappings": {
+        "course_name": "courses.name",
+        "provider_name": "courses.provider_name",
+        "region": "offerings.region",
+        "start_date/end_date": "offerings.start_date/end_date, YYYY-MM-DD",
+        "training_hours": "offerings.training_hours",
+        "tuition_krw": "offerings.tuition_krw",
+        "listed_self_pay_krw": "offerings.listed_self_pay_krw, not personalized final price",
+        "curriculum": "content evidence when present, null otherwise",
+        "eligibility": "offerings.eligibility_text when present, null otherwise",
+        "course_id/offering_id/cohort": "source identities when present; null preserved",
+        "source_excel_row": "provenance only, not stable cross-file identity"
+      },
+      "id_policy": "Use verified source IDs if present. Otherwise assign internal UUID and conservative fingerprint(provider,name,region,start,end). Exact fingerprint is a duplicate candidate, not authority to merge conflicting cohorts. A changed file row number never becomes a new global identity by itself."
+    },
+    {
+      "source": "ncs",
+      "shape_version": "provided-sample-v1",
+      "records_path": "datasets[].rows",
+      "entity_kind": "skill_reference",
+      "mappings": {
+        "학습모듈명": "skill_references.name for modules",
+        "분류(소>세)": "skill_references.classification",
+        "주요 키워드": "skill_references.keywords_json after comma normalization",
+        "능력단위(과정)": "skill_references.name for training standards",
+        "수준": "skill_references.standard_level, never user proficiency",
+        "훈련시간": "skill_references.standard_hours, never actual offering schedule",
+        "훈련방법/시설": "skill_references.raw_details_json"
+      },
+      "id_policy": "Keep a real NCS code only if supplied. Otherwise internal UUID from kind + classification + name + source hash; never fabricate a national code. Equal names alone do not prove module/standard identity."
+    }
+  ],
+  "quality_rules": [
+    "Array lengths are computed, never fixed to the old 20/10 samples.",
+    "Top-level record_count/row_count/totalCount are metadata, not sole truth; compare actual expected arrays.",
+    "Empty or malformed required array quarantines the batch; source errors do not publish an empty catalog.",
+    "Raw null/0/not_applicable are distinct. Unknown optional fields are preserved in raw_json and reported; incompatible required shape fails.",
+    "List/detail/XLSX-derived JSON duplicates are not counted twice.",
+    "Partial batches never delete missing courses or close missing offerings.",
+    "Carry-forward copies retain original collected_at and file hashes; null collected_at remains null. Previous batch/record ID mappings are recorded in validation_report_json; copying is not recollection.",
+    "Strict catalog source whitelist; unsupported sources are rejected.",
+    "All normalized links, evidence and indexes are built against one draft catalog version before activation.",
+    "Keep previous catalog versions referenced by recommendations.",
+    "Counts of course, offering, NCS module, NCS standard and missing curriculum are reported separately."
+  ],
+  "prepared_columns_not_in_original_payload": [
+    "manifest.source_schema_version",
+    "manifest.adapter_version",
+    "manifest.batch_mode",
+    "manifest.coverage"
+  ],
+  "notes": "The new manifest wraps the existing source payload; the team does not have to rename the supplied source fields. No new data collection has been performed by this design revision."
+}

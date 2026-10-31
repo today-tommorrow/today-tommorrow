@@ -1,0 +1,86 @@
+{
+  "version": "recommendation-0.7.0",
+  "status": "implementation_proposal_not_benchmarked",
+  "catalog_sources": [
+    "kmooc",
+    "work24",
+    "ncs"
+  ],
+  "course_sources": [
+    "kmooc",
+    "work24"
+  ],
+  "retrieval": {
+    "channels": [
+      "title_terms",
+      "body_terms",
+      "ncs_links"
+    ],
+    "per_channel_limit": 100,
+    "rrf_k": 60,
+    "rerank_limit": 30,
+    "candidate_batch_size": 5,
+    "max_query_terms": 12,
+    "lexical_engine": "PostgreSQL 17 simple FTS over pre-normalized terms",
+    "requires_embedding_model": false
+  },
+  "ranking": {
+    "axis_weights": {
+      "goal": 0.45,
+      "prerequisite": 0.25,
+      "outcome": 0.2,
+      "preference": 0.1
+    },
+    "axis_values": [
+      0,
+      0.5,
+      1,
+      null
+    ],
+    "unknown_is_not_zero": true,
+    "lower_bound": "sum(weight * known_value)",
+    "upper_bound": "lower_bound + sum(weight for unknown axes)",
+    "coverage": "sum(weight for known axes)",
+    "sort": [
+      "goal_basis descending: content_supported, topic_only",
+      "score_lower descending",
+      "coverage descending",
+      "constraint_unknown_count ascending",
+      "rrf descending",
+      "course_id ascending",
+      "offering_id ascending"
+    ],
+    "result_limit": 5,
+    "provider_cap": 2,
+    "relax_provider_cap_if_needed": false,
+    "one_offering_per_course": true,
+    "unrelated_candidates_excluded": true
+  },
+  "execution": {
+    "model_family": "Gemma 4 12B Q4",
+    "gpu_concurrency_initial": 1,
+    "validation_repair_attempts": 1,
+    "intake_request_trigger": "initial question and after committed answer; never every keystroke or React render",
+    "performance_slo": "not_yet_measured"
+  },
+  "scope": {
+    "post_result_questions": false,
+    "recommend_before_final_submit": false,
+    "ncs_is_live_course": false,
+    "raw_document_contents_in_trace": false
+  },
+  "intake": {
+    "policy_version": "intake-0.8.0",
+    "choice_first": true,
+    "question_generator": "same local Gemma 4 12B Q4",
+    "generation_events": [
+      "initial_question",
+      "after_answer_commit",
+      "after_confirmed_source_change"
+    ],
+    "completion_owner": "server",
+    "max_generated_options_initial": 5,
+    "schema_version": "1.0",
+    "repair_attempts_initial": 1
+  }
+}

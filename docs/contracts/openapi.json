@@ -1,0 +1,6185 @@
+{
+  "openapi": "3.1.0",
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "info": {
+    "title": "다음 / Today Tommorrow 개발 계약",
+    "version": "0.8.0",
+    "description": "v0.8 / 2026-11-01 KST. 선택형 UI 유지, local Gemma가 맥락별 질문과 선택지를 구조화 출력. 전체 입력 후 교육 추천. v0.7 추천 파이프라인·3원천 적재·저장소 기준 유지. 설계 계약이며 서버 구현 완료 아님."
+  },
+  "servers": [
+    {
+      "url": "/api"
+    }
+  ],
+  "security": [
+    {
+      "SessionCookie": []
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "기존 실제 DB 연결 확인 유지",
+        "operationId": "health",
+        "description": "기존 main.py 계약 유지. SELECT 1 성공 200. 실패 503 {detail: database_unavailable}. 일반 신규 API 오류 포맷과 구분.",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "DB 연결 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "DB 연결 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "detail": {
+                      "type": "string",
+                      "enum": [
+                        "database_unavailable"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "detail"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/google/start": {
+      "get": {
+        "summary": "Google 로그인 시작",
+        "operationId": "startGoogleLogin",
+        "description": "서버에서 일회용 state/nonce와 브라우저 바인딩 생성. Google OAuth authorization code flow, openid email profile. 성공 후 /onboarding으로 이동. 임의 외부 return URL을 받지 않는다.",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "성공",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/google/callback": {
+      "get": {
+        "summary": "Google 인증 후 계정과 서비스 세션 생성",
+        "operationId": "googleCallback",
+        "description": "state·브라우저 바인딩·일회성·만료 검증, 서버에서 code 교환, Google 서명/iss/aud/exp/nonce 확인. google_sub로 users upsert. 성공 Location=/onboarding, 사용자 취소 Location=/login?error=oauth_cancelled. code·토큰을 브라우저 응답 본문/로그에 노출하지 않는다.",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "error",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "성공",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "today_session=<opaque>; HttpOnly; Secure(운영); SameSite=Lax; Path=/api"
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "summary": "로그인 사용자와 CSRF 토큰 조회",
+        "operationId": "getCurrentUser",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "summary": "현재 로그인 세션 종료",
+        "operationId": "logout",
+        "description": "현재 세션 폐기와 쿠키 만료. 계정·입력 초안·추천 기록은 삭제하지 않는다.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/onboarding/options": {
+      "get": {
+        "summary": "질문 선택지·파일 지원 범위 조회",
+        "operationId": "getOnboardingOptions",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingOptions"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles": {
+      "post": {
+        "summary": "로그인 사용자 입력 초안 생성",
+        "operationId": "createProfile",
+        "description": "users.id가 소유자. 익명 세션 생성 API는 없다.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}": {
+      "get": {
+        "summary": "입력 초안과 자료 처리·확인 상태 조회",
+        "operationId": "getProfile",
+        "description": "초안·자료·확인 항목과 서버가 계산한 intake_state를 조회. 질문 본문은 IntakeQuestion에서 조회한다. GET은 Gemma를 호출하지 않는다. review_token은 모든 적용 항목 완료·상충 해소·자료 확인 후에만 발급한다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "입력 응답 저장",
+        "operationId": "patchProfile",
+        "description": "answers는 현재까지의 전체 응답 묶음. 버전 일치 시 revision+1, status=draft, 진행 추천 job은 superseded. 자료 처리 job은 해당 자료가 바뀌거나 삭제되지 않는 한 계속 실행한다. 작성 중에는 빈 항목을 허용하고 제출 시 완결성을 검증. 이미 입력한 내용은 유지. 분야 변경 시 관련 경험 항목을 재확인 표시하되 업로드 원본을 자동 삭제하지 않는다. 자유문장 해석을 자동 확정하지 않는다. 명시적 직접 수정이 수락한 해석보다 우선한다. 이전 해석 작업은 stale 처리하고 미정은 같은 내용으로 반복 질문하지 않는다. 질문 생성 job과 ready 질문도 stale 처리한다. 미정 답변은 unanswered와 구분하고 재질문하지 않는다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/review-items": {
+      "patch": {
+        "summary": "입력 완료 전 추출 내용 수정",
+        "operationId": "patchReviewItems",
+        "description": "원문 인용·document/chunk ID는 서버가 생성하고 클라이언트 수정 불가. 항목 상태와 표시 라벨만 수정. revision+1. 결과 화면에서 추가 질문하지 않는다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewPatch"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/documents/files": {
+      "post": {
+        "summary": "이력서·JD 등 파일 업로드 후 추출 작업 시작",
+        "operationId": "uploadDocumentFile",
+        "description": "PDF(스캔 OCR 포함), DOCX, TXT, PNG/JPG 지원을 구현 기본안으로 둔다. 파일 1개씩 multipart, 복수 자료는 반복 등록. 실제 허용형식·한도는 options에서 조회. 저장 위치는 GPU 서버 비공개 업로드 디렉터리. 확장자/MIME/실제 내용 검증, 본문 스트리밍 제한. 업로드마다 revision+1.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "설정된 파일·본문 한도 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "지원하지 않는 파일 형식",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentFileInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/documents/links": {
+      "post": {
+        "summary": "공개 링크 본문 수집 후 추출 작업 시작",
+        "operationId": "addDocumentLink",
+        "description": "공개 채용공고·이력서·포트폴리오 HTML 또는 지원 문서 링크를 실제 서버에서 읽는다. URL 문자열만 모델에 넘기는 방식이 아니다. HTTP(S)만, 내부/loopback/link-local/metadata 주소 차단, DNS와 연결 IP 및 redirect 매 단계 재검증. 제한 초과·로그인벽·수집 차단은 실패 상태와 같은 입력 단계의 파일/텍스트 대체 제공. Google 로그인은 Drive 파일 권한을 부여하지 않는다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "설정된 파일·본문 한도 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "지원하지 않는 파일 형식",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentLinkInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/documents/texts": {
+      "post": {
+        "summary": "직접 입력한 텍스트 분석",
+        "operationId": "addDocumentText",
+        "description": "파일·링크와 동등한 입력 경로. 자료가 없는 사용자는 이력/경험을 직접 적거나 문서 없음으로 진행할 수 있다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "설정된 파일·본문 한도 초과",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "지원하지 않는 파일 형식",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentTextInput"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}": {
+      "get": {
+        "summary": "자료 처리 결과·추출 미리보기 조회",
+        "operationId": "getDocument",
+        "description": "",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Document"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "선택 자료와 파생 추출 내용 제거",
+        "operationId": "deleteDocument",
+        "description": "소유권·expected_revision 확인. 원본/텍스트/청크와 프로필의 해당 출처 항목 정리, 관련 진행 작업 취소, revision+1. 기존 자료 기반 추천은 stale 표시. 세션이나 다른 입력은 유지.",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          },
+          {
+            "name": "expected_revision",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/documents/{document_id}/retry": {
+      "post": {
+        "summary": "파일·링크 추출 재시도",
+        "operationId": "retryDocument",
+        "description": "실패 자료를 같은 입력 단계에서 재처리. 성공 자료를 재수집하려면 revision 변경과 사용자 확인을 다시 거친다.",
+        "parameters": [
+          {
+            "name": "document_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DocumentAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RevisionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/submit": {
+      "post": {
+        "summary": "입력 완료를 확정하고 교육 추천 실행",
+        "operationId": "submitProfile",
+        "description": "유일한 교육 추천 진입점. 적용되는 슬롯이 직접 입력/수락/미정/없음으로 완료되고 상충이 해소되었는지 검사. 자료 없음이면 0개, 있음이면 1개 이상 모두 ready. review_token·revision·자료 해시 검증 후 사용자 정보·카탈로그·설정·as_of를 고정한다. profiling→mapping_needs→retrieving→checking_constraints→assessing→ranking→explaining→validating→persisting을 실행. 중간 교육 노출과 결과 후 추가 질문은 없다. 동일 키·본문은 동일 job. 입력 누락 422, stale/자료 미완료 409.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          },
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "작업 대기 한도 초과",
+            "headers": {
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/jobs/{job_id}": {
+      "get": {
+        "summary": "자료 처리 또는 추천 진행 상태 조회",
+        "operationId": "getJob",
+        "description": "본인 소유 문서·질문 생성·보조 입력 해석·추천 작업의 상태. intake_question은 generating_question→validating_question→completed/failed. 성공 result.question_id로 검증된 질문 조회. JSON 토큰을 화면에 스트리밍하지 않는다. 추천 완료 전 교육 후보는 반환하지 않는다.",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Job"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/recommendations/{run_id}": {
+      "get": {
+        "summary": "완료된 추천·입력 요약·근거 조회",
+        "operationId": "getRecommendation",
+        "description": "완료된 추천, 입력 요약, 학습 필요 항목, 단계별 처리 요약, 근거와 조건 상태를 반환. 사용자용 UI에는 역량 점수나 취업 확률로 내부 순위 점수를 표시하지 않는다. 후보 없음은 model_outcome=not_needed/explanation_mode=none으로 구분하며 추론 실패는 성공 추천으로 대체하지 않는다.",
+        "parameters": [
+          {
+            "name": "run_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationRun"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/{course_id}": {
+      "get": {
+        "summary": "추천 교육의 상세와 출처 조회",
+        "operationId": "getCourse",
+        "description": "",
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourseDetail"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/courses/compare": {
+      "get": {
+        "summary": "선택한 교육 비교",
+        "operationId": "compareCourses",
+        "description": "",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "minItems": 2,
+              "maxItems": 3,
+              "uniqueItems": true
+            },
+            "style": "form",
+            "explode": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CourseDetail"
+                      },
+                      "minItems": 2,
+                      "maxItems": 3
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/saved-courses": {
+      "get": {
+        "summary": "계정의 관심 교육 조회",
+        "operationId": "listSavedCourses",
+        "description": "",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/CourseSummary"
+                      }
+                    }
+                  },
+                  "required": [
+                    "items"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/saved-courses/{course_id}": {
+      "put": {
+        "summary": "관심 교육 저장",
+        "operationId": "saveCourse",
+        "description": "",
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "관심 교육 저장 해제",
+        "operationId": "unsaveCourse",
+        "description": "",
+        "parameters": [
+          {
+            "name": "course_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "성공"
+          },
+          "400": {
+            "description": "요청 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "로그인 필요",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "CSRF 또는 접근 거부",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "리소스 없음 또는 다른 사용자 소유",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "입력 버전·자료 처리·확인 토큰 충돌",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "필수 입력·분기 검증 실패",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "처리 기능 사용 불가",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/interpretations": {
+      "post": {
+        "operationId": "interpretIntake",
+        "summary": "입력 문장과 ready 자료의 해석 제안 생성",
+        "description": "보조 경로: 선택지 대신 직접 적은 문장 또는 ready 자료에서 해석 제안 생성. 초기 글쓰기를 요구하지 않는다. 질문 맥락이 있으면 question_id를 전달. 원문 인용과 서버 허용 슬롯을 검증하고 수락 전 자동 반영하지 않는다. 빈 text라도 ready_document_ids가 있으면 허용. 둘 다 없으면 422. stale 입력은 기존 규칙대로 거부한다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          },
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterpretationRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/interpretations/{interpretation_id}": {
+      "get": {
+        "operationId": "getInterpretation",
+        "summary": "입력 해석과 다음 입력 제안 조회",
+        "description": "본인 소유 보조 입력 해석. suggested_slots는 참고이며 완료 판정과 다음 질문은 서버 정책 및 질문 생성 job이 담당한다.",
+        "parameters": [
+          {
+            "name": "interpretation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Interpretation"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/interpretations/{interpretation_id}/apply": {
+      "post": {
+        "operationId": "applyInterpretation",
+        "summary": "사용자가 수락한 해석만 초안에 반영",
+        "description": "expected_revision=base_revision=현재 revision과 자료 해시 일치, 제안 소유권·서로소 accepted/rejected 검증. 양쪽 배열은 해당 해석의 모든 제안 ID를 정확히 분할한다. 미결정은 적용 전 UI에서 해결한다. 트랜잭션으로 수락 값만 반영하고 revision+1. 원문은 수정하지 않는다. 동일 Idempotency-Key 재전송은 원 응답, 다른 본문은 409. 해석 결과의 임의 값·ID를 클라이언트가 추가할 수 없다. 적용 후 현재 질문도 stale 처리한다. intake_state를 반환하며 필요할 때 질문 생성 API를 별도로 호출한다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "interpretation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          },
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InterpretationApply"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/questions": {
+      "post": {
+        "operationId": "generateIntakeQuestion",
+        "summary": "local Gemma로 다음 질문과 선택지 생성",
+        "description": "로그인 후 첫 질문에도 사용. 서버가 확인된 답변·자료 해시·미완료 슬롯·이전 질문 의미를 조회해 intake_question job 생성. 동등 context_hash의 ready 질문/진행 job 재사용. 부작용 없는 화면 조회나 재렌더링으로 새 질문을 만들지 않는다. 모델의 QuestionDraft를 검증한 뒤 ID를 붙여 저장. 수집할 슬롯이 없거나 자료 처리가 필요하면 200 IntakeState. 답변은 이 호출에서 변경하지 않는다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          },
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobAccepted"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "질문 생성 대신 자료 처리 또는 전체 확인으로 이동",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeState"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionRequest"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/questions/{question_id}": {
+      "get": {
+        "operationId": "getIntakeQuestion",
+        "summary": "검증·저장된 질문과 선택지 조회",
+        "description": "본인 소유 질문만 반환. 생성 원문 patch와 내부 프롬프트는 제외. React는 기존 제목·카드·버튼에 plain text로 렌더링. stale 질문은 선택 불가. origin=fallback이면 표준 질문임을 표시한다. 교육 후보와 course URL은 포함하지 않는다.",
+        "parameters": [
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeQuestion"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{profile_id}/questions/{question_id}/answer": {
+      "post": {
+        "operationId": "answerIntakeQuestion",
+        "summary": "표시된 선택지 ID로 답변 확정",
+        "description": "서버에 저장된 question+option binding만 사용한다. 소유권·ready·base_revision=expected_revision=현재 revision·자료 해시를 원자적으로 확인하고 해당 answer_patch만 적용한다. 질문 answered, profile revision+1, 다른 ready 질문 stale. 이력 저장 후 intake_state를 재계산한다. 동일 Idempotency-Key와 본문은 원 응답, 다른 선택지는 409. 선택지 문자열·임의 patch는 받지 않는다. 초안 저장 후 다음 질문 생성 실패는 이미 저장한 답변을 롤백하지 않는다.",
+        "parameters": [
+          {
+            "name": "profile_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "question_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/Csrf"
+          },
+          {
+            "$ref": "#/components/parameters/Idempotency"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Profile"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "인증·소유권·버전·입력·처리 오류",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuestionAnswer"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "today_session"
+      }
+    },
+    "parameters": {
+      "Csrf": {
+        "name": "X-CSRF-Token",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string"
+        },
+        "description": "GET /api/auth/me에서 조회하는 세션 바인딩 토큰"
+      },
+      "Idempotency": {
+        "name": "Idempotency-Key",
+        "in": "header",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128
+        }
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "request_id": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "additionalProperties": false
+      },
+      "EntryIntent": {
+        "type": "string",
+        "enum": [
+          "goal_known",
+          "explore",
+          "advance"
+        ]
+      },
+      "FieldCode": {
+        "type": "string",
+        "enum": [
+          "ai_data",
+          "software_cloud",
+          "security_network",
+          "robotics_manufacturing",
+          "semiconductor",
+          "digital_content",
+          "other",
+          "undecided"
+        ]
+      },
+      "Evidence": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "field_path": {
+            "type": "string"
+          },
+          "quote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_system": {
+            "type": "string",
+            "enum": [
+              "kmooc",
+              "work24",
+              "ncs"
+            ]
+          },
+          "checked_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "verification_state": {
+            "type": "string",
+            "enum": [
+              "observed",
+              "verified",
+              "unknown",
+              "conflicting"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "field_path",
+          "quote",
+          "source_url",
+          "source_system",
+          "checked_at",
+          "verification_state"
+        ],
+        "additionalProperties": false
+      },
+      "Schedule": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+                "sat",
+                "sun"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "start_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{2}:\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end_time": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^\\d{2}:\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "timezone": {
+            "type": "string",
+            "enum": [
+              "Asia/Seoul"
+            ]
+          },
+          "is_asynchronous": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "days",
+          "start_time",
+          "end_time",
+          "timezone",
+          "is_asynchronous"
+        ],
+        "additionalProperties": false
+      },
+      "Offering": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "external_offering_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cohort": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enrollment_start": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enrollment_end": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "delivery_mode": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline",
+              "hybrid",
+              "unknown"
+            ]
+          },
+          "region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Schedule"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "training_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "tuition_krw": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "listed_self_pay_krw": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "eligibility_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recruitment_status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed",
+              "unknown"
+            ]
+          },
+          "checked_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "external_offering_id",
+          "cohort",
+          "start_date",
+          "end_date",
+          "enrollment_start",
+          "enrollment_end",
+          "delivery_mode",
+          "region",
+          "schedule",
+          "training_hours",
+          "tuition_krw",
+          "listed_self_pay_krw",
+          "eligibility_text",
+          "recruitment_status",
+          "checked_at"
+        ],
+        "additionalProperties": false
+      },
+      "CourseSummary": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provider_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "field_code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_system": {
+            "type": "string",
+            "enum": [
+              "kmooc",
+              "work24"
+            ]
+          },
+          "course_type": {
+            "type": "string",
+            "enum": [
+              "online_course",
+              "vocational_training",
+              "kdt",
+              "unknown"
+            ]
+          },
+          "evidence_level": {
+            "type": "string",
+            "enum": [
+              "listing_only",
+              "detail_verified"
+            ]
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_demo": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider_name",
+          "field_code",
+          "source_system",
+          "course_type",
+          "evidence_level",
+          "detail_url",
+          "is_demo"
+        ],
+        "additionalProperties": false
+      },
+      "CourseDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "provider_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "field_code": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FieldCode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source_system": {
+            "type": "string",
+            "enum": [
+              "kmooc",
+              "work24"
+            ]
+          },
+          "course_type": {
+            "type": "string",
+            "enum": [
+              "online_course",
+              "vocational_training",
+              "kdt",
+              "unknown"
+            ]
+          },
+          "evidence_level": {
+            "type": "string",
+            "enum": [
+              "listing_only",
+              "detail_verified"
+            ]
+          },
+          "detail_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "is_demo": {
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prerequisites": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "learning_outcomes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "offerings": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Offering"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "missing_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "provider_name",
+          "field_code",
+          "source_system",
+          "course_type",
+          "evidence_level",
+          "detail_url",
+          "is_demo",
+          "description",
+          "prerequisites",
+          "learning_outcomes",
+          "offerings",
+          "evidence",
+          "missing_fields"
+        ],
+        "additionalProperties": false
+      },
+      "CoursePage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CourseSummary"
+            }
+          },
+          "next_cursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "catalog_version_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "items",
+          "next_cursor",
+          "catalog_version_id"
+        ],
+        "additionalProperties": false
+      },
+      "Reason": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "answer_keys": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "text",
+          "answer_keys",
+          "evidence_ids"
+        ],
+        "additionalProperties": false
+      },
+      "RecommendationItem": {
+        "type": "object",
+        "properties": {
+          "course": {
+            "$ref": "#/components/schemas/CourseSummary"
+          },
+          "offering": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Offering"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rank": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "match_state": {
+            "type": "string",
+            "enum": [
+              "verified_conditions",
+              "unknown_conditions"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Reason"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            }
+          },
+          "missing_fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rank_breakdown": {
+            "$ref": "#/components/schemas/RankBreakdown"
+          }
+        },
+        "required": [
+          "course",
+          "offering",
+          "rank",
+          "match_state",
+          "reasons",
+          "evidence",
+          "missing_fields",
+          "rank_breakdown"
+        ],
+        "additionalProperties": false
+      },
+      "RecommendationRun": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "catalog_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result_state": {
+            "type": "string",
+            "enum": [
+              "matches",
+              "unknown_conditions",
+              "empty",
+              "unsupported_field"
+            ]
+          },
+          "explanation_mode": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "none"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RecommendationItem"
+            }
+          },
+          "notices": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "excluded_counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile_snapshot": {
+            "$ref": "#/components/schemas/Answers"
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "runtime_mode": {
+            "type": "string",
+            "enum": [
+              "real_model",
+              "sample"
+            ]
+          },
+          "model_outcome": {
+            "type": "string",
+            "enum": [
+              "succeeded",
+              "not_needed"
+            ]
+          },
+          "pipeline_version": {
+            "type": "string"
+          },
+          "ranking_config_version": {
+            "type": "string"
+          },
+          "retrieval_config_version": {
+            "type": "string"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "needs": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Need"
+            }
+          },
+          "stages": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PipelineStage"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "profile_revision",
+          "catalog_version_id",
+          "result_state",
+          "explanation_mode",
+          "items",
+          "notices",
+          "excluded_counts",
+          "created_at",
+          "profile_id",
+          "profile_snapshot",
+          "model_id",
+          "runtime_mode",
+          "model_outcome",
+          "pipeline_version",
+          "ranking_config_version",
+          "retrieval_config_version",
+          "as_of",
+          "needs",
+          "stages"
+        ],
+        "additionalProperties": false
+      },
+      "CatalogMeta": {
+        "type": "object",
+        "properties": {
+          "catalog_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "as_of": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "is_snapshot": {
+            "type": "boolean"
+          },
+          "course_rows": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "source_counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "coverage_notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "kmooc",
+                "work24",
+                "ncs"
+              ]
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "catalog_version_id",
+          "as_of",
+          "is_snapshot",
+          "course_rows",
+          "source_counts",
+          "coverage_notes"
+        ],
+        "additionalProperties": false
+      },
+      "Option": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "label",
+          "description"
+        ],
+        "additionalProperties": false
+      },
+      "Health": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ok"
+            ]
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "additionalProperties": false
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "email": {
+            "type": "string"
+          },
+          "avatar_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "display_name",
+          "email",
+          "avatar_url"
+        ],
+        "additionalProperties": false
+      },
+      "AuthSession": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "csrf_token": {
+            "type": "string"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "user",
+          "csrf_token",
+          "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "Answers": {
+        "type": "object",
+        "properties": {
+          "entry_intent": {
+            "$ref": "#/components/schemas/EntryIntent"
+          },
+          "field_code": {
+            "$ref": "#/components/schemas/FieldCode"
+          },
+          "custom_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interest_activity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "field_confirmed": {
+            "type": "boolean"
+          },
+          "experience": {
+            "type": "string",
+            "enum": [
+              "beginner",
+              "basic",
+              "project",
+              "work",
+              "unknown"
+            ]
+          },
+          "previous_gap": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "application",
+                  "depth",
+                  "collaboration",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "learning_goal": {
+            "type": "string",
+            "enum": [
+              "foundation",
+              "portfolio",
+              "collaboration",
+              "unknown"
+            ]
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "weekday_day",
+              "evening_weekend",
+              "flexible",
+              "unknown"
+            ]
+          },
+          "delivery_mode": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline",
+              "hybrid",
+              "any",
+              "unknown"
+            ]
+          },
+          "commute_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "budget_status": {
+            "type": "string",
+            "enum": [
+              "amount",
+              "no_limit",
+              "unknown"
+            ]
+          },
+          "budget_krw": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_timing": {
+            "type": "string",
+            "enum": [
+              "soon",
+              "one_to_three_months",
+              "browse",
+              "unknown"
+            ]
+          },
+          "document_decision": {
+            "type": "string",
+            "enum": [
+              "provided",
+              "none"
+            ]
+          },
+          "self_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "eligibility_context": {
+            "type": "object",
+            "properties": {
+              "age": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 120
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "employment_status": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "employed",
+                      "unemployed",
+                      "student",
+                      "self_employed",
+                      "unknown"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "education": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "residence_region": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          },
+          "goal_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "constraints_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "ReviewedItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "have",
+              "want_to_learn",
+              "unknown",
+              "excluded"
+            ]
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "chunk_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_quote": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "document",
+              "user"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "state",
+          "document_id",
+          "chunk_id",
+          "evidence_quote",
+          "origin"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewedItemEdit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "have",
+              "want_to_learn",
+              "unknown",
+              "excluded"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "Profile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted"
+            ]
+          },
+          "answers": {
+            "$ref": "#/components/schemas/Answers"
+          },
+          "reviewed_items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewedItem"
+            }
+          },
+          "documents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Document"
+            }
+          },
+          "completed_sections": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "direction",
+                "experience",
+                "goal",
+                "conditions"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "review_token": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "slot_origins": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "enum": [
+                "direct",
+                "accepted_interpretation",
+                "accepted_document",
+                "explicit_unknown",
+                "selected_option"
+              ]
+            }
+          },
+          "unresolved_conflicts": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "latest_interpretation_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "intake_state": {
+            "$ref": "#/components/schemas/IntakeState"
+          },
+          "selection_summaries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "question_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "selected_option_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "target_slot": {
+                  "$ref": "#/components/schemas/IntakeSlot"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "question_id",
+                "selected_option_id",
+                "target_slot",
+                "label",
+                "revision"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "revision",
+          "status",
+          "answers",
+          "reviewed_items",
+          "documents",
+          "completed_sections",
+          "review_token",
+          "updated_at",
+          "slot_origins",
+          "unresolved_conflicts",
+          "latest_interpretation_id",
+          "intake_state",
+          "selection_summaries"
+        ],
+        "additionalProperties": false
+      },
+      "ProfilePatch": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "answers": {
+            "$ref": "#/components/schemas/Answers"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "answers"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewPatch": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReviewedItemEdit"
+            }
+          }
+        },
+        "required": [
+          "expected_revision",
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentKind": {
+        "type": "string",
+        "enum": [
+          "resume",
+          "job_description",
+          "portfolio",
+          "other"
+        ]
+      },
+      "Document": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "file",
+              "url",
+              "text"
+            ]
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uri"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mime_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "size_bytes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "processing",
+              "ready",
+              "failed"
+            ]
+          },
+          "extracted_preview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "content_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "profile_id",
+          "kind",
+          "source_type",
+          "display_name",
+          "source_url",
+          "mime_type",
+          "size_bytes",
+          "status",
+          "extracted_preview",
+          "job_id",
+          "error_code",
+          "content_sha256",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentAccepted": {
+        "type": "object",
+        "properties": {
+          "document": {
+            "$ref": "#/components/schemas/Document"
+          },
+          "profile_revision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "document",
+          "profile_revision"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentFileInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "file": {
+            "type": "string",
+            "format": "binary"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "kind",
+          "file"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentLinkInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "kind",
+          "url"
+        ],
+        "additionalProperties": false
+      },
+      "DocumentTextInput": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "kind": {
+            "$ref": "#/components/schemas/DocumentKind"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "expected_revision",
+          "kind",
+          "text"
+        ],
+        "additionalProperties": false
+      },
+      "RevisionRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "SubmitRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "review_token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "expected_revision",
+          "review_token"
+        ],
+        "additionalProperties": false
+      },
+      "JobAccepted": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "superseded",
+              "cancelled"
+            ]
+          },
+          "poll_after_ms": {
+            "type": "integer",
+            "minimum": 500
+          }
+        },
+        "required": [
+          "job_id",
+          "status",
+          "poll_after_ms"
+        ],
+        "additionalProperties": false
+      },
+      "Job": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "document_processing",
+              "intake_interpretation",
+              "recommendation",
+              "intake_question"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed",
+              "superseded",
+              "cancelled"
+            ]
+          },
+          "phase": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "fetching",
+              "extracting",
+              "interpreting",
+              "freezing",
+              "profiling",
+              "mapping_needs",
+              "retrieving",
+              "checking_constraints",
+              "assessing",
+              "ranking",
+              "explaining",
+              "validating",
+              "persisting",
+              "completed",
+              "failed",
+              "generating_question",
+              "validating_question"
+            ]
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "document_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "interpretation_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "recommendation_run_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "question_id": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "format": "uuid"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Error"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "completed_stages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status",
+          "phase",
+          "profile_id",
+          "result",
+          "error",
+          "created_at",
+          "finished_at",
+          "completed_stages"
+        ],
+        "additionalProperties": false
+      },
+      "OnboardingOptions": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Option"
+            }
+          },
+          "entry_intents": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Option"
+            }
+          },
+          "allowed_file_extensions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "max_upload_bytes": {
+            "type": "integer"
+          },
+          "max_profile_documents": {
+            "type": "integer"
+          },
+          "upload_limit_note": {
+            "type": "string"
+          },
+          "branch_rules_version": {
+            "type": "string"
+          },
+          "intake_policy_version": {
+            "type": "string"
+          },
+          "allowed_catalog_sources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "kmooc",
+                "work24",
+                "ncs"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "interpretation_enabled": {
+            "type": "boolean"
+          },
+          "question_generation_enabled": {
+            "type": "boolean"
+          },
+          "question_schema_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "fields",
+          "entry_intents",
+          "allowed_file_extensions",
+          "max_upload_bytes",
+          "max_profile_documents",
+          "upload_limit_note",
+          "branch_rules_version",
+          "intake_policy_version",
+          "allowed_catalog_sources",
+          "interpretation_enabled",
+          "question_generation_enabled",
+          "question_schema_version"
+        ],
+        "additionalProperties": false
+      },
+      "IntakeSlot": {
+        "type": "string",
+        "enum": [
+          "entry_intent",
+          "field_code",
+          "custom_field",
+          "experience",
+          "previous_gap",
+          "learning_goal",
+          "availability",
+          "delivery_mode",
+          "commute_region",
+          "budget_status",
+          "budget_krw",
+          "start_timing",
+          "document_decision",
+          "goal_text",
+          "constraints_text",
+          "interest_activity"
+        ]
+      },
+      "ProposalValue": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "text"
+                ]
+              },
+              "text": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1000
+              }
+            },
+            "required": [
+              "kind",
+              "text"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "integer"
+                ]
+              },
+              "integer": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "kind",
+              "integer"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "SlotProposal": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slot": {
+            "$ref": "#/components/schemas/IntakeSlot"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ProposalValue"
+          },
+          "label": {
+            "type": "string"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "user_text",
+              "document"
+            ]
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "chunk_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "quote": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "proposed",
+              "conflict"
+            ]
+          },
+          "conflicts_with": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "slot",
+          "value",
+          "label",
+          "source_type",
+          "document_id",
+          "chunk_id",
+          "quote",
+          "status",
+          "conflicts_with"
+        ],
+        "additionalProperties": false
+      },
+      "InterpretationRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 6000
+          },
+          "ready_document_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
+          },
+          "question_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "expected_revision",
+          "text",
+          "ready_document_ids"
+        ],
+        "additionalProperties": false
+      },
+      "Interpretation": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "input_hash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "stale",
+              "failed",
+              "applied"
+            ]
+          },
+          "assistant_text": {
+            "type": "string",
+            "maxLength": 500
+          },
+          "proposals": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SlotProposal"
+            }
+          },
+          "model_id": {
+            "type": "string"
+          },
+          "prompt_version": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "suggested_slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntakeSlot"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "id",
+          "profile_id",
+          "base_revision",
+          "input_hash",
+          "status",
+          "assistant_text",
+          "proposals",
+          "model_id",
+          "prompt_version",
+          "created_at",
+          "suggested_slots"
+        ],
+        "additionalProperties": false
+      },
+      "InterpretationApply": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "accepted_proposal_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
+          },
+          "rejected_proposal_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "expected_revision",
+          "accepted_proposal_ids",
+          "rejected_proposal_ids"
+        ],
+        "additionalProperties": false
+      },
+      "Need": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string"
+          },
+          "basis": {
+            "type": "string",
+            "enum": [
+              "user_requested",
+              "jd_required",
+              "ncs_reference"
+            ]
+          },
+          "learner_state": {
+            "type": "string",
+            "enum": [
+              "self_reported_have",
+              "want_to_learn",
+              "unknown"
+            ]
+          },
+          "source_item_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "ncs_reference_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "mapping_state": {
+            "type": "string",
+            "enum": [
+              "supported",
+              "suggested",
+              "unmapped"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "basis",
+          "learner_state",
+          "source_item_ids",
+          "ncs_reference_ids",
+          "mapping_state"
+        ],
+        "additionalProperties": false
+      },
+      "ConstraintCheck": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "recruitment",
+              "schedule",
+              "mode",
+              "region",
+              "budget",
+              "eligibility",
+              "start_timing"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pass",
+              "fail",
+              "unknown",
+              "not_applicable"
+            ]
+          },
+          "reason_code": {
+            "type": "string"
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "field",
+          "status",
+          "reason_code",
+          "evidence_ids"
+        ],
+        "additionalProperties": false
+      },
+      "AxisAssessment": {
+        "type": "object",
+        "properties": {
+          "axis": {
+            "type": "string",
+            "enum": [
+              "goal",
+              "prerequisite",
+              "outcome",
+              "preference"
+            ]
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number",
+                "enum": [
+                  0,
+                  0.5,
+                  1
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "reason_code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "axis",
+          "value",
+          "evidence_ids",
+          "reason_code"
+        ],
+        "additionalProperties": false,
+        "description": "각 축별 0/0.5/1/null과 근거. 완성 결과에는 네 축이 정확히 한 번씩 있어야 하며 서버가 unique axis와 합계를 검증한다."
+      },
+      "RankBreakdown": {
+        "type": "object",
+        "properties": {
+          "goal_basis": {
+            "type": "string",
+            "enum": [
+              "content_supported",
+              "topic_only",
+              "unrelated"
+            ]
+          },
+          "score_lower": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "score_upper": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "coverage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1
+          },
+          "axes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AxisAssessment"
+            }
+          },
+          "constraint_checks": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConstraintCheck"
+            }
+          },
+          "ranking_config_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "goal_basis",
+          "score_lower",
+          "score_upper",
+          "coverage",
+          "axes",
+          "constraint_checks",
+          "ranking_config_version"
+        ],
+        "additionalProperties": false
+      },
+      "PipelineStage": {
+        "type": "object",
+        "properties": {
+          "stage": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "running",
+              "succeeded",
+              "failed",
+              "skipped"
+            ]
+          },
+          "input_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "output_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason_counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "duration_ms": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "stage",
+          "status",
+          "input_count",
+          "output_count",
+          "reason_counts",
+          "duration_ms"
+        ],
+        "additionalProperties": false
+      },
+      "IntakeState": {
+        "type": "object",
+        "properties": {
+          "section": {
+            "type": "string",
+            "enum": [
+              "direction",
+              "experience",
+              "goal",
+              "conditions",
+              "review"
+            ]
+          },
+          "next_action": {
+            "type": "string",
+            "enum": [
+              "generate_question",
+              "collect_documents",
+              "review_sources",
+              "resolve_conflict",
+              "review"
+            ]
+          },
+          "eligible_slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntakeSlot"
+            },
+            "uniqueItems": true
+          },
+          "missing_slots": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IntakeSlot"
+            },
+            "uniqueItems": true
+          },
+          "completed_sections": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "direction",
+                "experience",
+                "goal",
+                "conditions"
+              ]
+            },
+            "uniqueItems": true
+          },
+          "active_question_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "section",
+          "next_action",
+          "eligible_slots",
+          "missing_slots",
+          "completed_sections",
+          "active_question_id"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionPatch": {
+        "type": "object",
+        "properties": {
+          "entry_intent": {
+            "$ref": "#/components/schemas/EntryIntent"
+          },
+          "field_code": {
+            "$ref": "#/components/schemas/FieldCode"
+          },
+          "custom_field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "experience": {
+            "type": "string",
+            "enum": [
+              "beginner",
+              "basic",
+              "project",
+              "work",
+              "unknown"
+            ]
+          },
+          "previous_gap": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "application",
+                  "depth",
+                  "collaboration",
+                  "unknown"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "learning_goal": {
+            "type": "string",
+            "enum": [
+              "foundation",
+              "portfolio",
+              "collaboration",
+              "unknown"
+            ]
+          },
+          "availability": {
+            "type": "string",
+            "enum": [
+              "weekday_day",
+              "evening_weekend",
+              "flexible",
+              "unknown"
+            ]
+          },
+          "delivery_mode": {
+            "type": "string",
+            "enum": [
+              "online",
+              "offline",
+              "hybrid",
+              "any",
+              "unknown"
+            ]
+          },
+          "commute_region": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "budget_status": {
+            "type": "string",
+            "enum": [
+              "amount",
+              "no_limit",
+              "unknown"
+            ]
+          },
+          "budget_krw": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "start_timing": {
+            "type": "string",
+            "enum": [
+              "soon",
+              "one_to_three_months",
+              "browse",
+              "unknown"
+            ]
+          },
+          "document_decision": {
+            "type": "string",
+            "enum": [
+              "provided",
+              "none"
+            ]
+          },
+          "goal_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "constraints_text": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "interest_activity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [],
+        "additionalProperties": false,
+        "description": "내부 모델 계약. primary target_slot과 서버가 허용한 companion slot만 포함. 선택 문구에 드러나지 않은 값, 이미 확정된 값, 서버 상태 필드 수정 금지. 클라이언트는 이 patch를 제출하지 않는다."
+      },
+      "QuestionDraftOption": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,31}$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "answer_patch": {
+            "$ref": "#/components/schemas/QuestionPatch"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "description",
+          "answer_patch"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionDraft": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "string",
+            "const": "1.0"
+          },
+          "target_slot": {
+            "$ref": "#/components/schemas/IntakeSlot"
+          },
+          "acknowledgement": {
+            "type": "string",
+            "maxLength": 180
+          },
+          "question": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 180
+          },
+          "helper_text": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "selection_mode": {
+            "type": "string",
+            "const": "single"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionDraftOption"
+            },
+            "minItems": 2,
+            "maxItems": 5
+          }
+        },
+        "required": [
+          "schema_version",
+          "target_slot",
+          "acknowledgement",
+          "question",
+          "helper_text",
+          "selection_mode",
+          "options"
+        ],
+        "additionalProperties": false,
+        "description": "local Gemma의 내부 구조화 출력. 프롬프트와 JSON schema를 함께 전달. 서버 검증 전 공개하거나 답변에 적용하지 않는다. 2~5 선택지/단일 선택은 초기 구현안이며 총 질문 수 제한이 아니다."
+      },
+      "QuestionOption": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "label": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "generated",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "kind"
+        ],
+        "additionalProperties": false
+      },
+      "IntakeQuestion": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "base_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "context_hash": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "answered",
+              "stale"
+            ]
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "fallback"
+            ]
+          },
+          "schema_version": {
+            "type": "string"
+          },
+          "target_slot": {
+            "$ref": "#/components/schemas/IntakeSlot"
+          },
+          "acknowledgement": {
+            "type": "string"
+          },
+          "question": {
+            "type": "string"
+          },
+          "helper_text": {
+            "type": "string"
+          },
+          "selection_mode": {
+            "type": "string",
+            "const": "single"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuestionOption"
+            },
+            "minItems": 2,
+            "maxItems": 6
+          },
+          "allow_custom_text": {
+            "type": "boolean"
+          },
+          "model_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "prompt_version": {
+            "type": "string"
+          },
+          "policy_version": {
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "profile_id",
+          "base_revision",
+          "context_hash",
+          "status",
+          "origin",
+          "schema_version",
+          "target_slot",
+          "acknowledgement",
+          "question",
+          "helper_text",
+          "selection_mode",
+          "options",
+          "allow_custom_text",
+          "model_id",
+          "prompt_version",
+          "policy_version",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionRequest": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "expected_revision"
+        ],
+        "additionalProperties": false
+      },
+      "QuestionAnswer": {
+        "type": "object",
+        "properties": {
+          "expected_revision": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "selected_option_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "expected_revision",
+          "selected_option_id"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}

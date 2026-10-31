@@ -1,0 +1,33 @@
+sequenceDiagram
+  participant UI as 사용자 화면
+  participant API as FastAPI
+  participant W as Worker
+  participant DB as PostgreSQL
+  participant L as Gemma
+  UI->>API: POST submit revision + review_token
+  API->>DB: 소유권·완료 검증, 스냅샷·job 저장
+  API-->>UI: 202 job_id
+  W->>DB: job 선점 후 트랜잭션 종료
+  W->>DB: 목표 용어로 NCS 참조 후보 조회
+  DB-->>W: 원문과 실제 존재하는 NCS 참조 ID
+  W->>L: 확정 프로필과 NCS 후보 해석
+  L-->>W: 학습 필요·근거 JSON
+  W->>DB: 제목·본문·NCS 연결 검색
+  DB-->>W: 교육·회차·원문 근거
+  W->>W: 참여 조건 검사
+  loop 제한된 후보 묶음
+    W->>L: 내용 적합성 평가
+    L-->>W: 축별 근거와 unknown
+  end
+  W->>W: 서버 정렬·중복 정리
+  W->>L: 선정 교육의 근거 기반 설명
+  L-->>W: 설명과 인용 ID
+  W->>W: 사실·인용 검증
+  alt 검증 성공
+    W->>DB: 결과·단계 기록 저장
+    UI->>API: 상태 확인 후 결과 조회
+    API-->>UI: 교육 추천 표시
+  else 제한된 수정 후에도 실패
+    W->>DB: job failed · 입력 보존
+    API-->>UI: 오류·같은 입력 재시도
+  end

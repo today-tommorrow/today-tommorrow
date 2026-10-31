@@ -1,0 +1,15 @@
+flowchart TD
+  UI["Gemma 질문·선택형 입력"] --> API["FastAPI 제출·스냅샷"]
+  API --> P["프로필·학습 필요 해석"]
+  ING["K-MOOC·고용24·NCS 적재"] --> DB[("PostgreSQL 카탈로그·근거")]
+  DB --> P
+  P --> R["후보 검색·순위 융합"]
+  DB --> R
+  R --> F["참여 조건 검사"]
+  F --> A["내용 평가·서버 정렬"]
+  A --> E["설명·근거 검증"]
+  P -.-> L["공유 Gemma 4 12B Q4"]
+  A -.-> L
+  E -.-> L
+  E --> TRACE[("결과·단계 기록")]
+  TRACE --> RESULT["완료된 교육 결과"]

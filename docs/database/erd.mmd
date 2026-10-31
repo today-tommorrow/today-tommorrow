@@ -1,0 +1,354 @@
+erDiagram
+    catalog_versions {
+        UUID id PK
+        TEXT status
+        TIMESTAMPTZ as_of
+        TIMESTAMPTZ created_at
+        JSONB summary_json
+    }
+    import_batches {
+        UUID id PK
+        UUID catalog_version_id FK
+        TEXT source_system
+        TEXT file_name
+        TEXT file_sha256
+        TEXT source_schema_version
+        TEXT adapter_version
+        TEXT batch_mode
+        TEXT coverage
+        TEXT status
+        TIMESTAMPTZ received_at
+        TIMESTAMPTZ collected_at
+        INTEGER record_count
+        JSONB validation_report_json
+    }
+    catalog_versions ||--o{ import_batches : "catalog_version_id"
+    source_records {
+        UUID id PK
+        UUID catalog_version_id FK
+        TEXT source_system
+        TEXT collection_method
+        TEXT entity_kind
+        TEXT external_id
+        TEXT source_url
+        TEXT file_name
+        UUID import_batch_id FK
+        TEXT record_locator
+        TIMESTAMPTZ collected_at
+        JSONB raw_json
+        TEXT content_sha256
+        TEXT reuse_status
+    }
+    catalog_versions ||--o{ source_records : "catalog_version_id"
+    import_batches ||--o{ source_records : "import_batch_id"
+    courses {
+        UUID id PK
+        UUID catalog_version_id FK
+        UUID source_record_id FK
+        TEXT source_system
+        TEXT external_id
+        TEXT name
+        TEXT provider_name
+        TEXT field_code
+        JSONB topic_tags_json
+        TEXT description
+        TEXT prerequisites
+        JSONB learning_outcomes_json
+        TEXT course_type
+        TEXT evidence_level
+        TEXT detail_url
+        BOOLEAN is_demo
+    }
+    catalog_versions ||--o{ courses : "catalog_version_id"
+    source_records ||--o{ courses : "source_record_id"
+    offerings {
+        UUID id PK
+        UUID course_id FK
+        UUID source_record_id FK
+        TEXT external_offering_id
+        TEXT cohort
+        DATE start_date
+        DATE end_date
+        TIMESTAMPTZ enrollment_start
+        TIMESTAMPTZ enrollment_end
+        TEXT delivery_mode
+        TEXT region
+        JSONB schedule_json
+        NUMERIC training_hours
+        BIGINT tuition_krw
+        BIGINT listed_self_pay_krw
+        TEXT eligibility_text
+        TEXT recruitment_status
+        TIMESTAMPTZ checked_at
+    }
+    courses ||--o{ offerings : "course_id"
+    source_records ||--o{ offerings : "source_record_id"
+    skill_references {
+        UUID id PK
+        UUID source_record_id FK
+        TEXT reference_kind
+        TEXT name
+        TEXT classification
+        JSONB keywords_json
+        TEXT standard_level
+        TEXT standard_hours
+        JSONB raw_details_json
+    }
+    source_records ||--o{ skill_references : "source_record_id"
+    evidence {
+        UUID id PK
+        UUID source_record_id FK
+        UUID course_id FK
+        UUID offering_id FK
+        UUID skill_reference_id FK
+        TEXT field_path
+        TEXT quote
+        JSONB fact_json
+        TEXT verification_state
+        TIMESTAMPTZ checked_at
+    }
+    source_records ||--o{ evidence : "source_record_id"
+    courses |o--o{ evidence : "course_id"
+    offerings |o--o{ evidence : "offering_id"
+    skill_references |o--o{ evidence : "skill_reference_id"
+    users {
+        UUID id PK
+        TEXT google_sub
+        TEXT email
+        TEXT display_name
+        TEXT avatar_url
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+    auth_sessions {
+        UUID id PK
+        UUID user_id FK
+        TEXT token_hash
+        TEXT csrf_token_hash
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ expires_at
+        TIMESTAMPTZ revoked_at
+    }
+    users ||--o{ auth_sessions : "user_id"
+    oauth_login_states {
+        UUID id PK
+        TEXT state_hash
+        TEXT browser_binding_hash
+        TEXT nonce_hash
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ expires_at
+        TIMESTAMPTZ consumed_at
+    }
+    intake_profiles {
+        UUID id PK
+        UUID user_id FK
+        TEXT status
+        INTEGER revision
+        JSONB answers_json
+        JSONB reviewed_items_json
+        JSONB completed_sections_json
+        JSONB slot_origins_json
+        JSONB unresolved_conflicts_json
+        INTEGER submitted_revision
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+    users ||--o{ intake_profiles : "user_id"
+    documents {
+        UUID id PK
+        UUID profile_id FK
+        UUID user_id FK
+        TEXT kind
+        TEXT source_type
+        TEXT display_name
+        TEXT source_url
+        TEXT storage_key
+        TEXT mime_type
+        BIGINT size_bytes
+        TEXT content_sha256
+        TEXT status
+        TEXT extracted_text
+        JSONB extraction_json
+        TEXT error_code
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+    intake_profiles ||--o{ documents : "profile_id"
+    document_chunks {
+        UUID id PK
+        UUID document_id FK
+        INTEGER ordinal
+        INTEGER page_number
+        TEXT source_locator
+        TEXT text_content
+        TEXT content_sha256
+    }
+    documents ||--o{ document_chunks : "document_id"
+    jobs {
+        UUID id PK
+        UUID profile_id FK
+        UUID user_id FK
+        UUID document_id FK
+        TEXT kind
+        TEXT status
+        TEXT phase
+        INTEGER profile_revision
+        TEXT idempotency_key
+        TEXT request_hash
+        JSONB input_json
+        JSONB result_json
+        TEXT error_code
+        INTEGER attempt
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ started_at
+        TIMESTAMPTZ finished_at
+        TIMESTAMPTZ lease_expires_at
+    }
+    intake_profiles ||--o{ jobs : "profile_id"
+    documents |o--o{ jobs : "document_id"
+    recommendation_runs {
+        UUID id PK
+        UUID profile_id FK
+        UUID user_id FK
+        UUID job_id FK
+        UUID catalog_version_id FK
+        INTEGER profile_revision
+        JSONB profile_snapshot_json
+        JSONB source_snapshot_json
+        TEXT result_state
+        TEXT model_id
+        TEXT prompt_version
+        TEXT pipeline_version
+        TEXT retrieval_config_version
+        TEXT ranking_config_version
+        TIMESTAMPTZ as_of
+        JSONB needs_json
+        TEXT model_outcome
+        TEXT runtime_mode
+        BOOLEAN is_stale
+        JSONB excluded_counts_json
+        TIMESTAMPTZ created_at
+    }
+    catalog_versions ||--o{ recommendation_runs : "catalog_version_id"
+    intake_profiles ||--o{ recommendation_runs : "profile_id"
+    jobs ||--o| recommendation_runs : "job_id"
+    recommendation_items {
+        UUID id PK
+        UUID run_id FK
+        UUID course_id FK
+        UUID offering_id FK
+        INTEGER rank
+        TEXT match_state
+        JSONB reason_json
+        JSONB rank_breakdown_json
+        JSONB evidence_ids_json
+        JSONB missing_fields_json
+    }
+    recommendation_runs ||--o{ recommendation_items : "run_id"
+    courses ||--o{ recommendation_items : "course_id"
+    offerings |o--o{ recommendation_items : "offering_id"
+    saved_courses {
+        UUID user_id PK,FK
+        UUID course_id PK,FK
+        TIMESTAMPTZ created_at
+    }
+    users ||--o{ saved_courses : "user_id"
+    courses ||--o{ saved_courses : "course_id"
+    catalog_search_documents {
+        UUID id PK
+        UUID catalog_version_id FK
+        UUID course_id FK
+        UUID skill_reference_id FK
+        TEXT title_terms
+        TEXT body_terms
+        JSONB normalized_terms_json
+        TEXT dictionary_version
+        TEXT content_sha256
+    }
+    catalog_versions ||--o{ catalog_search_documents : "catalog_version_id"
+    courses |o--o{ catalog_search_documents : "course_id"
+    skill_references |o--o{ catalog_search_documents : "skill_reference_id"
+    course_skill_links {
+        UUID id PK
+        UUID course_id FK
+        UUID skill_reference_id FK
+        UUID course_evidence_id FK
+        TEXT relation_state
+        TEXT method
+        TEXT mapping_version
+        JSONB rationale_json
+    }
+    courses ||--o{ course_skill_links : "course_id"
+    skill_references ||--o{ course_skill_links : "skill_reference_id"
+    evidence |o--o{ course_skill_links : "course_evidence_id"
+    profile_interpretations {
+        UUID id PK
+        UUID profile_id FK
+        UUID user_id FK
+        UUID job_id FK
+        INTEGER base_revision
+        TEXT input_hash
+        JSONB source_hashes_json
+        TEXT status
+        JSONB proposal_json
+        JSONB decision_json
+        TEXT model_id
+        TEXT prompt_version
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ applied_at
+    }
+    intake_profiles ||--o{ profile_interpretations : "profile_id"
+    jobs ||--o{ profile_interpretations : "job_id"
+    recommendation_steps {
+        UUID id PK
+        UUID job_id FK
+        TEXT stage
+        INTEGER attempt
+        TEXT status
+        TEXT input_hash
+        JSONB output_json
+        JSONB version_json
+        INTEGER input_count
+        INTEGER output_count
+        TIMESTAMPTZ started_at
+        TIMESTAMPTZ finished_at
+        TEXT error_code
+    }
+    jobs ||--o{ recommendation_steps : "job_id"
+    intake_questions {
+        UUID id PK
+        UUID profile_id FK
+        UUID user_id FK
+        UUID job_id FK
+        INTEGER base_revision
+        TEXT context_hash
+        JSONB source_hashes_json
+        TEXT target_slot
+        TEXT question_signature
+        TEXT status
+        TEXT origin
+        TEXT schema_version
+        TEXT model_id
+        TEXT prompt_version
+        TEXT policy_version
+        JSONB draft_json
+        JSONB public_question_json
+        JSONB option_bindings_json
+        JSONB validation_json
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ answered_at
+    }
+    intake_profiles ||--o{ intake_questions : "profile_id"
+    jobs ||--o{ intake_questions : "job_id"
+    intake_answers {
+        UUID id PK
+        UUID question_id FK
+        UUID profile_id FK
+        UUID user_id FK
+        UUID selected_option_id
+        JSONB applied_patch_json
+        INTEGER revision_before
+        INTEGER revision_after
+        TIMESTAMPTZ created_at
+    }
+    intake_questions ||--o{ intake_answers : "question_id"

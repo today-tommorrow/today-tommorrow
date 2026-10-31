@@ -1,0 +1,213 @@
+{
+  "source_version": "0.8",
+  "baseline_commit": "c9cb41b5bfad39e39985160a66e0a5a39a5bd044",
+  "files": [
+    {
+      "source": ".docs.local/daeum-design-v0.8/README.md",
+      "destination": "docs/reference/v0.8/README.md",
+      "source_sha256": "a3092d574e18ab9afd5c3a941b4fbead5f02366b7af9c9ab38093daf7e6730ec",
+      "destination_sha256": "d3d5a85e4acd78a47a03a8dc147e99b57753a600f7dc810c35adb717e8213f3e",
+      "transformation": "archive_notice_added"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/api-types.ts",
+      "destination": "docs/contracts/api-types.ts",
+      "source_sha256": "6af8836ef5495d32ed084d5d3f666eeb15747d3a6755da4b4276a6c7d7d4d5aa",
+      "destination_sha256": "6af8836ef5495d32ed084d5d3f666eeb15747d3a6755da4b4276a6c7d7d4d5aa",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/architecture.svg",
+      "destination": "docs/operations/architecture.svg",
+      "source_sha256": "576c1e7709cd8f7d259d2fb0fa12f60b362128c3b83649cf79951b7eb162e744",
+      "destination_sha256": "576c1e7709cd8f7d259d2fb0fa12f60b362128c3b83649cf79951b7eb162e744",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/data-ingestion.mmd",
+      "destination": "docs/data/data-ingestion.mmd",
+      "source_sha256": "00e084ea1406de50456d33685c6782afff4d27306d9e028ae471ca17a85b889d",
+      "destination_sha256": "00e084ea1406de50456d33685c6782afff4d27306d9e028ae471ca17a85b889d",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/data-ingestion.svg",
+      "destination": "docs/data/data-ingestion.svg",
+      "source_sha256": "fb669df15bf4a1256bb58ecf518c1108daf840713b01dec41d13fbc56102def0",
+      "destination_sha256": "fb669df15bf4a1256bb58ecf518c1108daf840713b01dec41d13fbc56102def0",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/erd.mmd",
+      "destination": "docs/database/erd.mmd",
+      "source_sha256": "2104283f1b7176d8ae38666f6f729585453236c8b3cc2e6ceac4e56e23926499",
+      "destination_sha256": "2104283f1b7176d8ae38666f6f729585453236c8b3cc2e6ceac4e56e23926499",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/erd.svg",
+      "destination": "docs/database/erd.svg",
+      "source_sha256": "d08e28a3cf01aa5a22a8fa2fb36bc000dce22e4f5b128b04c5697f7b528dc591",
+      "destination_sha256": "d08e28a3cf01aa5a22a8fa2fb36bc000dce22e4f5b128b04c5697f7b528dc591",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/index.html",
+      "destination": "docs/reference/v0.8/index.html",
+      "source_sha256": "80b1b0dcc18905760971c71f396cf0a12ceedb554ab8e439fa1d5c3e376ae969",
+      "destination_sha256": "468a5e704f95872a6c131f1559a19fd51d2dbc3ba0c62de3555e8a9a195cf971",
+      "transformation": "relative_links_rewritten"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/ingestion-contract.json",
+      "destination": "docs/data/ingestion-contract.json",
+      "source_sha256": "12b631f23e5806551dba4999b5a9e4ecb12d417d276bc43a42dfb66e2de28b90",
+      "destination_sha256": "12b631f23e5806551dba4999b5a9e4ecb12d417d276bc43a42dfb66e2de28b90",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/intake-architecture.mmd",
+      "destination": "docs/intake/intake-architecture.mmd",
+      "source_sha256": "a62ca190c27b579dc4791f3357da0c97476f55ef6e6f4992faf04936b165f38e",
+      "destination_sha256": "a62ca190c27b579dc4791f3357da0c97476f55ef6e6f4992faf04936b165f38e",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/intake-architecture.svg",
+      "destination": "docs/intake/intake-architecture.svg",
+      "source_sha256": "54608ffae722efc21acd2b2b1e38e9b0bd3f4562ef692365b9e692de0280c53a",
+      "destination_sha256": "54608ffae722efc21acd2b2b1e38e9b0bd3f4562ef692365b9e692de0280c53a",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/intake-question-contract.json",
+      "destination": "docs/intake/intake-question-contract.json",
+      "source_sha256": "42510efcbf6bc525b9aa8617f3ac0cb2c938c47adb268a6d08ff9e6efcfdbaa8",
+      "destination_sha256": "42510efcbf6bc525b9aa8617f3ac0cb2c938c47adb268a6d08ff9e6efcfdbaa8",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/intake-sequence.mmd",
+      "destination": "docs/intake/intake-sequence.mmd",
+      "source_sha256": "e1ce2b40d999d4762f874885ea355e39626c4674308dac02e7e697ddf2acb428",
+      "destination_sha256": "e1ce2b40d999d4762f874885ea355e39626c4674308dac02e7e697ddf2acb428",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/intake-sequence.svg",
+      "destination": "docs/intake/intake-sequence.svg",
+      "source_sha256": "bbae65a63c15ab4599353e3bc59aa5b1e068b25a36598f24089f3445e2c30790",
+      "destination_sha256": "bbae65a63c15ab4599353e3bc59aa5b1e068b25a36598f24089f3445e2c30790",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/openapi.json",
+      "destination": "docs/contracts/openapi.json",
+      "source_sha256": "edbad53d2f0094a61d426653b0a163fe22936c388a193e8dbe85cf6fd6a30251",
+      "destination_sha256": "edbad53d2f0094a61d426653b0a163fe22936c388a193e8dbe85cf6fd6a30251",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/openapi.yaml",
+      "destination": "docs/contracts/openapi.yaml",
+      "source_sha256": "031284766350d4abacb274978aa874fa94c7388c6ac70e44e15356b1caf385e8",
+      "destination_sha256": "031284766350d4abacb274978aa874fa94c7388c6ac70e44e15356b1caf385e8",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-architecture.mmd",
+      "destination": "docs/recommendation/recommendation-architecture.mmd",
+      "source_sha256": "ded1dab7531663db1b9487ce6c180baf50a5014adc65edc7701b2e129528df3b",
+      "destination_sha256": "ded1dab7531663db1b9487ce6c180baf50a5014adc65edc7701b2e129528df3b",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-architecture.svg",
+      "destination": "docs/recommendation/recommendation-architecture.svg",
+      "source_sha256": "c99c920a7de7a84fcaa6a0b888e90ef9444b549a72c7aedd51c812e269e57639",
+      "destination_sha256": "c99c920a7de7a84fcaa6a0b888e90ef9444b549a72c7aedd51c812e269e57639",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-config.json",
+      "destination": "docs/recommendation/recommendation-config.json",
+      "source_sha256": "45739fc8062ab040838af061b0d51def281dff666e740726e4ae2a5d50525282",
+      "destination_sha256": "45739fc8062ab040838af061b0d51def281dff666e740726e4ae2a5d50525282",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-flow.mmd",
+      "destination": "docs/recommendation/recommendation-flow.mmd",
+      "source_sha256": "cb094677e7c46d96949ab570d931b6423ae190bb0101eb2ec5248759cf0d458a",
+      "destination_sha256": "cb094677e7c46d96949ab570d931b6423ae190bb0101eb2ec5248759cf0d458a",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-flow.svg",
+      "destination": "docs/recommendation/recommendation-flow.svg",
+      "source_sha256": "782b1cfd033da8afe45c078b2a602ba69616d5cabe567b19f713e2c4b1c6edeb",
+      "destination_sha256": "782b1cfd033da8afe45c078b2a602ba69616d5cabe567b19f713e2c4b1c6edeb",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-sequence.mmd",
+      "destination": "docs/recommendation/recommendation-sequence.mmd",
+      "source_sha256": "5b52e48663f37ba97a5eaace2faabfadc22f722e25d90d57b6d0c0afa9408a43",
+      "destination_sha256": "5b52e48663f37ba97a5eaace2faabfadc22f722e25d90d57b6d0c0afa9408a43",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/recommendation-sequence.svg",
+      "destination": "docs/recommendation/recommendation-sequence.svg",
+      "source_sha256": "ec156f95bd3874bc4b3456fbe0d2d98c26391938c9384b592e0715006578d978",
+      "destination_sha256": "ec156f95bd3874bc4b3456fbe0d2d98c26391938c9384b592e0715006578d978",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/schema.sql",
+      "destination": "docs/database/schema.sql",
+      "source_sha256": "e453f61f8b87e17fd3cea648dbb526cbd7e5fab83c524a90c83f7c3b4c23d1ae",
+      "destination_sha256": "e453f61f8b87e17fd3cea648dbb526cbd7e5fab83c524a90c83f7c3b4c23d1ae",
+      "transformation": "none"
+    },
+    {
+      "source": ".docs.local/daeum-design-v0.8/wireframe.html",
+      "destination": "docs/product/wireframe.html",
+      "source_sha256": "2966255b01e5c579e644c1aefefec4293aa84156059bc22778ca2bf62ecfa5c1",
+      "destination_sha256": "b5a355e0f1649e852927864bd596431878bf36ad4bf4833c7e24dfbe224cd98e",
+      "transformation": "relative_links_rewritten"
+    }
+  ],
+  "sections": {
+    "product/README.md": [
+      "scope",
+      "adaptive"
+    ],
+    "intake/README.md": [
+      "question_contract",
+      "implementation"
+    ],
+    "recommendation/README.md": [
+      "stages",
+      "needs",
+      "retrieval",
+      "constraints",
+      "ranking",
+      "model",
+      "recommendation_architecture",
+      "recommendation_sequence",
+      "recommendation_flow"
+    ],
+    "data/README.md": [
+      "data"
+    ],
+    "contracts/README.md": [
+      "api"
+    ],
+    "operations/README.md": [
+      "execution",
+      "repository"
+    ]
+  },
+  "note": "ERD is preserved as schema.sql + Mermaid/SVG; section 19 and validation history remain in the archived HTML/README. Local originals were not deleted."
+}

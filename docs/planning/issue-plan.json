@@ -1,0 +1,838 @@
+[
+  {
+    "id": "T01",
+    "phase": "P0",
+    "title": "팀원이 공통 명세와 계약을 찾아 같은 샘플로 개발한다",
+    "lead": "B",
+    "deps": [],
+    "refs": [
+      "docs/README.md",
+      "docs/planning/decisions.md",
+      "docs/contracts/README.md",
+      "docs/intake/intake-question-contract.json"
+    ],
+    "scope": "명세 카테고리·탐색 경로, 계약 변경 절차, 병렬 작업 경계, 공통 합성 샘플과 착수 전 미결정 계약 확정",
+    "exclude": "업무 기능 구현·미측정 성능 확정",
+    "contract": "문서 시작점은 docs/README.md. HTTP 경로는 OpenAPI servers=/api + paths. 질문 생성은 expected_revision, 답변은 expected_revision + selected_option_id만 전송. YAML/JSON/TS와 모델 계약을 같은 샘플로 비교한다.",
+    "checks": [
+      "기존 원본 25개가 분류·출처 기록으로 추적되고 내부 링크가 모두 유효하다",
+      "D01·D02·D04·D05의 착수 전 계약과 샘플을 관련 영역 담당자가 확인한다",
+      "JSON/YAML 일치·참조 해석·타입/스키마 검증의 실제 명령과 결과를 기록한다"
+    ],
+    "work": {
+      "웹": "공통 성공·빈 결과·오류 fixture와 타입을 확인",
+      "API": "명세·슬롯 정책·멱등 계약과 오류 예시를 취합",
+      "AI": "질문 외 S1/S2/S5/S7 모델 스키마와 실패 샘플 확정",
+      "인프라/데이터": "원본 출처·설정 버전·공용 파일 소유권 확인"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": [
+      "D01",
+      "D02",
+      "D04",
+      "D05"
+    ]
+  },
+  {
+    "id": "T02",
+    "phase": "P0",
+    "title": "다른 팀원의 실제 Mac 새 클론에서 개발환경을 실행한다",
+    "lead": "D",
+    "deps": [],
+    "refs": [
+      "README.md",
+      "docs/development.md",
+      "docs/planning/baseline.md"
+    ],
+    "scope": "구현자 외 실제 Mac에서 setup/dev/check·재실행 보존 검증. 최신 uv launcher·Node 캐시 사용",
+    "exclude": "이미 완료된 설치 기능 재구현·시스템 Python/PATH 변경",
+    "contract": "./setup → ./dev → ./check. 실제 GET /api/health 200 {\"status\":\"ok\"}; 본인 DB 장애 시 503 {\"detail\":\"database_unavailable\"}. Node/Python은 버전 파일 기준이며 setup만 필요한 런타임을 설치한다.",
+    "checks": [
+      "다른 물리적 Mac의 아키텍처·uv·Python·Node 버전과 실행 결과 기록",
+      "setup 재실행 후 기존 .env와 DB 데이터 보존",
+      "dev/check가 런타임을 다운로드하지 않고 필요한 경우 setup을 안내"
+    ],
+    "work": {
+      "인프라/데이터": "다른 팀원과 새 클론 실행·오류 복구 확인",
+      "웹": "브라우저 health 성공·재시도 확인",
+      "API": "실제 DB health 성공·장애 응답 확인"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T03",
+    "phase": "P0",
+    "title": "지정 GPU에서 실제 모델의 질문과 설명 생성을 확인한다",
+    "lead": "C",
+    "deps": [],
+    "refs": [
+      "docs/operations/README.md",
+      "docs/intake/intake-question-contract.json",
+      "docs/recommendation/README.md"
+    ],
+    "scope": "정확한 모델 artifact·런타임 확정과 L4 기본 실행, 구조화 출력 지원 확인",
+    "exclude": "최종 품질 합격 판정·모델 교체의 임의 확정",
+    "contract": "질문 계약의 generation_context_example → QuestionDraft; 합성 후보 ID·근거를 준 설명 입력 → 허용 ID만 사용한 출력. 실제 모델 ID·파일 해시·양자화·런타임·프롬프트 버전 기록.",
+    "checks": [
+      "실제 L4에서 모델 로딩과 최소 질문·설명 생성 성공 또는 구체적 차단 사유 기록",
+      "JSON Schema 지원 범위·메모리·지연 측정",
+      "기존 Python 3.14 API와 모델 런타임의 호환/분리 방식을 합의"
+    ],
+    "work": {
+      "AI": "실제 모델 호출·JSON 검증·버전 고정",
+      "인프라/데이터": "GPU 접근·모델 상주·환경 재현"
+    },
+    "gpu": "필수 — 실제 L4 장치·모델·런타임·원 출력 검증 결과 기록",
+    "decisions": [
+      "D03"
+    ]
+  },
+  {
+    "id": "T04",
+    "phase": "P0",
+    "title": "운영자가 사용 가능한 교육 원천 배치와 출처를 준비한다",
+    "lead": "D",
+    "deps": [],
+    "refs": [
+      "docs/data/README.md",
+      "docs/data/ingestion-contract.json"
+    ],
+    "scope": "K-MOOC·고용24·NCS의 실제 공개 사용 가능 자료와 manifest, 형식·결측·수집 시각·사용 범위 확인",
+    "exclude": "새 원천 추가·모든 원천의 실시간 API 수집 가정·개인 사용자 자료 수집",
+    "contract": "K-MOOC response.items/results, 고용24 records, NCS datasets[].rows. manifest의 source_system/schema_version/adapter_version/sha256/batch_mode/coverage/collected_at를 제공한다.",
+    "checks": [
+      "실제 배열 길이와 형식·결측·원 URL·수집 방법 확인",
+      "사용 범위와 재배포 가능 여부를 기록하고 원본·개인정보를 공개 이슈에 붙이지 않는다",
+      "합성 fixture와 실제 원천 배치 위치를 구분해 후속 adapter 개발자가 접근 가능"
+    ],
+    "work": {
+      "인프라/데이터": "원천 배치·manifest·출처 검토",
+      "AI": "내용·근거·NCS 연결에 필요한 필드 확인"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T05",
+    "phase": "P1",
+    "title": "사용자가 Google 로그인 후 본인 세션을 확인하고 로그아웃한다",
+    "lead": "B",
+    "deps": [
+      "T01"
+    ],
+    "refs": [
+      "docs/operations/README.md",
+      "docs/contracts/openapi.yaml",
+      "docs/database/schema.sql"
+    ],
+    "scope": "Google authorization code/OIDC, users·sessions·login states, 웹 로그인·취소·세션 종료",
+    "exclude": "Drive/Gmail 권한·Google 토큰 장기 저장",
+    "contract": "GET /api/auth/google/start → 302; callback 성공 → /onboarding, 취소 → /login?error=oauth_cancelled. GET /api/auth/me → AuthSession; POST logout → 204. 비로그인 개인 API는 401, CSRF 불일치는 403.",
+    "checks": [
+      "state·nonce·브라우저 바인딩·만료·일회성과 ID token 서명/iss/aud/exp/nonce 검증",
+      "실제 OAuth 로그인·취소·로그아웃을 같은 origin에서 확인",
+      "google_sub 식별, HttpOnly/SameSite·운영 Secure 쿠키, 토큰 로그 비노출"
+    ],
+    "work": {
+      "웹": "로그인·콜백·취소·세션 만료 화면",
+      "API": "인증 라우트·쿠키·CSRF·소유권 의존성·ORM/migration",
+      "인프라/데이터": "OAuth redirect URI·서버 환경 설정"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T06",
+    "phase": "P1",
+    "title": "사용자가 입력 초안을 저장하고 중단 후 이어간다",
+    "lead": "B",
+    "deps": [
+      "T01",
+      "T05"
+    ],
+    "refs": [
+      "docs/intake/README.md",
+      "docs/contracts/openapi.yaml",
+      "docs/database/schema.sql"
+    ],
+    "scope": "프로필 생성·조회·전체 answers 수정·revision·완료 정책·초안 재진입",
+    "exclude": "모델 질문 생성·교육 추천 실행",
+    "contract": "POST /api/profiles → 201 Profile. PATCH /api/profiles/{id} {expected_revision:0,answers:{entry_intent:\"explore\"}} → 200 revision=1. 오래된 revision은 409. 재로그인 시 현재 초안을 찾는 방식은 D06에서 확정한다.",
+    "checks": [
+      "본인 초안만 저장·조회하고 타인 접근 거부",
+      "미정/N/A/미응답과 조건부 필수 슬롯을 구분",
+      "동시 수정 시 최신 입력 유지, 자료 원본 자동 삭제 금지",
+      "테스트 DB에 migration 적용 후 저장·재조회"
+    ],
+    "work": {
+      "웹": "초안 재진입·저장 실패·409 복구",
+      "API": "profiles·intake policy·revision·소유권·ORM/migration"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": [
+      "D02",
+      "D06"
+    ]
+  },
+  {
+    "id": "T07",
+    "phase": "P1",
+    "title": "사용자가 긴 작업의 상태를 확인하고 중단 후 복구한다",
+    "lead": "B",
+    "deps": [
+      "T01",
+      "T03",
+      "T06"
+    ],
+    "refs": [
+      "docs/operations/README.md",
+      "docs/contracts/openapi.yaml",
+      "docs/database/schema.sql"
+    ],
+    "scope": "jobs·lease·상태 조회·Worker 회복·공유 GPU 슬롯·재시도/취소/대체 상태",
+    "exclude": "개별 질문·추출·추천 알고리즘 구현",
+    "contract": "GET /api/jobs/{id} → Job. status는 queued/running/succeeded/failed/superseded/cancelled; phase=completed와 status=succeeded를 구분. 성공 result는 kind별 ID만 반환하고 추천 완료 전 후보는 노출하지 않는다.",
+    "checks": [
+      "Worker 종료·lease 만료 후 중복 결과 없이 회복",
+      "긴 모델/OCR/fetch 동안 DB 트랜잭션을 유지하지 않음",
+      "질문 우선 처리와 추천 작업 기아 방지·공유 GPU 동시성 검증",
+      "소유권·멱등·실패 재시도 규칙을 확정하고 검증"
+    ],
+    "work": {
+      "API": "jobs 저장·소유권·상태 전이·lease",
+      "인프라/데이터": "Worker 실행·재시작·GPU 슬롯 관리",
+      "웹": "실제 phase 기반 대기·실패·재시도 UI",
+      "AI": "작업 kind별 호출·취소 경계"
+    },
+    "gpu": "공유 GPU 동시성·대기 검증 필요; 상태 전이 단위 검사는 목과 별도 기록",
+    "decisions": [
+      "D05"
+    ]
+  },
+  {
+    "id": "T08",
+    "phase": "P1",
+    "title": "개발자가 모든 PR에서 필수 CI 검사 결과를 확인한다",
+    "lead": "D",
+    "deps": [],
+    "refs": [
+      "README.md",
+      "docs/development.md",
+      "docs/planning/baseline.md"
+    ],
+    "scope": "GitHub Actions CI, 고정 런타임·잠금 설치, 기존 검사 재사용, DB 검증 경로와 필수 check 설정",
+    "exclude": "자동 배포·자동 Approve·PAT 공유·실제 GPU 검증 대체",
+    "contract": "PR에서 TS/ESLint/Prettier/Vitest/Ruff/API·scripts unittest/Vite build 수행. Node/Python은 버전 파일을 사용. Linux runner에는 정확한 Node/npm을 먼저 준비해 macOS 캐시 다운로드에 의존하지 않는다.",
+    "checks": [
+      "실제 PR에서 전체 CI 성공과 의도적 검사 실패가 구분됨",
+      "DB migration·실제 health 검증을 단위 목 결과와 구분",
+      "실제 PR 성공 후 정확한 check 이름을 필수 검사로 지정하고 증거 기록",
+      "작성자 외 xifoxy-ru 또는 zxcv718 사람 승인 규칙 유지; 자동 배포·자동 승인 없음"
+    ],
+    "work": {
+      "인프라/데이터": "workflow·런타임·캐시·필수 check 설정 검증",
+      "웹": "웹 검사와 빌드",
+      "API": "Python·DB 검사"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T09",
+    "phase": "P2A",
+    "title": "사용자가 선택으로 시작해 실제 Gemma의 맞춤 질문에 답한다",
+    "lead": "C",
+    "deps": [
+      "T01",
+      "T03",
+      "T06",
+      "T07"
+    ],
+    "refs": [
+      "docs/intake/README.md",
+      "docs/intake/intake-question-contract.json",
+      "docs/contracts/openapi.yaml",
+      "docs/product/wireframe.html"
+    ],
+    "scope": "첫 질문·다음 질문 생성, 선택지 바인딩·원자적 답변, 미정·온라인·초보 분기, 대기/fallback",
+    "exclude": "채팅 UI 전환·고정 3문항 종료·제출 전 교육 표시",
+    "contract": "POST questions {expected_revision:0}+Idempotency-Key → 202 JobAccepted 또는 200 IntakeState. GET question → public IntakeQuestion. POST answer {expected_revision:0,selected_option_id:<반환 UUID>} → 200 Profile revision=1. 서버 저장 patch만 적용.",
+    "checks": [
+      "실제 모델에서 분야·경험이 다르면 질문과 선택지 의미가 달라짐",
+      "미선택 후보를 사실로 저장하지 않음; 임의 option·타인·stale 입력 거부",
+      "중복 클릭 1회 적용·GET/재렌더링에 모델 재호출 없음",
+      "실패 시 기존 답변 보존하고 fallback origin 명시"
+    ],
+    "work": {
+      "웹": "QuestionView·QuestionState·선택 카드",
+      "API": "eligible slots·질문/답변 바인딩·revision 트랜잭션·migration",
+      "AI": "QuestionDraft 생성·구조/의미/중복/근거 검증",
+      "인프라/데이터": "공유 GPU 실행"
+    },
+    "gpu": "필수 — 실제 L4의 질문 생성과 웹→API→모델→선택 완료",
+    "decisions": [
+      "D02",
+      "D03",
+      "D05"
+    ]
+  },
+  {
+    "id": "T10",
+    "phase": "P2A",
+    "title": "사용자가 이전 답변을 수정해도 최신 입력이 보존된다",
+    "lead": "B",
+    "deps": [
+      "T06",
+      "T09"
+    ],
+    "refs": [
+      "docs/intake/README.md",
+      "docs/contracts/openapi.yaml"
+    ],
+    "scope": "뒤로 가기·직접 수정·자료 변경 후 질문 stale 처리, 선택 요약 갱신",
+    "exclude": "원본 자료 자동 삭제·완료 슬롯 무조건 재질문",
+    "contract": "revision=4 질문을 표시한 뒤 프로필이 revision=5로 변경되면 기존 answer(expected_revision=4)는 409. 최신 answers 유지, 다음 질문은 새 context_hash로 요청.",
+    "checks": [
+      "동시 탭·늦게 도착한 질문 job이 최신 프로필을 덮어쓰지 않음",
+      "분야 변경 시 필요한 경험·목표만 재확인하고 자료 보존",
+      "selection_summaries가 수정 전 선택 문구를 현재 사실처럼 노출하지 않음"
+    ],
+    "work": {
+      "웹": "뒤로 가기·수정·409 최신 상태 복구",
+      "API": "질문/job 무효화와 선택 이력 최신성",
+      "AI": "변경된 확인 문맥만 사용"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T11",
+    "phase": "P2A",
+    "title": "사용자가 직접 쓴 답변의 해석 제안을 확인하고 수락한다",
+    "lead": "C",
+    "deps": [
+      "T06",
+      "T07",
+      "T09"
+    ],
+    "refs": [
+      "docs/intake/README.md",
+      "docs/contracts/openapi.yaml"
+    ],
+    "scope": "보조 자유문장·ready 자료 해석, 인용·상충·제안 수락/거절",
+    "exclude": "초기 글쓰기 강요·해석 자동 확정",
+    "contract": "POST interpretations {expected_revision:2,text:\"주말에 온라인으로 배우고 싶어요\",ready_document_ids:[]} → 202. apply의 accepted/rejected ID는 모든 제안을 서로소로 분할. revision/hash 불일치 409, 빈 text와 빈 자료 모두 422.",
+    "checks": [
+      "실제 모델 제안을 수락하기 전 answers 미변경",
+      "주말 제한을 평일 저녁까지 확장하지 않음",
+      "임의 ID/값·타인·변경된 자료 거부, 동일 키 원 응답 보존",
+      "수락 후 revision+1·이전 질문 stale"
+    ],
+    "work": {
+      "웹": "제안 확인·수락·거절·상충 해결",
+      "API": "apply 트랜잭션·소유권·해시·멱등",
+      "AI": "원문 인용이 있는 슬롯 제안 생성"
+    },
+    "gpu": "필수 — 실제 모델 해석·사용자 확인·저장 연동",
+    "decisions": [
+      "D04",
+      "D05"
+    ]
+  },
+  {
+    "id": "T12",
+    "phase": "P2A",
+    "title": "사용자가 파일이나 텍스트 자료를 등록해 추출 근거를 확인한다",
+    "lead": "D",
+    "deps": [
+      "T01",
+      "T06",
+      "T07"
+    ],
+    "refs": [
+      "docs/operations/README.md",
+      "docs/contracts/openapi.yaml",
+      "docs/database/schema.sql"
+    ],
+    "scope": "PDF·DOCX·TXT·PNG/JPG 기본안과 OCR, 텍스트 입력, 비공개 저장·청크·해시·내용 해석",
+    "exclude": "개인 자료를 카탈로그/공용 색인에 적재·지원 형식/한도 임의 확대",
+    "contract": "POST /api/profiles/{id}/documents/files multipart expected_revision/kind/file → 202 DocumentAccepted; texts는 expected_revision/kind/text. 옵션 API의 한도 준수. 크기 초과 413, 미지원 형식 415, 처리 실패는 Document.failed.",
+    "checks": [
+      "합성 PDF(텍스트/스캔)·DOCX·TXT·이미지의 실제 추출과 위치·인용 확인",
+      "MIME/실제 내용 검증·스트리밍 제한·손상/암호화/빈 텍스트 오류",
+      "장문 처리 범위·누락을 표시하고 미처리 자료를 ready로 표시하지 않음",
+      "등록 시 revision 증가, 서버 비공개 저장, DB 저장·재조회"
+    ],
+    "work": {
+      "웹": "파일/텍스트 등록·진행·미리보기",
+      "API": "업로드 검증·DocumentAccepted·자료 소유권·migration",
+      "AI": "청크별 정보 추출·근거 병합",
+      "인프라/데이터": "파서·OCR·저장소·처리 한도"
+    },
+    "gpu": "실제 추출+Gemma 분석 연동 필요; OCR CPU/GPU와 모델 GPU를 구분",
+    "decisions": [
+      "D09",
+      "D11"
+    ]
+  },
+  {
+    "id": "T13",
+    "phase": "P2A",
+    "title": "사용자가 공개 링크의 본문을 읽고 실패하면 대체 입력한다",
+    "lead": "D",
+    "deps": [
+      "T06",
+      "T07",
+      "T12"
+    ],
+    "refs": [
+      "docs/operations/README.md",
+      "docs/contracts/openapi.yaml"
+    ],
+    "scope": "공개 HTTP(S) HTML/지원 문서 수집, 필요 범위의 동적 본문, 안전 검증·파일/텍스트 대체",
+    "exclude": "비공개 Drive 접근·로그인벽 우회·URL 문자열만 모델에 전달",
+    "contract": "POST documents/links {expected_revision:3,kind:\"job_description\",url:<공개 합성 테스트 URL>} → 202. DNS·실제 연결 IP·redirect/재시도마다 사설/loopback/link-local/metadata 차단. 차단·timeout은 실패 자료로 표시.",
+    "checks": [
+      "테스트 HTTP 서버의 공개 본문을 실제 추출해 위치·해시 보존",
+      "사설 IP·redirect 우회·크기/시간 제한 초과·로그인벽 테스트",
+      "실패 사유·대체 입력을 표시하고 다른 답변 보존"
+    ],
+    "work": {
+      "웹": "링크 등록·실패 사유·대체 입력",
+      "API": "링크 작업·소유권·실패 응답",
+      "인프라/데이터": "수집기·IP 고정·redirect 검증·추출"
+    },
+    "gpu": "수집 자체 N/A; 전체 자료 의미 추출은 T12의 실제 모델 경로로 검증",
+    "decisions": [
+      "D09"
+    ]
+  },
+  {
+    "id": "T14",
+    "phase": "P2A",
+    "title": "사용자가 자료 해석을 확인하고 재시도하거나 삭제한다",
+    "lead": "B",
+    "deps": [
+      "T11",
+      "T12",
+      "T13"
+    ],
+    "refs": [
+      "docs/contracts/openapi.yaml",
+      "docs/operations/README.md",
+      "docs/planning/decisions.md"
+    ],
+    "scope": "review-items 확인·라벨 수정, 실패 자료 재시도·삭제, 파생 근거 정리·결과 stale",
+    "exclude": "원문 인용/서버 ID 클라이언트 수정·세션 전체 삭제",
+    "contract": "PATCH review-items {expected_revision,items:[{id:<서버ID>,label:\"Python 기초\",state:\"have\"}]} → 200 Profile. DELETE /api/documents/{id}?expected_revision=N → 204. POST retry {expected_revision:N} → 202.",
+    "checks": [
+      "자료 원문·청크·파생 인용 삭제 정책을 D11로 확정·검증",
+      "자료 변경이 질문·해석·추천의 오래된 상태에 반영",
+      "미처리/실패 자료가 남으면 제출 차단; 재시도/삭제 후 진행",
+      "본인 자료만 처리하며 다른 답변·자료 보존"
+    ],
+    "work": {
+      "웹": "원문 대조·확인 상태·재시도/삭제",
+      "API": "review-items·자료 삭제·revision·파생 상태 정리",
+      "인프라/데이터": "파일·청크 정리·작업 취소"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": [
+      "D07",
+      "D11"
+    ]
+  },
+  {
+    "id": "T15",
+    "phase": "P2B",
+    "title": "운영자가 K-MOOC 목록과 상세를 중복 없이 적재한다",
+    "lead": "D",
+    "deps": [
+      "T04"
+    ],
+    "refs": [
+      "docs/data/README.md",
+      "docs/data/ingestion-contract.json",
+      "docs/database/schema.sql"
+    ],
+    "scope": "K-MOOC adapter·출처·목록/상세 id 결합·과정/회차/근거 저장",
+    "exclude": "시간 단위 추정·홍보 이미지를 커리큘럼으로 간주",
+    "contract": "response.items 목록과 response.results 상세를 id로 결합. 같은 id의 목록·상세는 과정 1개로 정규화. 고립 상세는 격리, HTML 원문과 안전 추출 근거 구분.",
+    "checks": [
+      "합성 중복·고립 상세·결측·추가 필드 fixture 검증",
+      "enrollment/study/playtime 원문·단위 검증 전 임의 변환 금지",
+      "ORM/migration 적용과 정규화·출처 재조회"
+    ],
+    "work": {
+      "인프라/데이터": "K-MOOC adapter·정규화·출처·품질 보고",
+      "API": "모델/migration 연결 순서 검토"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T16",
+    "phase": "P2B",
+    "title": "운영자가 고용24 과정과 회차의 결측을 보존해 적재한다",
+    "lead": "D",
+    "deps": [
+      "T04"
+    ],
+    "refs": [
+      "docs/data/README.md",
+      "docs/data/ingestion-contract.json",
+      "docs/database/schema.sql"
+    ],
+    "scope": "고용24 records adapter·과정/회차·금액·일정·자격·fingerprint",
+    "exclude": "행 번호를 전역 ID로 사용·개인 부담금 추정·충돌 회차 자동 병합",
+    "contract": "records[].course_name/provider_name/region/start_date/end_date/training_hours/tuition_krw/listed_self_pay_krw/curriculum/eligibility. null·0·N/A 구분, 실제 ID 없으면 내부 UUID와 보수적 fingerprint.",
+    "checks": [
+      "행 순서 변경을 다른 과정으로 오인하지 않고 충돌 회차 격리/보고",
+      "표시 자비부담금을 개인 최종 가격으로 확정하지 않음",
+      "추가 배치 결측 보완과 DB 저장·재조회"
+    ],
+    "work": {
+      "인프라/데이터": "고용24 adapter·중복 후보·결측 보존",
+      "API": "모델/migration 연결 순서 검토"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T17",
+    "phase": "P2B",
+    "title": "운영자가 NCS를 교육 후보와 구분한 학습 참조로 적재한다",
+    "lead": "D",
+    "deps": [
+      "T04"
+    ],
+    "refs": [
+      "docs/data/README.md",
+      "docs/data/ingestion-contract.json",
+      "docs/database/schema.sql"
+    ],
+    "scope": "datasets[].rows 학습모듈·훈련기준 구분·키워드/분류/출처 정규화",
+    "exclude": "NCS로 모집 과정·기관·회차·수강료 생성·가짜 표준 코드 생성",
+    "contract": "학습모듈명/분류(소>세)/주요 키워드와 능력단위(과정)/수준/훈련시간/훈련방법/시설을 skill_references로 매핑. 동일 이름만으로 모듈·기준 병합 금지.",
+    "checks": [
+      "NCS 적재 전후 courses/offerings 증가 없음",
+      "실제 코드 없는 자료에 국가 표준 코드 생성 없음",
+      "참조 수준/시간을 사용자 능력/실제 교육 일정으로 전용하지 않음"
+    ],
+    "work": {
+      "인프라/데이터": "NCS adapter·참조·출처 저장",
+      "AI": "참조 ID·학습 용어 계약 확인"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T18",
+    "phase": "P2B",
+    "title": "운영자가 추가 배치를 활성화해도 기존 추천 근거가 유지된다",
+    "lead": "D",
+    "deps": [
+      "T15",
+      "T16",
+      "T17"
+    ],
+    "refs": [
+      "docs/data/README.md",
+      "docs/data/ingestion-contract.json",
+      "docs/database/schema.sql"
+    ],
+    "scope": "manifest 검증·배치 격리·partial/full coverage·draft 스냅샷·원자적 활성화",
+    "exclude": "부분 배치에 없는 과정 삭제·수집 시각을 복사 시각으로 변경",
+    "contract": "partial은 기존 데이터+신규 배치로 draft 구성; full도 명시 coverage 내 교체. 빈/깨진 필수 배열은 격리하고 active 유지. 새 버전의 근거·링크·색인 준비 후 짧은 트랜잭션으로 활성화.",
+    "checks": [
+      "실패·빈 배치로 활성 카탈로그가 비워지지 않음",
+      "이월 source hash/collected_at와 이전 ID 매핑 보존",
+      "추천 1회가 카탈로그 한 버전만 참조, 이전 추천 재조회 가능"
+    ],
+    "work": {
+      "인프라/데이터": "배치 실행·검증 보고·스냅샷·색인 활성화",
+      "API": "원자적 pointer 교체·버전 참조 검증"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T19",
+    "phase": "P2B",
+    "title": "사용자 목표로 활성 카탈로그 전체에서 교육 후보를 찾는다",
+    "lead": "D",
+    "deps": [
+      "T01",
+      "T15",
+      "T16",
+      "T17",
+      "T18"
+    ],
+    "refs": [
+      "docs/recommendation/README.md",
+      "docs/recommendation/recommendation-config.json",
+      "docs/database/schema.sql"
+    ],
+    "scope": "한국어/영문 용어 정규화·PostgreSQL FTS·NCS 연결·RRF·안정적 중복 제거",
+    "exclude": "별도 임베딩/벡터 DB 필수 도입·표본 20/10행에 검색 고정·제약 자동 완화",
+    "contract": "title_terms/body_terms/ncs_links 순위를 RRF sum(1/(k+rank))로 결합. 초기 제안 k=60·채널100·평가30. 없는 채널 기여 0, 동일 점수는 안정적 ID 순. 입력은 parameterized query.",
+    "checks": [
+      "표본보다 큰 합성 카탈로그에서 전체 활성 색인 검색",
+      "한 채널 비어도 다른 채널 사용, 전체 없음의 이유 구분",
+      "suggested NCS 링크를 실제 커리큘럼 근거로 승격하지 않음",
+      "검색 평가셋으로 누락·오탐과 사전 버전 기록"
+    ],
+    "work": {
+      "인프라/데이터": "검색·사전·FTS/GIN·RRF·중복",
+      "AI": "목표/학습 필요 질의 계약·근거 있는 확장"
+    },
+    "gpu": "FTS/RRF는 N/A; Gemma 질의 확장을 채택하면 실제 GPU 결과 별도 기록",
+    "decisions": []
+  },
+  {
+    "id": "T20",
+    "phase": "P3",
+    "title": "사용자가 전체 입력을 제출해 근거 있는 실제 교육 추천을 확인한다",
+    "lead": "C",
+    "deps": [
+      "T06",
+      "T07",
+      "T09",
+      "T19"
+    ],
+    "refs": [
+      "docs/recommendation/README.md",
+      "docs/recommendation/recommendation-config.json",
+      "docs/contracts/openapi.yaml",
+      "docs/intake/README.md"
+    ],
+    "scope": "자료 없는 경로부터 전체 확인·submit·S0–S9·결과 UI·빈/미지원/미확인/실패 구분; 자료 경로는 T14 완료 후 연결",
+    "exclude": "제출 전 교육 노출·결과 후 추가 질문·실패를 규칙 추천 성공으로 대체",
+    "contract": "POST submit {expected_revision:N,review_token:<서버 발급>}+Idempotency-Key → 202. 미완료 422, stale/자료 미완료 409. run의 matches/unknown_conditions/empty/unsupported_field와 job.failed를 구분. G=1,P=null,O=.5,F=1일 때 lower=.65,upper=.90,coverage=.75이며 확률 표시 금지.",
+    "checks": [
+      "S0에 revision·자료 해시·선택 문구·catalog/config/as_of 고정",
+      "S1/S2는 자기보고·목표·JD·NCS를 구분; 문서 부재를 능력 부족으로 해석하지 않음",
+      "S4 pass/fail/unknown/N/A 보존; 확인된 fail 제외, 조건 자동 완화 금지",
+      "S5/S6 평가·서버 정렬·기관 편중·회차 중복·안정적 tie-break 검증",
+      "S7/S8 ID·인용·수치·조건 검증, 제한된 수정 후 실패는 failed",
+      "S9 원자 저장 후에만 교육 표시; 실제 웹→API→GPU→결과 확인"
+    ],
+    "work": {
+      "웹": "전체 확인·제출·phase·결과 상태·근거 표시",
+      "API": "S0 제출/스냅샷·S4 조건·S6 정렬·S8 검증·S9 저장·조회",
+      "AI": "S1/S2 해석·S5 평가·S7 설명·공통 스키마",
+      "인프라/데이터": "S3 검색 연동·카탈로그·공유 GPU"
+    },
+    "gpu": "필수 — 실제 L4; 0후보 not_needed와 추론 실패를 분리",
+    "decisions": [
+      "D04",
+      "D05",
+      "D07",
+      "D08",
+      "D12"
+    ],
+    "completion_deps": [
+      "T14"
+    ]
+  },
+  {
+    "id": "T21",
+    "phase": "P3",
+    "title": "사용자가 추천 교육의 상세와 출처를 확인한다",
+    "lead": "A",
+    "deps": [
+      "T18",
+      "T20"
+    ],
+    "refs": [
+      "docs/contracts/openapi.yaml",
+      "docs/recommendation/README.md"
+    ],
+    "scope": "CourseDetail·회차·가격/일정/자격·출처·미확인 정보 화면",
+    "exclude": "교육 원문에 없는 사실 생성·내부 점수를 사용자 능력으로 표시",
+    "contract": "GET /api/courses/{course_id} → 200 CourseDetail, 없는 ID 404. details는 description/prerequisites/outcomes/offerings/evidence/missing_fields와 null을 보존.",
+    "checks": [
+      "추천된 course/회차의 동일 카탈로그 근거를 확인",
+      "null 금액을 무료로, online을 비동기로 표시하지 않음",
+      "출처 URL·확인 시각·미확인 조건·가상 데이터 표시 보존"
+    ],
+    "work": {
+      "웹": "상세·출처·미확인 상태",
+      "API": "과정 상세·회차·근거 응답"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": []
+  },
+  {
+    "id": "T22",
+    "phase": "P3",
+    "title": "사용자가 선택한 교육을 같은 기준으로 비교한다",
+    "lead": "A",
+    "deps": [
+      "T21"
+    ],
+    "refs": [
+      "docs/contracts/openapi.yaml",
+      "docs/product/README.md"
+    ],
+    "scope": "선택 교육의 방식·일정·가격·선수지식·근거 비교",
+    "exclude": "추측으로 결측 채우기·내부 점수를 취업 확률로 표시",
+    "contract": "GET /api/courses/compare?ids=<id1>,<id2> → 계약의 상세 목록. 비교 개수 제한·중복/없는 ID 처리는 OpenAPI와 D13 확정 예시를 적용한다. 정적 /compare 라우트가 /{course_id}에 가려지지 않도록 검증.",
+    "checks": [
+      "서로 다른 원천의 동일 비교 항목·단위 일치",
+      "없는 정보 unknown 유지, 입력 오류·없음 응답 검증",
+      "비교 해제·재선택과 직접 URL 접근 검증"
+    ],
+    "work": {
+      "웹": "비교 선택·표·빈 상태",
+      "API": "compare 입력 검증·라우트 우선순위·응답"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": [
+      "D13"
+    ]
+  },
+  {
+    "id": "T23",
+    "phase": "P3",
+    "title": "사용자가 관심 교육을 저장하고 다시 조회하거나 해제한다",
+    "lead": "A",
+    "deps": [
+      "T05",
+      "T18",
+      "T21"
+    ],
+    "refs": [
+      "docs/contracts/openapi.yaml",
+      "docs/database/schema.sql",
+      "docs/planning/decisions.md"
+    ],
+    "scope": "계정별 관심 저장·해제·목록·카탈로그 교체 정책",
+    "exclude": "다른 사용자 관심 목록 노출·갱신 시 중복 과정 자동 추정",
+    "contract": "PUT /api/me/saved-courses/{course_id} → 204; GET /api/me/saved-courses → CoursePage; DELETE → 204. 같은 과정 반복 저장의 멱등성과 catalog_version 전환 시 정책을 D10으로 확정.",
+    "checks": [
+      "반복 저장 중복 없음·해제 후 조회 반영",
+      "다른 계정과 분리·비로그인/CSRF 검증",
+      "카탈로그 교체 뒤 관심 과정의 과거/현재 의미와 페이지 cursor 검증"
+    ],
+    "work": {
+      "웹": "관심 버튼·목록·재진입",
+      "API": "saved_courses·목록·소유권·멱등",
+      "인프라/데이터": "카탈로그 버전별 과정 정체성 검토"
+    },
+    "gpu": "N/A — 모델 실행을 포함하지 않음",
+    "decisions": [
+      "D10"
+    ]
+  },
+  {
+    "id": "T24",
+    "phase": "P4",
+    "title": "사용자가 지정 서버의 HTTPS 주소에서 서비스를 이용한다",
+    "lead": "D",
+    "deps": [
+      "T05",
+      "T07",
+      "T08",
+      "T20"
+    ],
+    "refs": [
+      "docs/operations/README.md",
+      "docs/development.md",
+      "docs/operations/architecture.svg"
+    ],
+    "scope": "단일 GPU 서버 웹·API·DB·파일·Worker·Gemma, Nginx·HTTPS·수동 배포/복구 절차",
+    "exclude": "자동 배포 CD·공개 DB/GPU endpoint·VITE_ 비밀값",
+    "contract": "Nginx는 /api를 제거하지 않음. SPA 경로는 index.html fallback, 없는 API/JS/CSS는 각각 404. 운영 OAuth callback과 PUBLIC_ORIGIN은 같은 HTTPS origin.",
+    "checks": [
+      "수동 배포 후 실제 health·로그인·질문·추천 성공",
+      "SPA 새로고침·없는 API·없는 자산·비공개 파일 접근 검증",
+      "프로세스 재시작·migration 적용·백업/복구 절차와 비밀 주입 확인",
+      "자동 배포·자동 승인 workflow 없음"
+    ],
+    "work": {
+      "인프라/데이터": "서버·프록시·TLS·비공개 저장·수동 배포/복구",
+      "API": "쿠키·health·migration·Worker 점검",
+      "웹": "정적 빌드·경로·API 통합",
+      "AI": "모델 상주·장치 버전"
+    },
+    "gpu": "필수 — 실제 배포 서버의 모델 실행까지 확인",
+    "decisions": []
+  },
+  {
+    "id": "T25",
+    "phase": "P4",
+    "title": "사용자가 자료 유무와 오류 상황에서도 전체 흐름을 완료한다",
+    "lead": "B",
+    "deps": [
+      "T10",
+      "T11",
+      "T14",
+      "T20",
+      "T21",
+      "T22",
+      "T23",
+      "T24"
+    ],
+    "refs": [
+      "docs/validation/README.md",
+      "docs/product/README.md",
+      "docs/contracts/openapi.yaml"
+    ],
+    "scope": "로그인→입력→자료→최종 추천→상세/비교/저장 E2E, 오류·소유권·복구 교차 검증",
+    "exclude": "목 결과를 실제 모델/OAuth/GPU 성공으로 보고",
+    "contract": "공통 합성 샘플 A: 자료 없음·미정·온라인. B: 합성 이력서+공개 테스트 JD·주말 조건. 실패: stale 409·파일 실패·모델 실패·다른 사용자 ID. 예상 상태는 각 기능 이슈와 OpenAPI 사용.",
+    "checks": [
+      "작성자 외 팀원이 실제 환경에서 A/B 전체 경로 재현",
+      "미선택 사실 저장·제출 전 추천·결과 뒤 추가 질문 없음",
+      "DB/Worker/모델 실패 후 입력 보존·재시도·자료 삭제 검증",
+      "PR/이슈에 환경·명령·예상/실제·미검증 항목 기록"
+    ],
+    "work": {
+      "웹": "화면·사용자 재현",
+      "API": "소유권·DB·트랜잭션 검증",
+      "AI": "실제 추론·근거 검증",
+      "인프라/데이터": "환경·장애·복구 재현"
+    },
+    "gpu": "필수 — 실제 GPU 전체 흐름, 목·CPU와 별도 증거",
+    "decisions": []
+  },
+  {
+    "id": "T26",
+    "phase": "P4",
+    "title": "팀원이 실제 L4에서 질문과 추천의 품질·대기시간을 판정한다",
+    "lead": "C",
+    "deps": [
+      "T03",
+      "T09",
+      "T19",
+      "T20",
+      "T24"
+    ],
+    "refs": [
+      "docs/validation/README.md",
+      "docs/recommendation/recommendation-config.json",
+      "docs/operations/README.md"
+    ],
+    "scope": "평가셋·합격선 합의, 질문/검색/추천 품질·동시 사용자 대기·GPU 부하·공유 큐 공정성",
+    "exclude": "미측정 성능 보장·평가 후 유리한 기준으로 임의 변경",
+    "contract": "실험 전에 D12로 평가셋·실패 분류·합격선 확정. 장치/모델/양자화/프롬프트/정책/카탈로그/설정 버전 고정. 질문 JSON 유효율·의미 일치·중복·추천 근거·p50/p95·큐 대기 측정.",
+    "checks": [
+      "실제 L4에서 초기 동시성1 기준과 사용자 수별 측정",
+      "짧은 질문 부하에서도 추천 작업 기아 여부 확인",
+      "fallback/repair/실패를 성공률에서 구분",
+      "합격/미달과 후속 조치를 원 데이터 집계로 기록"
+    ],
+    "work": {
+      "AI": "평가셋·루브릭·실제 모델 품질",
+      "인프라/데이터": "부하·큐·GPU 메모리·시간 측정",
+      "웹": "체감 대기·오류 화면 교차 확인",
+      "API": "단계별 시간·카운트·버전 기록"
+    },
+    "gpu": "필수 — 실제 L4 장치와 고정 모델 버전",
+    "decisions": [
+      "D12"
+    ]
+  }
+]

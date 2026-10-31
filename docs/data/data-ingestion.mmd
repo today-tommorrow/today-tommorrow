@@ -1,0 +1,13 @@
+flowchart TD
+  K["K-MOOC 목록·상세"] --> RAW["manifest·원본 해시"]
+  W["고용24 records"] --> RAW
+  N["NCS datasets rows"] --> RAW
+  RAW --> V{"스키마·출처 유효?"}
+  V -->|아니오| Q["격리·오류 보고"]
+  V -->|예| NORMAL["정규화·결측·중복 식별"]
+  NORMAL --> C["교육·회차"]
+  NORMAL --> SK["NCS 참조"]
+  C --> IDX["근거·용어 연결·색인"]
+  SK --> IDX
+  IDX --> CHECK["건수·관계·근거 품질 검사"]
+  CHECK --> ACTIVE["active 버전 원자적 교체"]

@@ -1,0 +1,354 @@
+{
+  "contract_version": "intake-0.8.0",
+  "status": "implementation_contract_not_live_inference",
+  "model_family": "local Gemma 4 12B Q4",
+  "generation_context_example": {
+    "profile_revision": 4,
+    "confirmed_answers": {
+      "field_code": "ai_data",
+      "experience": "basic"
+    },
+    "confirmed_evidence": [
+      {
+        "id": "item-python-basics",
+        "text": "파이썬 기초 문법을 배우고 예제를 따라 해봤다",
+        "confirmed": true
+      }
+    ],
+    "eligible_slots": [
+      "learning_goal"
+    ],
+    "allowed_companion_slots": {
+      "learning_goal": [
+        "goal_text"
+      ]
+    },
+    "resolved_unknown_slots": [],
+    "previous_question_signatures": [
+      "experience:ai_data"
+    ],
+    "forbidden_outputs": [
+      "course_candidates",
+      "completion_decision",
+      "html",
+      "javascript",
+      "arbitrary_url"
+    ]
+  },
+  "model_output_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "schema_version": {
+        "type": "string",
+        "const": "1.0"
+      },
+      "target_slot": {
+        "type": "string",
+        "enum": [
+          "entry_intent",
+          "field_code",
+          "custom_field",
+          "experience",
+          "previous_gap",
+          "learning_goal",
+          "availability",
+          "delivery_mode",
+          "commute_region",
+          "budget_status",
+          "budget_krw",
+          "start_timing",
+          "document_decision",
+          "goal_text",
+          "constraints_text",
+          "interest_activity"
+        ]
+      },
+      "acknowledgement": {
+        "type": "string",
+        "maxLength": 180
+      },
+      "question": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 180
+      },
+      "helper_text": {
+        "type": "string",
+        "maxLength": 240
+      },
+      "selection_mode": {
+        "type": "string",
+        "const": "single"
+      },
+      "options": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,31}$"
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 80
+            },
+            "description": {
+              "type": "string",
+              "maxLength": 160
+            },
+            "answer_patch": {
+              "type": "object",
+              "properties": {
+                "entry_intent": {
+                  "type": "string",
+                  "enum": [
+                    "goal_known",
+                    "explore",
+                    "advance"
+                  ]
+                },
+                "field_code": {
+                  "type": "string",
+                  "enum": [
+                    "ai_data",
+                    "software_cloud",
+                    "security_network",
+                    "robotics_manufacturing",
+                    "semiconductor",
+                    "digital_content",
+                    "other",
+                    "undecided"
+                  ]
+                },
+                "custom_field": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "experience": {
+                  "type": "string",
+                  "enum": [
+                    "beginner",
+                    "basic",
+                    "project",
+                    "work",
+                    "unknown"
+                  ]
+                },
+                "previous_gap": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "application",
+                        "depth",
+                        "collaboration",
+                        "unknown"
+                      ]
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "learning_goal": {
+                  "type": "string",
+                  "enum": [
+                    "foundation",
+                    "portfolio",
+                    "collaboration",
+                    "unknown"
+                  ]
+                },
+                "availability": {
+                  "type": "string",
+                  "enum": [
+                    "weekday_day",
+                    "evening_weekend",
+                    "flexible",
+                    "unknown"
+                  ]
+                },
+                "delivery_mode": {
+                  "type": "string",
+                  "enum": [
+                    "online",
+                    "offline",
+                    "hybrid",
+                    "any",
+                    "unknown"
+                  ]
+                },
+                "commute_region": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "budget_status": {
+                  "type": "string",
+                  "enum": [
+                    "amount",
+                    "no_limit",
+                    "unknown"
+                  ]
+                },
+                "budget_krw": {
+                  "anyOf": [
+                    {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "start_timing": {
+                  "type": "string",
+                  "enum": [
+                    "soon",
+                    "one_to_three_months",
+                    "browse",
+                    "unknown"
+                  ]
+                },
+                "document_decision": {
+                  "type": "string",
+                  "enum": [
+                    "provided",
+                    "none"
+                  ]
+                },
+                "goal_text": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "constraints_text": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 2000
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "interest_activity": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [],
+              "additionalProperties": false,
+              "description": "내부 모델 계약. primary target_slot과 서버가 허용한 companion slot만 포함. 선택 문구에 드러나지 않은 값, 이미 확정된 값, 서버 상태 필드 수정 금지. 클라이언트는 이 patch를 제출하지 않는다."
+            }
+          },
+          "required": [
+            "key",
+            "label",
+            "description",
+            "answer_patch"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 2,
+        "maxItems": 5
+      }
+    },
+    "required": [
+      "schema_version",
+      "target_slot",
+      "acknowledgement",
+      "question",
+      "helper_text",
+      "selection_mode",
+      "options"
+    ],
+    "additionalProperties": false,
+    "description": "local Gemma의 내부 구조화 출력. 프롬프트와 JSON schema를 함께 전달. 서버 검증 전 공개하거나 답변에 적용하지 않는다. 2~5 선택지/단일 선택은 초기 구현안이며 총 질문 수 제한이 아니다."
+  },
+  "model_output_example": {
+    "schema_version": "1.0",
+    "target_slot": "learning_goal",
+    "acknowledgement": "파이썬 기초와 예제 경험을 알려주셨어요.",
+    "question": "배운 내용을 활용해서, 이번에는 무엇을 완성하고 싶나요?",
+    "helper_text": "마음에 가까운 결과를 골라주세요.",
+    "selection_mode": "single",
+    "options": [
+      {
+        "key": "analysis_project",
+        "label": "직접 고른 데이터로 분석 결과물 만들기",
+        "description": "질문을 정하고 분석 결과를 설명하는 경험",
+        "answer_patch": {
+          "learning_goal": "portfolio",
+          "goal_text": "직접 고른 데이터로 분석 결과물을 만들고 싶다"
+        }
+      },
+      {
+        "key": "foundation",
+        "label": "예제를 보지 않고 기초 코드를 작성하기",
+        "description": "아직 헷갈리는 기초를 내 것으로 정리",
+        "answer_patch": {
+          "learning_goal": "foundation",
+          "goal_text": "예제 없이 기초 코드를 작성하고 싶다"
+        }
+      },
+      {
+        "key": "team_project",
+        "label": "다른 사람과 역할을 나눠 프로젝트 완성하기",
+        "description": "코드와 결과를 함께 정리하는 경험",
+        "answer_patch": {
+          "learning_goal": "collaboration",
+          "goal_text": "역할을 나눠 데이터 프로젝트를 완성하고 싶다"
+        }
+      }
+    ]
+  },
+  "server_contract": [
+    "Validate schema, enum, bounds, unique option keys, eligible target and allowed companion slots.",
+    "Acknowledgement can cite only confirmed facts; no statement that unread files have been analyzed.",
+    "Every selectable patch must set its target slot to a resolved value, including explicit unknown; reject no-op patches.",
+    "Labels and companion values must express the same choice; use conservative companion extraction and evaluate semantic alignment separately.",
+    "Assign question/option UUIDs only after validation and persist exact option-to-patch binding before rendering.",
+    "Append a server-owned explicit-unknown choice where allowed; direct input remains a separate optional affordance.",
+    "Selecting an option submits only expected_revision and selected_option_id.",
+    "Never accept client-supplied patches or let Gemma mark intake complete.",
+    "Same context reuses a question; stale revision/hash rejects answer with 409.",
+    "On generation failure: retry once as initial proposal; then visibly labelled standard questions may continue input. This never replaces failed recommendation inference."
+  ],
+  "defaults_proposed": {
+    "options_min": 2,
+    "options_max": 5,
+    "selection_mode": "single",
+    "generation_repair_attempts": 1,
+    "gpu_concurrency": 1,
+    "total_question_count": "coverage-based, not fixed at three"
+  }
+}
