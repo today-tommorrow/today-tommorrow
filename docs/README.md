@@ -6,7 +6,7 @@
 
 1. [팀 작업 규칙](../AGENTS.md), [현재 실행·협업 규칙](../README.md), [개발 가이드](development.md).
 2. [최신 코드와 명세의 차이](planning/baseline.md), [제품 흐름](product/README.md).
-3. 담당 이슈의 [Phase·소유 영역](planning/phases.md)과 [이슈 목록](planning/issues.md).
+3. 바로 착수할 작업은 [프론트·백엔드 공정도](planning/workflow.md)에서 확인합니다. 담당 이슈의 [Phase·소유 영역](planning/phases.md)과 [이슈 목록](planning/issues.md).
 4. 해당 영역 명세와 [API 계약](contracts/README.md), [결정할 사항](planning/decisions.md).
 5. 수정 전 선행 이슈와 겹치는 파일 담당을 확인하고, 완료 전 [검증 기준](validation/README.md)을 확인합니다.
 

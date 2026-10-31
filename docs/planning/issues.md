@@ -1,6 +1,6 @@
 # 시나리오 이슈 목록
 
-[문서 안내](../README.md) · [Phase](phases.md) · [전체 작업 정의](issue-plan.json)
+[프론트·백엔드 공정도](workflow.md) · [문서 안내](../README.md) · [Phase](phases.md) · [전체 작업 정의](issue-plan.json)
 
 임시 T번호는 추적용이며 실제 브랜치/PR에는 오른쪽 GitHub 이슈 번호를 사용합니다. 계획 단계 체크박스는 구현 완료를 의미하지 않습니다.
 
