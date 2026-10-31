@@ -217,4 +217,3 @@ class AuthHTTPTests(unittest.TestCase):
         response = client.get("/api/auth/google/callback", params={"code": "synthetic-private-code", "state": "synthetic-state"})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(observed, [b""])
-
