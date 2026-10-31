@@ -185,6 +185,49 @@ afterEach(() => {
 })
 
 describe('해석 제안 확인과 수락·거절', () => {
+  it.each(['failure', 'cancel'] as const)(
+    '새 해석 %s 후 중단된 저장 해석을 GET으로 다시 불러온다',
+    async (outcome) => {
+      const oldRead = deferred()
+      const creation = deferred()
+      let reads = 0
+      const fetch = serve((path) => {
+        if (path === lookupPath)
+          return ++reads === 1 ? oldRead.promise : Response.json(interpretation)
+        if (path === `${profilePath}/interpretations`)
+          return outcome === 'failure'
+            ? new Response(null, { status: 503 })
+            : creation.promise
+        throw new Error(`Unexpected ${path}`)
+      })
+      render(<Harness />)
+      await screen.findByText('직접 알려줄게요')
+      draft()
+      fireEvent.click(
+        screen.getByRole('button', { name: '입력과 준비된 자료 해석하기' }),
+      )
+      if (outcome === 'cancel')
+        fireEvent.click(screen.getByRole('button', { name: '대기 중지' }))
+      else await screen.findByRole('alert')
+      const retry = await screen.findByRole('button', {
+        name: '저장된 해석 다시 불러오기',
+      })
+      await waitFor(() => expect(retry.hasAttribute('disabled')).toBe(false))
+      fireEvent.click(retry)
+      await screen.findByText(interpretation.assistant_text)
+      expect(reads).toBe(2)
+      expect(mutations(fetch)).toHaveLength(1)
+      await act(async () => {
+        oldRead.resolve(
+          Response.json({ ...interpretation, assistant_text: '이전 응답' }),
+        )
+        creation.resolve(new Response(null, { status: 503 }))
+      })
+      expect(screen.queryByText('이전 응답')).toBeNull()
+      expect(screen.getByText(interpretation.assistant_text)).toBeTruthy()
+    },
+  )
+
   it('원문·상충·값을 표시하고 모든 제안을 확인한 뒤 ID 분할만 전송한다', async () => {
     const fetch = serve((path) => {
       if (path === lookupPath) return Response.json(interpretation)

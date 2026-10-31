@@ -193,6 +193,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   )
   const [interpretationLoading, setInterpretationLoading] = useState(false)
   const [interpretationError, setInterpretationError] = useState('')
+  const [interpretationInterrupted, setInterpretationInterrupted] =
+    useState(false)
   const [interpretationAttempt, setInterpretationAttempt] = useState(0)
   const interpretationLoad = useRef<AbortController | null>(null)
   const [decisions, setDecisions] = useState<
@@ -416,6 +418,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       interpretationLoad.current?.abort()
       setInterpretationLoading(false)
       setInterpretationError('')
+      setInterpretationInterrupted(false)
       if (
         found.base_revision === latest.current.revision &&
         found.status !== 'applied'
@@ -495,6 +498,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   useEffect(() => {
     const controller = new AbortController()
     interpretationLoad.current = controller
+    setInterpretationInterrupted(false)
     const id = profile.latest_interpretation_id
     setInterpretation(null)
     setDecisions({})
@@ -566,6 +570,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
 
   async function interpret(signal: AbortSignal) {
     interpretationLoad.current?.abort()
+    setInterpretationInterrupted(
+      !!latest.current.latest_interpretation_id && !interpretation,
+    )
     setInterpretationLoading(false)
     setInterpretationError('')
     const accepted = await mutate<JobAccepted>(
@@ -992,11 +999,13 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         {interpretationLoading && (
           <p role="status">저장된 해석을 불러오고 있어요…</p>
         )}
-        {interpretationError && (
+        {(interpretationError || interpretationInterrupted) && (
           <div className="stack">
-            <p role="alert" className="error">
-              {interpretationError}
-            </p>
+            {interpretationError && (
+              <p role="alert" className="error">
+                {interpretationError}
+              </p>
+            )}
             <button
               disabled={busy || interpretationLoading}
               onClick={() => setInterpretationAttempt((value) => value + 1)}
