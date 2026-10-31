@@ -112,6 +112,7 @@ def validate_question(
     allowed = {target} | companion_slots.get(target, set())
     nullable = {"custom_field", "previous_gap", "commute_region", "budget_krw",
                 "goal_text", "constraints_text", "interest_activity"}
+    patches: set[str] = set()
     for option in draft.options:
         patch = option.answer_patch
         if set(patch) - allowed or set(patch) & blocked:
@@ -122,4 +123,20 @@ def validate_question(
             raise QuestionError("unresolved_question_target")
         if any(value is None and key not in nullable for key, value in patch.items()):
             raise QuestionError("invalid_question_patch")
+        budget_status = patch.get("budget_status")
+        if budget_status is not None:
+            if patch.get("budget_krw") is not None and budget_status != "amount":
+                raise QuestionError("inconsistent_budget_patch")
+            if (budget_status == "amount" and "budget_krw" in allowed - blocked
+                    and patch.get("budget_krw") is None):
+                raise QuestionError("missing_budget_amount")
+        # A null cap does not distinguish two choices with no budget amount.
+        # Keep the original patch: nulls in other slots can explicitly clear data.
+        comparison_patch = patch
+        if budget_status in {"no_limit", "unknown"} and patch.get("budget_krw") is None:
+            comparison_patch = {key: value for key, value in patch.items() if key != "budget_krw"}
+        encoded = json.dumps(comparison_patch, sort_keys=True, ensure_ascii=False)
+        if encoded in patches:
+            raise QuestionError("duplicate_question_patch")
+        patches.add(encoded)
     return draft

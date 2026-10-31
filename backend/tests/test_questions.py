@@ -7,7 +7,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
 
-from app.ai.gemma import GemmaQuestions
+from app.ai.gemma import PROMPT_VERSION, GemmaQuestions
 from app.ai.questions import QuestionError, validate_question
 
 EXAMPLE = json.loads(Path(__file__).with_name("question_example.json").read_text())
@@ -29,6 +29,17 @@ def validate(value, **kwargs):
     )
     policy.update(kwargs)
     return validate_question(json.dumps(value), **policy)
+
+
+def draft_with_patches(slot, options):
+    draft = copy.deepcopy(EXAMPLE)
+    draft["target_slot"] = slot
+    draft["options"] = [
+        {"key": f"option_{index}", "label": label, "description": "",
+         "answer_patch": answer_patch}
+        for index, (label, answer_patch) in enumerate(options)
+    ]
+    return draft
 
 
 class QuestionValidationTests(unittest.TestCase):
@@ -68,8 +79,11 @@ class QuestionValidationTests(unittest.TestCase):
         for slot, value, accepted in cases:
             example = copy.deepcopy(EXAMPLE)
             example["target_slot"] = slot
-            for option in example["options"]:
-                option["answer_patch"] = {slot: value}
+            example["options"] = example["options"][:2]
+            example["options"][0]["answer_patch"] = {slot: value}
+            example["options"][1]["answer_patch"] = {
+                slot: 1000 if slot == "budget_krw" else "다른 입력",
+            }
             with self.subTest(slot=slot, accepted=accepted):
                 if accepted:
                     self.assertEqual(validate(example, eligible_slots={slot}).target_slot, slot)
@@ -86,6 +100,93 @@ class QuestionValidationTests(unittest.TestCase):
         with self.assertRaises(QuestionError):
             validate_question('{"question":"a","question":"b"}', eligible_slots=set(),
                               companion_slots={}, confirmed_slots=set(), resolved_unknown_slots=set())
+
+    def test_observed_budget_labels_cannot_hide_identical_patches(self):
+        draft = draft_with_patches("budget_status", [
+            (label, {"budget_status": "no_limit"})
+            for label in ["무료", "10만 원 이하", "10만~50만 원", "금액 제한 없음"]
+        ])
+        with self.assertRaisesRegex(QuestionError, "^duplicate_question_patch$"):
+            validate(draft, eligible_slots={"budget_status"},
+                     companion_slots={"budget_status": {"budget_krw"}})
+
+    def test_observed_online_variants_cannot_hide_identical_patches(self):
+        draft = draft_with_patches("delivery_mode", [
+            ("온라인 실시간", {"delivery_mode": "online"}),
+            ("방문 수업", {"delivery_mode": "offline"}),
+            ("온라인 자율 학습", {"delivery_mode": "online"}),
+        ])
+        with self.assertRaisesRegex(QuestionError, "^duplicate_question_patch$"):
+            validate(draft, eligible_slots={"delivery_mode"})
+
+    def test_duplicate_patch_ignores_object_key_order(self):
+        draft = draft_with_patches("budget_status", [
+            ("무료", {"budget_status": "amount", "budget_krw": 0}),
+            ("유료", {"budget_krw": 0, "budget_status": "amount"}),
+        ])
+        with self.assertRaisesRegex(QuestionError, "^duplicate_question_patch$"):
+            validate(draft, eligible_slots={"budget_status"},
+                     companion_slots={"budget_status": {"budget_krw"}})
+
+    def test_budget_options_preserve_zero_and_distinct_caps(self):
+        draft = draft_with_patches("budget_status", [
+            ("무료만", {"budget_status": "amount", "budget_krw": 0}),
+            ("10만 원까지", {"budget_status": "amount", "budget_krw": 100000}),
+            ("상한 없음", {"budget_status": "no_limit"}),
+        ])
+        validated = validate(draft, eligible_slots={"budget_status"},
+                             companion_slots={"budget_status": {"budget_krw"}})
+        self.assertEqual(validated.model_dump()["options"], draft["options"])
+
+    def test_null_budget_cap_does_not_distinguish_no_amount_options(self):
+        for status in ["no_limit", "unknown"]:
+            draft = draft_with_patches("budget_status", [
+                ("첫 번째", {"budget_status": status}),
+                ("두 번째", {"budget_status": status, "budget_krw": None}),
+            ])
+            with self.subTest(status=status), self.assertRaisesRegex(QuestionError, "^duplicate_question_patch$"):
+                validate(draft, eligible_slots={"budget_status"},
+                         companion_slots={"budget_status": {"budget_krw"}})
+
+    def test_comparison_does_not_remove_explicit_nulls_from_returned_patches(self):
+        draft = draft_with_patches("budget_status", [
+            ("상한 없음", {"budget_status": "no_limit", "budget_krw": None}),
+            ("무료만", {"budget_status": "amount", "budget_krw": 0}),
+        ])
+        result = validate(draft, eligible_slots={"budget_status"},
+                          companion_slots={"budget_status": {"budget_krw"}})
+        self.assertEqual(result.model_dump()["options"], draft["options"])
+        draft = draft_with_patches("learning_goal", [
+            ("기초 목표 유지", {"learning_goal": "foundation"}),
+            ("기초 목표 초기화", {"learning_goal": "foundation", "goal_text": None}),
+        ])
+        self.assertEqual(validate(draft).model_dump()["options"], draft["options"])
+
+    def test_budget_amount_required_only_when_companion_can_be_collected(self):
+        draft = draft_with_patches("budget_status", [
+            ("상한 금액 있음", {"budget_status": "amount"}),
+            ("상한 없음", {"budget_status": "no_limit"}),
+        ])
+        validate(draft, eligible_slots={"budget_status"}, companion_slots={})
+        validate(draft, eligible_slots={"budget_status"},
+                 companion_slots={"budget_status": {"budget_krw"}},
+                 confirmed_slots={"budget_krw"})
+        for value in [{"budget_status": "amount"},
+                      {"budget_status": "amount", "budget_krw": None}]:
+            draft["options"][0]["answer_patch"] = value
+            with self.subTest(value=value), self.assertRaisesRegex(QuestionError, "^missing_budget_amount$"):
+                validate(draft, eligible_slots={"budget_status"},
+                         companion_slots={"budget_status": {"budget_krw"}})
+
+    def test_budget_cap_cannot_mean_no_limit_or_unknown(self):
+        for status in ["no_limit", "unknown"]:
+            draft = draft_with_patches("budget_status", [
+                ("금액 있음", {"budget_status": status, "budget_krw": 100000}),
+                ("무료만", {"budget_status": "amount", "budget_krw": 0}),
+            ])
+            with self.subTest(status=status), self.assertRaisesRegex(QuestionError, "^inconsistent_budget_patch$"):
+                validate(draft, eligible_slots={"budget_status"},
+                         companion_slots={"budget_status": {"budget_krw"}})
 
     def test_policy_and_confirmed_values(self):
         for policy in [dict(eligible_slots=set()), dict(confirmed_slots={"learning_goal"}),
@@ -137,6 +238,34 @@ class ModelHTTPTests(unittest.TestCase):
         self.assertEqual(body["max_tokens"], 512)
         self.assertFalse(body["stream"])
         self.assertEqual(json.loads(body["messages"][1]["content"]), CONTEXT)
+
+    def test_request_explains_confirmed_domain_and_budget_codes(self):
+        context = {
+            **CONTEXT, "eligible_slots": ["budget_status"],
+            "allowed_companion_slots": {"budget_status": ["budget_krw"]},
+        }
+        draft = draft_with_patches("budget_status", [
+            ("무료만", {"budget_status": "amount", "budget_krw": 0}),
+            ("상한 없음", {"budget_status": "no_limit"}),
+        ])
+        type(self).body = json.dumps({"choices": [{"finish_reason": "stop", "message": {
+            "content": json.dumps(draft),
+        }}]}).encode()
+        self.client.generate(context)
+        body = self.calls[0][1]
+        system = body["messages"][0]["content"]
+        self.assertEqual(PROMPT_VERSION, "question-0.8.0-2")
+        self.assertIn("출력 언어는 한국어", system)
+        self.assertIn("한국어 학습을 교육 분야로 가정하지 마세요", system)
+        contracts = json.loads(system.split("\n슬롯 계약:\n", 1)[1])
+        self.assertEqual(set(contracts), {"field_code", "experience", "budget_status", "budget_krw"})
+        self.assertIn("ai_data=AI·데이터", contracts["field_code"]["description"])
+        self.assertIn("no_limit=지출 상한 없음", contracts["budget_status"]["description"])
+        self.assertIn("무료만 원하면 0", contracts["budget_krw"]["description"])
+        schema = body["response_format"]["json_schema"]["schema"]
+        patches = schema["properties"]["options"]["items"]["properties"]["answer_patch"]["properties"]
+        self.assertEqual(contracts["budget_status"], patches["budget_status"])
+        self.assertEqual(json.loads(body["messages"][1]["content"]), context)
 
     def test_cancelled_before_call(self):
         cancelled = threading.Event()
