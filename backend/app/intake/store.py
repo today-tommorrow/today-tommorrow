@@ -17,12 +17,17 @@ class RevisionConflict(Exception):
     pass
 
 
-def get_profile(db: Session, profile_id: UUID, user_id: UUID) -> IntakeProfile:
-    row = db.scalar(
-        select(IntakeProfile).where(
-            IntakeProfile.id == profile_id, IntakeProfile.user_id == user_id
-        )
+def get_profile(
+    db: Session, profile_id: UUID, user_id: UUID, *, lock: bool = False
+) -> IntakeProfile:
+    statement = select(IntakeProfile).where(
+        IntakeProfile.id == profile_id, IntakeProfile.user_id == user_id
     )
+    if lock:
+        statement = statement.with_for_update().execution_options(
+            populate_existing=True
+        )
+    row = db.scalar(statement)
     if row is None:
         raise ProfileNotFound()
     return row
@@ -43,7 +48,7 @@ def replace_answers(
     expected_revision: int,
     answers: dict[str, Any],
 ) -> IntakeProfile:
-    current = get_profile(db, profile_id, user_id)
+    current = get_profile(db, profile_id, user_id, lock=True)
     if current.revision != expected_revision:
         raise RevisionConflict()
     old = current.answers_json
@@ -95,11 +100,57 @@ def replace_answers(
     ).one_or_none()
     if updated is None:
         raise RevisionConflict()
+    from app.intake.question_service import invalidate
+
+    invalidate(db, profile_id)
     return updated
 
 
-def profile_response(row: IntakeProfile) -> dict[str, Any]:
+def selection_summaries(db: Session, row: IntakeProfile) -> list[dict[str, Any]]:
+    from app.intake.question_models import IntakeAnswer, IntakeQuestion
+
+    history = db.execute(
+        select(IntakeAnswer, IntakeQuestion)
+        .join(IntakeQuestion, IntakeQuestion.id == IntakeAnswer.question_id)
+        .where(IntakeAnswer.profile_id == row.id, IntakeAnswer.user_id == row.user_id)
+        .order_by(IntakeAnswer.revision_after)
+    ).all()
+    latest = {question.target_slot: (answer, question) for answer, question in history}
+    summaries = []
+    for answer, question in latest.values():
+        if question.target_slot in row.unresolved_conflicts_json or any(
+            key not in row.answers_json or row.answers_json[key] != value
+            for key, value in answer.applied_patch_json.items()
+        ):
+            continue
+        binding = question.option_bindings_json[str(answer.selected_option_id)]
+        summaries.append(
+            {
+                "question_id": str(question.id),
+                "selected_option_id": str(answer.selected_option_id),
+                "target_slot": question.target_slot,
+                "label": binding["label"],
+                "revision": answer.revision_after,
+            }
+        )
+    return summaries
+
+
+def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str, Any]:
     state = evaluate(row.answers_json, row.unresolved_conflicts_json)
+    summaries = []
+    if db is not None:
+        from app.intake.question_models import IntakeQuestion
+
+        ready = db.scalar(
+            select(IntakeQuestion.id).where(
+                IntakeQuestion.profile_id == row.id,
+                IntakeQuestion.base_revision == row.revision,
+                IntakeQuestion.status == "ready",
+            )
+        )
+        state["active_question_id"] = str(ready) if ready else None
+        summaries = selection_summaries(db, row)
     return {
         "id": str(row.id),
         "revision": row.revision,
@@ -115,6 +166,6 @@ def profile_response(row: IntakeProfile) -> dict[str, Any]:
             row.answers_json, row.unresolved_conflicts_json
         ),
         "latest_interpretation_id": None,
-        "selection_summaries": [],
+        "selection_summaries": summaries,
         "intake_state": state,
     }

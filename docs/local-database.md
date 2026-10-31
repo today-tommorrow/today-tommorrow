@@ -1,6 +1,6 @@
 # 실제 교육 데이터를 사용하는 로컬 개발 DB
 
-고용24 데이터와 완성된 벡터를 로컬 DB에 넣고, 모델 없이 적재·검색·권한을 검사한다. `today_app`에는 [인증 저장 기반](../backend/app/auth/README.md)의 사용자·세션·OAuth 상태도 migration으로 준비한다. [Google 로그인 API](google-login.md)는 이 테이블을 사용한다. [초안 API](profile-drafts.md)는 today_app에 저장하며 질문·추천 API와 Worker 구현은 다음 단계이며, GPU 서버나 VPN 접속은 필요하지 않다.
+고용24 데이터와 완성된 벡터를 로컬 DB에 넣고, 모델 없이 적재·검색·권한을 검사한다. `today_app`에는 [인증 저장 기반](../backend/app/auth/README.md)의 사용자·세션·OAuth 상태도 migration으로 준비한다. [Google 로그인 API](google-login.md)는 이 테이블을 사용한다. [초안 API](profile-drafts.md)와 [질문·작업 API](question-jobs.md)는 `today_app`에 저장하며, 질문 생성만 별도 Worker와 설정된 모델 서버를 사용한다. 로컬 DB 준비와 교육 검색 검사는 모델이나 GPU 서버 접속을 요구하지 않는다.
 
 ## 준비와 실행
 
@@ -13,7 +13,7 @@ Git, Docker Compose v2, 실행 중인 Docker 엔진, uv를 준비한다. Python�
 ./check
 ```
 
-`./setup`은 기존 `.env`를 덮어쓰지 않는다. 웹/API 의존성과 별도 `tools/catalog` 환경을 설치하고, PostgreSQL 이미지를 빌드한 뒤 교육 데이터 bootstrap과 앱 migration을 순서대로 실행한다. loader에는 NumPy·pgvector Python 어댑터·psycopg만 설치하며 torch·FlagEmbedding·모델 가중치는 설치하지 않는다.
+`./setup`은 기존 `.env`를 덮어쓰지 않는다. 웹/API 의존성과 별도 `tools/catalog` 환경을 설치하고, PostgreSQL 이미지를 빌드한 뒤 교육 데이터 bootstrap과 앱 migration을 순서대로 실행한다. 앱 migration은 인증·초안·작업·질문·답변·idempotency 요청 테이블을 준비한다. loader에는 NumPy·pgvector Python 어댑터·psycopg만 설치하며 torch·FlagEmbedding·모델 가중치는 설치하지 않는다.
 
 기본 개발 DB는 `127.0.0.1:55432/work24_dev`다. `.env`의 세 URL은 같은 호스트·포트·DB를 가리켜야 하며 사용자 역할은 아래 표와 맞춘다. `POSTGRES_USER`/`POSTGRES_PASSWORD`는 bootstrap 계정에 대응한다. 포트를 바꾸면 `DB_PORT`와 세 URL을 모두 바꾼다. 이전 `today` DB 설정이 남은 `.env`는 먼저 보관하고 `env.example`을 참고해 개발 설정을 맞춘다. 초기화는 원격 주소·다른 DB 이름·libpq 연결 우회를 거부한다.
 

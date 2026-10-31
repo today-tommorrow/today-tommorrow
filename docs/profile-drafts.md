@@ -40,9 +40,9 @@ PATCH의 `answers`는 일부 필드를 합치는 patch가 아니라 **현재까�
 
 비적용 하위 슬롯은 완료 판정과 응답의 `unresolved_conflicts`에서 제외한다. 예를 들어 경험을 beginner로 바꾸면 previous_gap의 기존 재확인은 현재 진행을 막지 않는다. 답변과 재확인 이력은 DB에 보존하며, 부모 답변을 다시 바꿔 해당 슬롯이 적용되면 아직 확인하지 않은 재확인이 다시 나타난다. 문서 선택은 별도로 필요하며 `document_decision:none`은 자료 없는 경로다. 자료를 제공한다고 선택해도 실제 처리 완료로 표시하지 않는다.
 
-분야를 바꾸면 기존 경험·목표 답변을 보존하고 `unresolved_conflicts`로 재확인을 요구한다. 같은 전체 답변을 다시 보내는 것으로 재확인을 해제하지 않는다. 관련 키를 제거해 다시 선택하거나 다른 값을 명시하면 해당 재확인이 해제된다. 질문 생성·선택 적용은 L2에서 연결한다.
+분야를 바꾸면 기존 경험·목표 답변을 보존하고 `unresolved_conflicts`로 재확인을 요구한다. 같은 전체 답변을 다시 보내는 것으로 재확인을 해제하지 않는다. 관련 키를 제거해 다시 선택하거나 다른 값을 명시하면 해당 재확인이 해제된다. 선택형 질문과 답변 적용은 [질문 API·Worker](question-jobs.md)에서 이 revision 계약과 연결한다.
 
-이번 범위에서는 질문 생성·해석·자료 API·추천 제출을 구현하지 않는다. 옵션의 해당 기능은 false, 업로드 한도와 개수는 0이다. `review_token`은 항상 null이며, 완료 구역 표시만으로 추천 제출이 가능하다고 판단하면 안 된다. documents·selection_summaries는 비어 있고 latest_interpretation_id는 null이다. GET은 모델을 호출하거나 새 질문을 만들지 않는다.
+선택형 질문 생성·작업 조회/취소·답변 API는 [질문 API·Worker 안내](question-jobs.md)에 구현되어 있다. 옵션의 `question_generation_enabled`는 실제 모델 URL과 모델 ID가 설정된 경우에만 true다. 해석·자료 API·추천 제출은 아직 미구현이며, 업로드 한도와 개수는 0이다. `review_token`은 항상 null이고, 완료 구역 표시만으로 추천 제출이 가능하다고 판단하면 안 된다. `documents`는 비어 있고 `latest_interpretation_id`는 null이다. `selection_summaries`는 현재 답변과 일치하는 최신 질문 선택을 슬롯별로 보여주며, 직접 수정으로 달라진 선택의 라벨은 표시하지 않는다. GET은 모델을 호출하거나 새 질문을 만들지 않는다.
 
 ## 다시 열기(D06)
 

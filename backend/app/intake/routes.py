@@ -10,6 +10,7 @@ from app.auth.dependencies import DB, authenticated, authenticated_write
 from app.auth.routes import PRIVATE
 from app.auth.store import SessionPrincipal
 from app.intake import store
+from app.intake.question_config import questions_enabled
 from app.intake.schemas import ProfilePatch, profile_patch_schema
 
 router = APIRouter(prefix="/api")
@@ -64,7 +65,7 @@ async def read_patch(request: Request) -> ProfilePatch:
 @router.post("/profiles", status_code=201)
 def create_profile(user: WriteUser, db: DB):
     try:
-        result = store.profile_response(store.create_profile(db, user.user.id))
+        result = store.profile_response(store.create_profile(db, user.user.id), db)
         db.commit()
         return JSONResponse(result, status_code=201, headers=PRIVATE)
     except SQLAlchemyError:
@@ -76,7 +77,9 @@ def create_profile(user: WriteUser, db: DB):
 def get_profile(id: str, user: ReadUser, db: DB):
     try:
         return JSONResponse(
-            store.profile_response(store.get_profile(db, profile_id(id), user.user.id)),
+            store.profile_response(
+                store.get_profile(db, profile_id(id), user.user.id), db
+            ),
             headers=PRIVATE,
         )
     except store.ProfileNotFound:
@@ -109,7 +112,7 @@ def patch_profile(
             patch.expected_revision,
             patch.answers.model_dump(exclude_unset=True),
         )
-        result = store.profile_response(row)
+        result = store.profile_response(row, db)
         db.commit()
         return JSONResponse(result, headers=PRIVATE)
     except store.ProfileNotFound:
@@ -158,7 +161,7 @@ def onboarding_options(user: ReadUser):
             "intake_policy_version": "1",
             "allowed_catalog_sources": ["work24"],
             "interpretation_enabled": False,
-            "question_generation_enabled": False,
+            "question_generation_enabled": questions_enabled(),
             "question_schema_version": "1.0",
         },
         headers=PRIVATE,
