@@ -2,6 +2,31 @@
 
 웹·API·DB 기반과 실제 DB health 확인을 구현했다. 업무 기능·샘플 모드·GPU·Nginx 배포는 아직 없으며 아래 관련 기준은 후속 구현에 적용한다. 설치와 공통 진입 절차는 [README](../README.md), 작업·리뷰 책임은 [팀 가이드](../AGENTS.md)를 따른다. 새 라이브러리와 큰 구조 변경은 관련 담당자와 먼저 합의한다.
 
+## 코드 규칙과 검사
+
+Python은 PEP8을 기준으로 공백 4칸 들여쓰기, 이항 연산자 양쪽과 쉼표 뒤 공백, 불필요한 공백 제거를 지킨다. import는 표준 라이브러리 → 외부 패키지 → 프로젝트 코드로 묶고 그룹 사이를 띄운다. 함수·변수는 `snake_case`, 클래스는 `PascalCase`, 상수는 `UPPER_SNAKE_CASE`를 쓴다. 긴 호출·식은 괄호 안에서 줄을 나누고 의미 단위로 정렬한다. PEP8의 기본 79열(주석·docstring 72열)을 참고하되 읽기 쉬운 흐름을 우선하고 관계없는 기존 코드 전체를 재포맷하지 않는다.
+
+현재 `backend/pyproject.toml`의 Ruff는 **E4·E7·E9·F·I**만 선택한다. 선택된 오류와 import 정렬을 검사하며 전체 PEP8 준수나 모든 공백·줄 길이를 보장하지 않는다. E501 줄 길이 검사는 선택하지 않았고 Ruff formatter도 검사 절차에 없다. 남은 스타일·이름·복잡한 흐름은 리뷰에서 확인한다.
+
+프런트엔드는 ESLint의 JavaScript·typescript-eslint 권장 규칙과 Prettier를 사용한다. TypeScript `strict` 타입 검사는 별도 `tsc --noEmit`으로 수행한다. ESLint 통과를 타입 검사나 React 동작 검증으로 대신하지 않는다. Prettier는 형식을 맞추고, 의미·상태 책임·연동 계약은 테스트와 리뷰로 확인한다.
+
+준비가 끝났으면 저장소 루트에서 `./check`로 타입·린트·포맷·테스트·빌드를 함께 검사한다. 개별 검사는 다음 실제 명령을 쓴다. npm 명령은 정확한 Node/npm이 터미널 PATH에 있을 때 `web`에서 실행하며, 프로젝트 캐시를 사용하는 경우에는 루트 `./check`를 사용한다.
+
+```sh
+# 저장소 루트: 전체 검사와 Python 린트만 따로 확인
+./check
+./backend/.venv/bin/ruff check --config backend/pyproject.toml backend scripts
+```
+
+```sh
+# web 디렉터리: 개별 프런트엔드 검사
+npm run typecheck
+npm run lint
+npm run format:check
+```
+
+기본 검사는 파일을 자동 수정하지 않는다. 포맷 수정이 필요하면 `web`에서 `npx prettier --write src`를 실행한 뒤 diff와 검사를 다시 확인한다. PR에는 실제 명령·환경·결과와 실행하지 못한 항목을 남긴다. PR 작성·승인·squash와 커밋 제목은 [README 협업 규칙](../README.md#pr과-병합)을 따른다.
+
 ## 웹: 화면 흐름과 상태
 
 Vite + React + TypeScript의 SPA로 구현하고 TypeScript `strict`를 사용한다. 사용자 기능 단위로 화면·요청·상태를 가까이 두되 기존 구조에 맞춰 책임별로 나눈다. 폴더를 미리 늘리거나 범용 계층을 만들지 않는다.
@@ -43,3 +68,7 @@ FastAPI 라우트는 HTTP 입력·응답을 다루고, 업무 로직은 서비�
 npm의 `package-lock.json`과 uv의 `uv.lock`을 저장소에 포함하고 팀이 같은 도구 버전·잠금 파일로 설치한다. 의존성 변경 PR에는 이유와 잠금 파일 변경을 함께 담는다. 웹 명세·잠금 파일은 `web`, API 명세·잠금 파일은 `backend`에 있다. 실행 명령은 README를 따른다.
 
 구현할 공통 check에는 TypeScript 검사, ESLint·Prettier 웹 검사, Ruff Python 검사, 필요한 동작 테스트, 웹 빌드를 포함한다. 현재 `./check`가 TypeScript·ESLint·Prettier·Ruff·웹/API/진입점 단위 테스트와 웹 빌드를 실행한다. 단위 테스트의 목 결과와 실제 DB health 실행 증거를 구분한다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
+
+세 로컬 진입점은 공통 POSIX launcher에서 `.python-version`의 정확한 Python을 uv로 선택한다. setup만 누락된 버전을 `uv python install --no-bin`으로 준비하며 dev/check는 setup을 안내한다. 호출 터미널의 Python 버전이나 작업 디렉터리에 의존하지 않고 uv sync/run에도 선택된 실행 경로를 명시한다. 시스템 Python·PATH는 바꾸지 않는다.
+
+Node/npm은 PATH의 정확한 버전·동일 설치를 우선 사용하고 프로젝트 전용 `.local/node` 캐시를 재사용한다. setup만 공식 macOS arm64/x64 archive의 SHA256 검증 후 설치하고 dev/check는 같은 선택을 사용한다. 캐시·임시 설치는 Git에서 제외하며 시스템 PATH·설정은 변경하지 않는다.

@@ -6,9 +6,11 @@ React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다
 
 ### 다섯 MacBook의 공통 준비
 
-Git, Node/npm, Python/uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `node --version`은 `.node-version`의 26.5.0, `python3 --version`은 `.python-version`의 3.14.6과 맞춘다. 다른 버전이면 버전 관리 도구로 전환하고 PATH를 확인한다. uv의 Python 설치 기능을 사용해도 `python3`가 기준 버전을 가리켜야 한다. Docker 엔진은 Docker Desktop 또는 사용하는 로컬 엔진에서 시작한다.
+Git, uv, Docker Compose v2 이상을 준비하고 Docker 엔진을 실행한다. `docker info`로 엔진 연결을 확인한다. Node/npm은 미리 설치하지 않아도 된다. 세 진입점은 `.node-version`의 정확한 Node(현재 26.5.0)와 같은 설치의 작동하는 npm을 PATH에서 먼저 찾고, 없으면 Git에서 제외한 프로젝트 `.local/node` 캐시를 사용한다. setup만 nodejs.org의 공식 macOS arm64/x64 archive를 받아 공식 manifest의 SHA256을 확인한 뒤 설치한다. 지원 빌드가 없거나 검증에 실패하면 중단하며 다른 도구로 대체하지 않는다. 다시 `./setup`을 실행해 재시도할 수 있다. Node 캐시 설치는 잠금과 임시 디렉터리를 사용해 완성된 설치만 공개한다. dev/check는 다운로드 없이 setup을 안내한다. 선택한 Node와 npm의 PATH는 자식 명령에만 적용하고 시스템 기본값·셸 프로필은 바꾸지 않는다.
 
-Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다. 두 번째 **물리적 Mac**의 새 클론 검증은 아직 수행하지 않았다. 한 Mac의 격리된 새 복사본 검증을 다른 팀원 Mac 검증으로 표시하지 않는다.
+Python을 미리 설치하거나 `python3`의 PATH를 바꿀 필요는 없다. 세 진입점은 호출 위치와 관계없이 저장소의 `.python-version`(현재 3.14.6)을 읽고 uv로 정확한 기존 설치를 먼저 찾는다. `./setup`만 누락된 Python을 uv 관리 디렉터리에 설치하며 기본 명령 링크를 만들지 않는다(`--no-bin`). 시스템 기본 Python·PATH·셸 프로필은 변경하지 않는다. 첫 설치에는 인터넷이 필요하고 이미 있으면 오프라인 재사용할 수 있다. 새 Python 다운로드를 검증한 uv 버전은 0.12.5다. 이전 uv에서 `No download found`가 나오면 uv를 업데이트한 뒤 재시도한다. 기존 정확한 Python은 이전 uv에서도 재사용할 수 있다. uv가 없거나 다운로드가 실패하면 안내와 함께 비정상 종료한다. uv 설치·네트워크 문제를 해결한 뒤 `./setup`을 다시 실행한다. `./dev`·`./check`는 Python을 다운로드하지 않으며 없으면 setup을 안내한다.
+
+Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다. 두 번째 **물리적 Mac**의 완료 검증은 아직 미수행이며, 한 Mac의 격리된 복사본 검증으로 대신 완료 처리하지 않는다.
 
 ### 준비 → 실행 → 검사
 
@@ -84,6 +86,13 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 ### PR과 병합
 
 - 기본 PR 대상은 `main`이며, 임시 통합에 참여하는 작업 PR만 해당 통합 브랜치를 대상으로 한다. PR 본문에 변경 목적, 영향받는 영역, 실행한 검증과 결과를 적는다.
-- `main` 변경은 관리자도 PR을 거친다. 필수 승인 수는 0명이며, 계약 변경 리뷰 요청은 팀의 협업 규칙이다.
-- 병합은 **Squash and merge**를 사용한다. 병합 후 작업 브랜치는 자동 삭제된다. `main`의 강제 푸시와 삭제는 차단한다.
+- `main` 변경은 관리자도 PR을 거친다. 작성자 외 리뷰어 **1명 이상 승인**이 필요하다. 리뷰어는 변경 범위·연동 계약·검증 결과를 확인하고, 계약 변경은 관련 영역 담당자에게 리뷰를 요청한다.
+- PR 제목은 아래 Conventional Commit 형식을 사용하고, [PR 양식](.github/pull_request_template.md)에 목적·영향·이슈 연결·실행한 검사와 미검증 항목을 적는다. 목·실제 모델·GPU 결과를 구분한다.
+- 병합은 **Squash and merge**를 사용한다. squash 커밋 제목도 PR 제목의 Conventional Commit 형식을 유지한다. 병합 후 작업 브랜치는 자동 삭제된다. `main`의 강제 푸시와 삭제는 차단한다.
 - 초기에는 필수 CI 검사를 지정하지 않는다. 팀의 검사 워크플로가 실제 PR에서 한 번 이상 성공한 뒤 해당 검사를 필수로 지정한다.
+
+### 커밋과 코드 규칙
+
+로컬 커밋과 PR 제목은 `type[(scope)]: summary` 형식으로 쓴다. `feat(web): show health status`, `fix(api): sanitize database error`, `docs: clarify onboarding`처럼 동작·변경 목적을 짧게 적는다. 종류는 `feat`, `fix`, `docs`, `refactor`, `test`, `chore` 등을 사용하고 scope는 필요할 때만 붙인다.
+
+호환성을 깨는 변경은 `feat(api)!: change response format`처럼 `!`를 붙이거나 footer에 `BREAKING CHANGE: ...`와 영향·이전 방법을 적는다. 한 커밋은 한 목적을 담고 관련 없는 정리와 섞지 않는다. [Python·프런트엔드 코드 규칙과 검사](docs/development.md#코드-규칙과-검사)를 따르고, 검사를 통과해도 사람이 읽기·계약·완료 조건을 리뷰한다.
