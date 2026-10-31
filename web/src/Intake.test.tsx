@@ -352,3 +352,60 @@ it.each(['job', 'profile'])(
     ).toBe('통신 오류에도 보존할 초안')
   },
 )
+
+it.each([false, true])(
+  '409 후 작성 중인 입력을 보존하고 최신 revision으로만 재시도한다 (조회 실패=%s)',
+  async (refreshFails) => {
+    const initial = {
+      ...profile(),
+      answers: { experience: 'beginner' as const },
+    }
+    const latest = {
+      ...initial,
+      revision: 2,
+      answers: { experience: 'work' as const },
+    }
+    const patches: Array<{ expected_revision: number; answers: unknown }> = []
+    let reads = 0
+    serve((path, init) => {
+      if (path !== '/api/profiles/profile-1')
+        throw new Error(`예상하지 않은 요청: ${path}`)
+      if (init.method === 'PATCH') {
+        patches.push(JSON.parse(init.body as string))
+        if (patches.length === 1) return new Response('{}', { status: 409 })
+        return json({
+          ...latest,
+          revision: 3,
+          answers: { ...latest.answers, document_decision: 'none' },
+        })
+      }
+      reads++
+      if (refreshFails && reads === 1)
+        return new Response('{}', { status: 503 })
+      return json(latest)
+    })
+    render(<Harness initial={initial} />)
+    await ready()
+    fireEvent.change(screen.getByLabelText('자료 내용'), {
+      target: { value: '다른 탭 수정 중에도 유지할 문장' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: '자료 없이 진행' }))
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      refreshFails ? '최신 내용을 불러오지 못했어요' : '작성 중인 내용은 유지',
+    )
+    expect(patches).toHaveLength(1)
+    if (refreshFails) {
+      fireEvent.click(screen.getByRole('button', { name: '최신 입력 확인' }))
+      await waitFor(() => expect(screen.queryByRole('alert')).toBeNull())
+    }
+    fireEvent.click(screen.getByRole('button', { name: '자료 없이 진행' }))
+    await waitFor(() => expect(patches).toHaveLength(2))
+    expect(patches[1]).toEqual({
+      expected_revision: 2,
+      answers: { experience: 'work', document_decision: 'none' },
+    })
+    expect(
+      (screen.getByLabelText('자료 내용') as HTMLTextAreaElement).value,
+    ).toBe('다른 탭 수정 중에도 유지할 문장')
+  },
+)

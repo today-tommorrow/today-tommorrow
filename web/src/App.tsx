@@ -177,14 +177,38 @@ function Workspace({ session }: { session: AuthSession }) {
         <button onClick={() => navigate('?saved=1')}>관심 교육</button>
       </nav>
       {error && (
-        <p role="alert" className="error">
-          {error}{' '}
-          <button onClick={() => setRoute(new URLSearchParams(route))}>
-            다시 불러오기
+        <section role="alert" className="panel stack">
+          <h2>
+            {route.has('profile')
+              ? '저장한 초안을 불러오지 못했어요'
+              : '새 초안을 만들지 못했어요'}
+          </h2>
+          <p>{error}</p>
+          {route.has('profile') && (
+            <p>
+              초안 링크는 유지했어요. 연결 상태를 확인한 뒤 다시 불러오세요.
+            </p>
+          )}
+          <button
+            disabled={busy}
+            onClick={() => {
+              if (route.has('profile')) setRoute(new URLSearchParams(route))
+              else void create()
+            }}
+          >
+            {route.has('profile')
+              ? '초안 다시 불러오기'
+              : '초안 만들기 다시 시도'}
           </button>
+        </section>
+      )}
+      {busy && (
+        <p role="status">
+          {route.has('profile')
+            ? '저장한 초안을 불러오고 있어요…'
+            : '새 초안을 만들고 있어요…'}
         </p>
       )}
-      {busy && <p role="status">입력 상태를 확인하고 있습니다…</p>}
       {runId ? (
         <Results key={runId} runId={runId} />
       ) : route.has('saved') ? (
