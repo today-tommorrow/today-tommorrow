@@ -59,7 +59,7 @@ FastAPI 라우트는 HTTP 입력·응답을 다루고, 업무 로직은 서비�
 
 ## DB: 세션과 변경 이력
 
-개발 DB는 Compose의 PostgreSQL을 사용하고 ORM은 SQLAlchemy 2.x를 기준으로 구현한다. SQLAlchemy 세션은 요청 또는 작업 단위로 열고 반드시 닫는다. 전역 세션을 공유하지 않는다. 트랜잭션은 하나의 업무 변경 단위로 묶고 성공 시 커밋, 실패 시 롤백한다. 세션 종료와 트랜잭션 책임을 명확히 하고 보조 함수마다 임의로 커밋하지 않는다. 느린 GPU 호출을 기다리는 동안 불필요한 DB 트랜잭션을 열어 두지 않는다.
+개발 DB는 [로컬 DB 초기화](local-database.md)의 PostgreSQL 16.14·pgvector 0.6.0을 사용한다. 교육 `work24_bge`는 bootstrap 소유이며 앱은 읽기만 한다. 업무 ORM과 Alembic 버전 테이블은 `today_app`에 두고 migration 계정으로 실행한다. SQLAlchemy 2.x 세션은 요청·작업 단위로 열고 반드시 닫는다. 전역 세션을 공유하지 않는다. 트랜잭션은 한 업무 변경 단위로 묶고 성공 시 commit, 실패 시 rollback한다. 느린 GPU 호출 중 DB 트랜잭션을 열어 두지 않는다.
 
 스키마 변경은 SQLAlchemy 모델과 Alembic 마이그레이션을 함께 제출한다. 자동 생성된 마이그레이션도 사람이 검토하고 기존 데이터·호환성에 미치는 영향을 적는다. 공유된 마이그레이션 이력을 고쳐 덮지 않는다. 개발 DB가 연결 가능한 뒤 적용하고 저장·재조회를 확인한다. 복구 방법은 변경 특성에 맞춰 설명하며 데이터 삭제나 무조건적인 downgrade를 기본 해결책으로 쓰지 않는다.
 
@@ -67,7 +67,7 @@ FastAPI 라우트는 HTTP 입력·응답을 다루고, 업무 로직은 서비�
 
 npm의 `package-lock.json`과 uv의 `uv.lock`을 저장소에 포함하고 팀이 같은 도구 버전·잠금 파일로 설치한다. 의존성 변경 PR에는 이유와 잠금 파일 변경을 함께 담는다. 웹 명세·잠금 파일은 `web`, API 명세·잠금 파일은 `backend`에 있다. 실행 명령은 README를 따른다.
 
-현재 `./check`가 TypeScript·ESLint·Prettier·Ruff·웹 실제 연동 테스트·API/진입점 unittest와 웹 빌드를 실행한다. 웹 테스트는 mock 없이 실제 서비스에 요청한다. 기존 API·진입점 unittest의 mock 결과와 실제 DB health 실행 증거를 구분한다. 이번 작업의 GitHub CI는 기존 mock 기반 unittest를 실행하지 않으며 [별도 검증 범위](frontend.md#github-ci-검증-범위)를 따른다. PR에는 실행한 검사와 결과, 미실행 항목을 남긴다. PR에서 실제 실행한 환경만 검증했다고 기록하고 다른 Mac의 온보딩을 완료했다고 표시하지 않는다. 실제 모델·GPU 검증은 이슈 완료 조건에 따라 실행하고, 목·CPU·GPU 또는 해당 없음과 이유를 구분한다.
+`./check`와 CI는 정적 검사·전체 웹 테스트·API/진입점/loader 단위 검사·빌드와 실제 로컬 DB 경계·재적재 보존을 검사한다. 합성 UI/질문 응답, 실제 HTTP/DB, 저장 질의 벡터, 실제 신규 모델 입력은 검증 범위가 다르므로 구분한다. [프런트 검증 범위](frontend.md#github-ci-검증-범위)와 [교육 DB 검증](local-database.md)을 함께 따른다. PR에는 실제 명령·환경·결과·미검증을 기록하고 다른 실제 Mac이나 GPU 실행을 수행했다고 추정하지 않는다.
 
 세 로컬 진입점은 공통 POSIX launcher에서 `.python-version`의 정확한 Python을 uv로 선택한다. setup만 누락된 버전을 `uv python install --no-bin`으로 준비하며 dev/check는 setup을 안내한다. 호출 터미널의 Python 버전이나 작업 디렉터리에 의존하지 않고 uv sync/run에도 선택된 실행 경로를 명시한다. 시스템 Python·PATH는 바꾸지 않는다.
 

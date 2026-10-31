@@ -105,10 +105,23 @@ def setup(node_env):
     run(["npm", "ci"], ROOT / "web", env)
     run(["uv", "sync", "--python", sys.executable, "--locked", "--dev"], ROOT / "backend", env)
     verify_backend_python(env)
+    run(["uv", "sync", "--project", str(ROOT / "tools/catalog"), "--python", sys.executable, "--locked"], env=env)
     # Pass parsed values via the process environment; Compose never evaluates .env.
-    run(["docker", "compose", "--env-file", os.devnull, "up", "-d", "--wait", "db"], env=env)
+    run(["docker", "compose", "--env-file", os.devnull, "up", "-d", "--build", "--wait", "db"], env=env)
+    catalog(env)
     run(["uv", "run", "--python", sys.executable, "--locked", "alembic", "upgrade", "head"], ROOT / "backend", env)
     print("준비 완료. ./dev로 시작하고 ./check로 검사하세요.")
+
+
+def catalog(env, verify_only=False):
+    command = [
+        "uv", "run", "--project", str(ROOT / "tools/catalog"), "--python", sys.executable,
+        "--locked", "python", str(ROOT / "tools/catalog/bootstrap.py"),
+        "--report", str(ROOT / ".local/catalog" / ("verify.json" if verify_only else "bootstrap.json")),
+    ]
+    if verify_only:
+        command.append("--verify-only")
+    run(command, env=env)
 
 
 def port_available(port):
@@ -181,13 +194,25 @@ def dev(node_env):
 
 
 def check(node_env):
-    # Tests use dependency overrides/mocks, never a developer's live database.
-    env = {**node_env, "CI": "1"}
+    # UI fixtures are isolated; integration checks read the prepared local catalog.
+    env = {
+        **load_environment(ROOT / ".env"), **node_env,
+        "CI": "1", "L0_DATABASE_TESTS": "1", "L0_REIMPORT_TESTS": "0",
+    }
+    catalog(env, verify_only=True)
     for command in (["npm", "run", "typecheck"], ["npm", "run", "lint"], ["npm", "run", "format:check"], ["npm", "test"]):
         run(command, ROOT / "web", env)
-    run(["uv", "run", "--python", sys.executable, "--locked", "ruff", "check", "--config", "pyproject.toml", ".", "../scripts"], ROOT / "backend", env)
+    run(["uv", "run", "--python", sys.executable, "--locked", "ruff", "check", "--config", "pyproject.toml", ".", "../scripts", "../tools/catalog"], ROOT / "backend", env)
     run(["uv", "run", "--python", sys.executable, "--locked", "python", "-m", "unittest", "discover", "-s", "tests"], ROOT / "backend", env)
     run([sys.executable, "-m", "unittest", "discover", "-s", "scripts", "-p", "test_*.py"], env=env)
+    run([
+        "uv", "run", "--project", str(ROOT / "tools/catalog"), "--python", sys.executable,
+        "--locked", "python", "-m", "unittest", "discover", "-s", "tools/catalog/tests",
+    ], env=env)
+    run([
+        "uv", "run", "--project", str(ROOT / "tools/catalog"), "--python", sys.executable,
+        "--locked", "python", "-m", "unittest", "discover", "-s", "tools/catalog/integration",
+    ], env=env)
     run(["npm", "run", "build"], ROOT / "web", env)
 
 

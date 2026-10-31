@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from local import load_environment, port_available, verify_backend_python
+from local import check, load_environment, port_available, setup, verify_backend_python
 
 
 class EnvironmentTests(unittest.TestCase):
@@ -45,3 +45,45 @@ class InterpreterTests(unittest.TestCase):
         with patch("local.subprocess.check_output", return_value="3.14.5\n/wrong/python\n"):
             with self.assertRaises(ValueError):
                 verify_backend_python(os.environ.copy())
+
+
+class CatalogEntrypointTests(unittest.TestCase):
+    def run_entrypoint(self, action):
+        example = Path(__file__).resolve().parents[1] / "env.example"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = example.read_text() + "\nWEB_PORT=5274\n"
+            (root / "env.example").write_text(example.read_text())
+            (root / ".env").write_text(original)
+            calls = []
+
+            def capture(command, cwd=None, env=None):
+                calls.append((command, env))
+
+            with patch("local.ROOT", root), patch("local.run", side_effect=capture), patch("local.tools"), patch("local.verify_backend_python"):
+                action(os.environ.copy())
+            self.assertEqual((root / ".env").read_text(), original)
+            return calls
+
+    def test_setup_loads_real_catalog_before_application_migrations(self):
+        calls = self.run_entrypoint(setup)
+        commands = [command for command, _env in calls]
+        loaders = [i for i, command in enumerate(commands) if any(str(arg).endswith("bootstrap.py") for arg in command)]
+        self.assertEqual(len(loaders), 1, "setup must load the real catalog once")
+        migration = next(i for i, command in enumerate(commands) if "alembic" in command)
+        self.assertLess(loaders[0], migration)
+        docker = next(command for command in commands if command[0] == "docker")
+        self.assertIn("--build", docker)
+
+    def test_check_verifies_catalog_without_reimporting(self):
+        calls = self.run_entrypoint(check)
+        loaders = [(command, env) for command, env in calls if any(str(arg).endswith("bootstrap.py") for arg in command)]
+        self.assertEqual(len(loaders), 1, "check must verify the stored catalog")
+        self.assertIn("--verify-only", loaders[0][0])
+        self.assertIn("CATALOG_DATABASE_URL", loaders[0][1])
+
+    def test_check_cannot_inherit_a_committed_reimport_test(self):
+        with patch.dict(os.environ, {"L0_REIMPORT_TESTS": "1"}):
+            calls = self.run_entrypoint(check)
+        for _command, env in calls:
+            self.assertEqual(env.get("L0_REIMPORT_TESTS"), "0")

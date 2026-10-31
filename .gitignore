@@ -7,3 +7,5 @@ dist/
 __pycache__/
 *.py[cod]
 /.local/node/
+/.local/catalog/
+/tdtemp/

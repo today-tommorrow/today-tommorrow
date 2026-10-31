@@ -61,22 +61,16 @@ jobs:
     name: Real API and database integration
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    services:
-      postgres:
-        image: postgres:17.11
-        env:
-          POSTGRES_USER: today
-          POSTGRES_PASSWORD: ci-only
-          POSTGRES_DB: today
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U today -d today"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 12
     env:
-      DATABASE_URL: postgresql+psycopg://today:ci-only@127.0.0.1:5432/today
+      POSTGRES_USER: today_bootstrap
+      POSTGRES_PASSWORD: ci-only
+      POSTGRES_DB: work24_dev
+      DB_PORT: "55432"
+      CATALOG_DATABASE_URL: postgresql://today_bootstrap:ci-only@127.0.0.1:55432/work24_dev
+      MIGRATION_DATABASE_URL: postgresql+psycopg://today_migrator:ci-migration@127.0.0.1:55432/work24_dev
+      DATABASE_URL: postgresql+psycopg://today_app:ci-app@127.0.0.1:55432/work24_dev
+      L0_DATABASE_TESTS: "1"
+      L0_REIMPORT_TESTS: "1"
       API_TARGET: http://127.0.0.1:8000
       WEB_PORT: "5273"
     steps:
@@ -95,16 +89,23 @@ jobs:
         run: |
           uv python install "$(cat .python-version)"
           uv sync --project backend --locked --dev --python "$(cat .python-version)"
+          uv sync --project tools/catalog --locked --python "$(cat .python-version)"
           npm ci --prefix web
+      - name: Prepare actual PostgreSQL 16 and pinned education data
+        run: |
+          docker compose --env-file /dev/null up -d --build --wait db
+          uv run --project tools/catalog --no-sync python tools/catalog/bootstrap.py --report .local/catalog/ci-bootstrap.json
       - name: Apply actual database migrations
         working-directory: backend
         run: uv run --no-sync alembic upgrade head
       - name: Python static and unit checks
         working-directory: backend
         run: |
-          uv run --no-sync ruff check --config pyproject.toml . ../scripts
+          uv run --no-sync ruff check --config pyproject.toml . ../scripts ../tools/catalog
           uv run --no-sync python -m unittest discover -s tests
           uv run --no-sync python -m unittest discover -s ../scripts -p 'test_*.py'
+          uv run --project ../tools/catalog --no-sync python -m unittest discover -s ../tools/catalog/tests
+          uv run --project ../tools/catalog --no-sync python -m unittest discover -s ../tools/catalog/integration
       - name: Start real API and Vite proxy
         run: |
           (
@@ -128,9 +129,8 @@ jobs:
         working-directory: web
         run: npm test -- --config vitest.config.ts
       - name: Verify actual database outage and recovery
-        env:
-          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
         run: |
+          POSTGRES_CONTAINER=$(docker compose --env-file /dev/null ps -q db)
           docker stop "$POSTGRES_CONTAINER"
           status=$(curl --silent --connect-timeout 5 --max-time 10 --output "$RUNNER_TEMP/db-outage.json" --write-out '%{http_code}' "http://127.0.0.1:$WEB_PORT/api/health")
           test "$status" = 503
@@ -167,11 +167,13 @@ jobs:
               kill -KILL "$server_pid" 2>/dev/null || true
             fi
           done
+          docker compose --env-file /dev/null stop db
       - name: Record verification boundaries
         if: ${{ always() }}
         run: |
           cat >> "$GITHUB_STEP_SUMMARY" <<'SUMMARY'
-          Real services: Vite proxy → FastAPI → PostgreSQL 17.11, migrations, database outage/recovery.
+          Real services: Vite proxy → FastAPI → PostgreSQL 16.14 + pgvector 0.6.0, migrations, database outage/recovery.
+          Pinned real education data: 406 courses, 6099 units; vector round-trip, stored-query exact/HNSW, reimport preservation and app/catalog permission boundaries.
           App.test.tsx uses real HTTP responses. Intake and configuration regressions use isolated synthetic fixtures and do not verify model/API integration.
           OAuth, profile, question, document and recommendation endpoints are not implemented in this baseline backend.
           Their complete UI/API/OAuth/GPU integration remains unverified. GPU: N/A for this CI job.
@@ -185,4 +187,5 @@ jobs:
             ${{ runner.temp }}/api.log
             ${{ runner.temp }}/web.log
             ${{ runner.temp }}/db-outage.json
+            .local/catalog/ci-bootstrap.json
           retention-days: 3

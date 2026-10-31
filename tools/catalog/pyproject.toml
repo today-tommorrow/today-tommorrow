@@ -1,0 +1,14 @@
+[project]
+name = "today-tommorrow-catalog-bootstrap"
+version = "0.1.0"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "numpy==2.5.4",
+  "pgvector==0.5.1",
+  "psycopg[binary]==3.3.6",
+]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+include = ["*.py", "tests", "integration"]
