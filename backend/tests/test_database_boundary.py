@@ -9,7 +9,9 @@ from unittest.mock import patch
 from uuid import uuid4
 
 from alembic.autogenerate import produce_migrations
+from alembic.config import Config
 from alembic.migration import MigrationContext
+from alembic.script import ScriptDirectory
 from sqlalchemy import (
     Column,
     Integer,
@@ -23,7 +25,8 @@ from sqlalchemy import (
 from sqlalchemy.engine import make_url
 from sqlalchemy.exc import DBAPIError
 
-from app.db import Base, include_migration_name, include_migration_object
+from app.auth.models import Base
+from app.db import include_migration_name, include_migration_object
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -67,8 +70,9 @@ class DatabaseBoundaryTests(unittest.TestCase):
     def test_application_migration_history_is_isolated_and_not_runtime_writable(self):
         self.assertTrue(inspect(self.admin).has_table("alembic_version", schema="today_app"))
         self.assertFalse(inspect(self.admin).has_table("alembic_version", schema="public"))
+        expected = ScriptDirectory.from_config(Config(str(ROOT / "backend/alembic.ini"))).get_current_head()
         with self.app.connect() as conn:
-            self.assertEqual(conn.execute(text("SELECT version_num FROM today_app.alembic_version")).scalar(), "0001_baseline")
+            self.assertEqual(conn.execute(text("SELECT version_num FROM today_app.alembic_version")).scalar(), expected)
         with self.app.connect() as conn, self.assertRaises(DBAPIError):
             conn.execute(text("UPDATE today_app.alembic_version SET version_num=version_num"))
 
