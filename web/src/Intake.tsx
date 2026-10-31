@@ -22,6 +22,32 @@ type Props = {
 
 type ReviewEdit = { label: string; state: ReviewedItem['state'] }
 
+function questionMatches(value: IntakeQuestion, id: string, profile: Profile) {
+  return (
+    !!value &&
+    value.id === id &&
+    value.profile_id === profile.id &&
+    profile.intake_state.active_question_id === id &&
+    value.base_revision === profile.revision &&
+    value.status === 'ready' &&
+    value.selection_mode === 'single' &&
+    typeof value.question === 'string' &&
+    value.question.trim().length > 0 &&
+    Array.isArray(value.options) &&
+    value.options.length > 0 &&
+    value.options.every(
+      (option) =>
+        option &&
+        typeof option.id === 'string' &&
+        option.id.length > 0 &&
+        typeof option.label === 'string' &&
+        option.label.trim().length > 0,
+    ) &&
+    new Set(value.options.map((option) => option.id)).size ===
+      value.options.length
+  )
+}
+
 const answerLabels: Record<keyof Answers, string> = {
   entry_intent: '시작한 이유',
   field_code: '관심 분야',
@@ -125,6 +151,9 @@ function jobMessage(job: Job) {
 export function Intake({ profile, onProfile, onRun }: Props) {
   const [options, setOptions] = useState<OnboardingOptions | null>(null)
   const [question, setQuestion] = useState<IntakeQuestion | null>(null)
+  const [questionLoading, setQuestionLoading] = useState(false)
+  const [questionError, setQuestionError] = useState('')
+  const [questionAttempt, setQuestionAttempt] = useState(0)
   const [interpretation, setInterpretation] = useState<Interpretation | null>(
     null,
   )
@@ -287,7 +316,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       throw new Error('현재 입력의 작업이 아니에요.')
     if (result.status !== 'succeeded')
       throw new Error(result.error?.message || '작업을 완료하지 못했어요.')
-    const next = await refresh(signal)
+    await refresh(signal)
     if (signal.aborted) return
     if (result.kind === 'recommendation') {
       if (!result.result?.recommendation_run_id)
@@ -308,11 +337,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         { signal },
       )
       if (signal.aborted) return
-      if (
-        found.profile_id === next.id &&
-        found.base_revision === latest.current.revision &&
-        found.status === 'ready'
-      )
+      if (questionMatches(found, result.result.question_id, latest.current))
         setQuestion(found)
       else
         setNotice(
@@ -373,30 +398,39 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     const controller = new AbortController()
     const id = profile.intake_state.active_question_id
     setQuestion(null)
+    setQuestionLoading(!!id)
+    setQuestionError('')
     if (id) {
       void request<IntakeQuestion>(`/questions/${encodeURIComponent(id)}`, {
         signal: controller.signal,
       })
         .then((value) => {
-          if (
-            !controller.signal.aborted &&
-            value.profile_id === latest.current.id &&
-            value.base_revision === latest.current.revision &&
-            value.status === 'ready'
-          )
-            setQuestion(value)
+          if (controller.signal.aborted) return
+          if (!questionMatches(value, id, latest.current))
+            throw new Error(
+              '질문 응답이 현재 입력과 맞지 않아요. 최신 입력을 확인한 뒤 다시 불러와 주세요.',
+            )
+          setQuestion(value)
         })
         .catch((cause: unknown) => {
           if (!controller.signal.aborted)
-            setError(
+            setQuestionError(
               cause instanceof Error
                 ? cause.message
                 : '질문을 불러오지 못했어요.',
             )
         })
+        .finally(() => {
+          if (!controller.signal.aborted) setQuestionLoading(false)
+        })
     }
     return () => controller.abort()
-  }, [profile.id, profile.revision, profile.intake_state.active_question_id])
+  }, [
+    profile.id,
+    profile.revision,
+    profile.intake_state.active_question_id,
+    questionAttempt,
+  ])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -751,7 +785,29 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             진행 중이던 작업 확인
           </button>
         )}
-        {question && question.base_revision === profile.revision ? (
+        {profile.intake_state.active_question_id && !question && (
+          <div className="stack">
+            {questionLoading && (
+              <p role="status">저장된 질문을 불러오고 있어요…</p>
+            )}
+            {questionError && (
+              <p role="alert" className="error">
+                {questionError}
+              </p>
+            )}
+            {!questionLoading && (
+              <button
+                disabled={busy}
+                onClick={() => setQuestionAttempt((value) => value + 1)}
+              >
+                저장된 질문 다시 불러오기
+              </button>
+            )}
+          </div>
+        )}
+        {question &&
+        question.base_revision === profile.revision &&
+        question.id === profile.intake_state.active_question_id ? (
           <div className="stack">
             {question.origin === 'fallback' && (
               <p className="muted">서버가 제공한 기본 질문입니다.</p>
@@ -776,6 +832,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             </div>
           </div>
         ) : (
+          !profile.intake_state.active_question_id &&
           profile.intake_state.next_action === 'generate_question' && (
             <button
               className="primary"
