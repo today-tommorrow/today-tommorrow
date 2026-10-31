@@ -56,6 +56,27 @@ class QuestionValidationTests(unittest.TestCase):
             with self.subTest(field=field), self.assertRaises(QuestionError):
                 validate(example)
 
+    def test_patch_schema_bounds(self):
+        cases = [
+            ("budget_krw", -1, False),
+            ("budget_krw", 0, True),
+            ("goal_text", "가" * 2001, False),
+            ("goal_text", "가" * 2000, True),
+            ("constraints_text", "가" * 2001, False),
+            ("constraints_text", "가" * 2000, True),
+        ]
+        for slot, value, accepted in cases:
+            example = copy.deepcopy(EXAMPLE)
+            example["target_slot"] = slot
+            for option in example["options"]:
+                option["answer_patch"] = {slot: value}
+            with self.subTest(slot=slot, accepted=accepted):
+                if accepted:
+                    self.assertEqual(validate(example, eligible_slots={slot}).target_slot, slot)
+                else:
+                    with self.assertRaisesRegex(QuestionError, "^invalid_question_json$"):
+                        validate(example, eligible_slots={slot})
+
     def test_duplicates(self):
         for field in ["key", "label"]:
             example = copy.deepcopy(EXAMPLE)

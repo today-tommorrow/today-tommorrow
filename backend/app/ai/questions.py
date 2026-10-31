@@ -36,11 +36,11 @@ class AnswerPatch(ContractModel):
     delivery_mode: Literal["online", "offline", "hybrid", "any", "unknown"] | None = None
     commute_region: str | None = None
     budget_status: Literal["amount", "no_limit", "unknown"] | None = None
-    budget_krw: int | None = None
+    budget_krw: Annotated[int, Field(ge=0)] | None = None
     start_timing: Literal["soon", "one_to_three_months", "browse", "unknown"] | None = None
     document_decision: Literal["provided", "none"] | None = None
-    goal_text: str | None = None
-    constraints_text: str | None = None
+    goal_text: Annotated[str, Field(max_length=2000)] | None = None
+    constraints_text: Annotated[str, Field(max_length=2000)] | None = None
     interest_activity: str | None = None
 
 
