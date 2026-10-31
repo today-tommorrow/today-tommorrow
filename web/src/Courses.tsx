@@ -163,6 +163,15 @@ function comparison(value: { items: CourseDetail[] }) {
   return value
 }
 
+function validComparisonIds(ids: string[]) {
+  return (
+    ids.length >= 2 &&
+    ids.length <= 3 &&
+    new Set(ids.map((id) => id.toLowerCase())).size === ids.length &&
+    ids.every((id) => /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(id))
+  )
+}
+
 type LoadState<T> = {
   path: string
   data: T | null
@@ -475,7 +484,13 @@ export function CourseDetails({ courseId }: { courseId: string }) {
   )
 }
 
-function CompareCourses({ ids }: { ids: string[] }) {
+function CompareCourses({
+  ids,
+  onClose,
+}: {
+  ids: string[]
+  onClose: () => void
+}) {
   const remote = useRemote(
     `/courses/compare?${new URLSearchParams({ ids: ids.join(',') })}`,
     comparison,
@@ -484,18 +499,37 @@ function CompareCourses({ ids }: { ids: string[] }) {
   const matches =
     data &&
     data.items.length === ids.length &&
-    new Set(data.items.map((course) => course.id)).size === ids.length &&
-    data.items.every((course) => ids.includes(course.id))
+    new Set(data.items.map((course) => course.id.toLowerCase())).size ===
+      ids.length &&
+    data.items.every((course) =>
+      ids.some((id) => id.toLowerCase() === course.id.toLowerCase()),
+    )
+  const ordered =
+    matches && data
+      ? ids.flatMap((id) =>
+          data.items.filter(
+            (course) => course.id.toLowerCase() === id.toLowerCase(),
+          ),
+        )
+      : []
   return (
     <section className="panel stack" aria-label="교육 비교 결과">
-      <h2>선택한 교육 비교</h2>
-      <LoadMessage {...remote} />
-      {data && !matches && (
-        <p role="alert">선택한 교육과 비교 결과가 다릅니다.</p>
-      )}
+      <div className="section-heading">
+        <h2>선택한 교육 비교</h2>
+        <button type="button" onClick={onClose}>
+          비교 닫기
+        </button>
+      </div>
+      <LoadMessage
+        {...remote}
+        error={
+          remote.error ||
+          (data && !matches ? '선택한 교육과 비교 결과가 다릅니다.' : null)
+        }
+      />
       {matches && data && (
         <div className="comparison-grid">
-          {data.items.map((course) => (
+          {ordered.map((course) => (
             <article className="panel" key={course.id}>
               <DetailBody course={course} />
             </article>
@@ -518,6 +552,7 @@ function ResultContent({ runId }: { runId: string }) {
   const [detailId, setDetailId] = useState<string | null>(null)
   const [selected, setSelected] = useState<string[]>([])
   const [compareIds, setCompareIds] = useState<string[]>([])
+  const [comparisonError, setComparisonError] = useState('')
   const run = remote.data
   const resultNames = {
     matches: '확인된 조건에 맞는 교육',
@@ -527,6 +562,7 @@ function ResultContent({ runId }: { runId: string }) {
   }
   function select(id: string, checked: boolean) {
     setCompareIds([])
+    setComparisonError('')
     setSelected((current) =>
       checked
         ? [...new Set([...current, id])].slice(0, 3)
@@ -609,6 +645,7 @@ function ResultContent({ runId }: { runId: string }) {
                   <label>
                     <input
                       type="checkbox"
+                      aria-label={`${item.course.name} 비교에 추가`}
                       checked={selected.includes(item.course.id)}
                       disabled={
                         selected.length >= 3 &&
@@ -630,13 +667,39 @@ function ResultContent({ runId }: { runId: string }) {
               <button
                 type="button"
                 disabled={selected.length < 2}
-                onClick={() => setCompareIds([...selected])}
+                onClick={() => {
+                  if (!validComparisonIds(selected)) {
+                    setComparisonError(
+                      '선택한 교육 정보를 확인할 수 없어 비교하지 못했어요. 다른 교육을 선택해 주세요.',
+                    )
+                    return
+                  }
+                  setComparisonError('')
+                  setCompareIds([...selected])
+                }}
               >
                 선택한 교육 비교
               </button>
+              <button
+                type="button"
+                disabled={selected.length === 0}
+                onClick={() => {
+                  setSelected([])
+                  setCompareIds([])
+                  setComparisonError('')
+                }}
+              >
+                선택 초기화
+              </button>
             </div>
           )}
-          {compareIds.length >= 2 && <CompareCourses ids={compareIds} />}
+          {comparisonError && <p role="alert">{comparisonError}</p>}
+          {compareIds.length >= 2 && (
+            <CompareCourses
+              ids={compareIds}
+              onClose={() => setCompareIds([])}
+            />
+          )}
           {detailId && (
             <div className="stack">
               <button type="button" onClick={() => setDetailId(null)}>
