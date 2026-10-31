@@ -173,14 +173,24 @@ describe('자료 등록 시 미등록 초안 보존', () => {
   it.each(['files', 'links', 'texts'] as const)(
     '%s만 등록하면 다른 자료 입력은 유지한다',
     async (source) => {
+      const registeredDocument: Document = {
+        ...document,
+        source_type:
+          source === 'files' ? 'file' : source === 'links' ? 'url' : 'text',
+        source_url: source === 'links' ? 'https://example.org/source' : null,
+      }
       serve((path, init) => {
         if (
           path === `/api/profiles/profile-1/documents/${source}` &&
           init.method === 'POST'
         )
-          return json({ document, profile_revision: 2 })
+          return json({ document: registeredDocument, profile_revision: 2 })
         if (path === '/api/profiles/profile-1')
-          return json({ ...profile(), revision: 2, documents: [document] })
+          return json({
+            ...profile(),
+            revision: 2,
+            documents: [registeredDocument],
+          })
         throw new Error(`예상하지 않은 요청: ${path}`)
       })
       render(<Harness />)
