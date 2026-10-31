@@ -206,6 +206,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const [kind, setKind] = useState<DocumentKind>('resume')
   const [file, setFile] = useState<File | null>(null)
   const [fileInputKey, setFileInputKey] = useState(0)
+  const [pendingDocument, setPendingDocument] =
+    useState<DocumentAccepted | null>(null)
   const [reviewEdits, setReviewEdits] = useState<Record<string, ReviewEdit>>({})
   const [reviewRevision, setReviewRevision] = useState<number | null>(null)
   const [error, setError] = useState('')
@@ -640,10 +642,16 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     signal: AbortSignal,
   ) {
     if (!options) throw new Error('자료 등록 조건을 먼저 불러와야 해요.')
+    if (pendingDocument) throw new Error('접수된 자료를 먼저 확인해 주세요.')
     if (latest.current.documents.length >= options.max_profile_documents)
       throw new Error('등록 가능한 자료 수를 초과했어요.')
+    if (source === 'texts' && !documentText.trim())
+      throw new Error('자료 내용을 입력해 주세요.')
+    const expectedRevision = latest.current.revision
+    const submittedText = documentText
+    const submittedUrl = documentUrl
     let body: unknown = {
-      expected_revision: latest.current.revision,
+      expected_revision: expectedRevision,
       kind,
       ...(source === 'links' ? { url: documentUrl } : { text: documentText }),
     }
@@ -660,7 +668,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       if (file.size > options.max_upload_bytes)
         throw new Error('파일이 업로드 크기 제한을 초과했어요.')
       const form = new FormData()
-      form.set('expected_revision', String(latest.current.revision))
+      form.set('expected_revision', String(expectedRevision))
       form.set('kind', kind)
       form.set('file', file)
       body = form
@@ -672,13 +680,63 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       { method: 'POST', body, signal },
     )
     if (signal.aborted) return
-    if (source === 'texts') setDocumentText('')
-    if (source === 'links') setDocumentUrl('')
+    const document = accepted?.document
+    if (
+      !document ||
+      document.profile_id !== latest.current.id ||
+      typeof document.id !== 'string' ||
+      !document.id.trim() ||
+      document.kind !== kind ||
+      document.source_type !==
+        { files: 'file', links: 'url', texts: 'text' }[source] ||
+      !['queued', 'processing', 'ready', 'failed'].includes(document.status) ||
+      (document.job_id !== null &&
+        (typeof document.job_id !== 'string' || !document.job_id.trim())) ||
+      !Number.isInteger(accepted.profile_revision) ||
+      accepted.profile_revision <= expectedRevision
+    )
+      throw new Error(
+        '자료 등록 응답을 확인할 수 없어요. 최신 입력을 확인한 뒤 다시 시도해 주세요.',
+      )
+    setPendingDocument(accepted)
+    if (document.job_id) rememberJob(document.job_id)
+    if (source === 'texts')
+      setDocumentText((current) => (current === submittedText ? '' : current))
+    if (source === 'links')
+      setDocumentUrl((current) => (current === submittedUrl ? '' : current))
     if (source === 'files') {
       setFile(null)
       setFileInputKey((value) => value + 1)
     }
-    await refresh(signal)
+    await confirmDocument(accepted, signal)
+  }
+
+  async function confirmDocument(
+    accepted: DocumentAccepted,
+    signal: AbortSignal,
+  ) {
+    const next = await request<Profile>(path, { signal })
+    if (signal.aborted) return
+    if (
+      !Array.isArray(next?.documents) ||
+      !next.documents.some(
+        (document) =>
+          document.id === accepted.document.id &&
+          document.profile_id === latest.current.id,
+      )
+    )
+      throw new Error(
+        '등록한 자료가 목록에서 확인되지 않아요. 등록한 자료를 다시 확인해 주세요.',
+      )
+    if (next.revision < accepted.profile_revision)
+      throw new Error(
+        '등록한 자료의 최신 버전을 아직 확인하지 못했어요. 등록한 자료를 다시 확인해 주세요.',
+      )
+    applyProfile(next, accepted.profile_revision)
+    setPendingDocument(null)
+    setNotice(
+      '자료 등록을 확인했어요. 처리 상태와 추출 미리보기를 확인해 주세요.',
+    )
     if (accepted.document.job_id)
       await finishJob(accepted.document.job_id, signal)
   }
@@ -745,7 +803,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       'review_sources',
       'resolve_conflict',
       'review',
-    ].includes(profile.intake_state.next_action) || profile.documents.length > 0
+    ].includes(profile.intake_state.next_action) ||
+    profile.documents.length > 0 ||
+    pendingDocument !== null
   const interpretationReady =
     interpretation?.profile_id === profile.id &&
     interpretation.status === 'ready' &&
@@ -869,7 +929,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             대기 중지
           </button>
         )}
-        {pendingJob && !busy && (
+        {pendingJob && !busy && !pendingDocument && (
           <button
             onClick={() =>
               void perform((signal) => finishJob(pendingJob, signal))
@@ -1120,7 +1180,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               />
             </label>
             <button
-              disabled={!file}
+              disabled={!file || !!pendingDocument}
               onClick={() =>
                 void perform((signal) => addDocument('files', signal))
               }
@@ -1136,7 +1196,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               />
             </label>
             <button
-              disabled={!documentUrl.trim()}
+              disabled={!documentUrl.trim() || !!pendingDocument}
               onClick={() =>
                 void perform((signal) => addDocument('links', signal))
               }
@@ -1151,7 +1211,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               />
             </label>
             <button
-              disabled={!documentText.trim()}
+              disabled={!documentText.trim() || !!pendingDocument}
               onClick={() =>
                 void perform((signal) => addDocument('texts', signal))
               }
@@ -1159,6 +1219,24 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               텍스트 등록
             </button>
           </fieldset>
+          {pendingDocument && (
+            <div className="stack">
+              <p role="status">
+                자료 등록은 접수됐어요. 목록을 다시 확인하면 처리 상태를 볼 수
+                있어요.
+              </p>
+              <button
+                disabled={busy}
+                onClick={() =>
+                  void perform((signal) =>
+                    confirmDocument(pendingDocument, signal),
+                  )
+                }
+              >
+                등록한 자료 다시 확인
+              </button>
+            </div>
+          )}
           {profile.documents.map((document) => (
             <article className="document-card stack" key={document.id}>
               <h3>{document.display_name}</h3>
@@ -1178,8 +1256,17 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   텍스트로 다시 등록할 수 있어요.
                 </p>
               )}
-              {document.extracted_preview && (
-                <blockquote>{document.extracted_preview}</blockquote>
+              {document.status === 'ready' && (
+                <div>
+                  <p className="muted">
+                    추출 미리보기이며 원문 전체가 아닐 수 있어요.
+                  </p>
+                  {document.extracted_preview ? (
+                    <blockquote>{document.extracted_preview}</blockquote>
+                  ) : (
+                    <p>추출 미리보기가 제공되지 않았어요.</p>
+                  )}
+                </div>
               )}
               <div className="buttons">
                 {document.job_id &&
@@ -1228,6 +1315,12 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                           `/documents/${encodeURIComponent(document.id)}?expected_revision=${latest.current.revision}`,
                           { method: 'DELETE', signal },
                         )
+                        if (signal.aborted) return
+                        if (pendingDocument?.document.id === document.id) {
+                          setPendingDocument(null)
+                          if (pendingJob === pendingDocument.document.job_id)
+                            rememberJob(null)
+                        }
                         await refresh(signal)
                       })
                   }}
@@ -1239,7 +1332,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           ))}
           {profile.documents.length === 0 && (
             <button
-              disabled={busy}
+              disabled={busy || !!pendingDocument}
               onClick={() =>
                 void perform(async (signal) => {
                   const next = await request<Profile>(path, {
