@@ -47,7 +47,12 @@ class NodeRuntimeTests(unittest.TestCase):
         self.assertFalse(usable_node(node, "26.5.0"))
 
     def test_missing_pair_never_downloads_for_dev_or_check(self):
-        with patch.dict(os.environ, {"PATH": ""}, clear=True), patch("node_runtime.install_node") as install:
+        with (
+            patch.dict(os.environ, {"PATH": ""}, clear=True),
+            patch("node_runtime.platform.system", return_value="Darwin"),
+            patch("node_runtime.platform.machine", return_value="arm64"),
+            patch("node_runtime.install_node") as install,
+        ):
             with self.assertRaisesRegex(ValueError, "./setup"):
                 node_environment(self.root, allow_download=False)
             install.assert_not_called()
