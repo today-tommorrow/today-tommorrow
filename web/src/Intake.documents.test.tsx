@@ -415,6 +415,7 @@ describe('파일·텍스트 자료 등록', () => {
         ),
       ).toBeTruthy()
       expect(sessionStorage.getItem(storageKey)).toBe(hasJob ? jobId : null)
+      expect(button('자료 없이 진행').disabled).toBe(true)
       typeText('접수 후 새로 작성한 문장')
       expect(button().disabled).toBe(true)
       fireEvent.click(button())
@@ -455,6 +456,42 @@ describe('파일·텍스트 자료 등록', () => {
       expect(sessionStorage.getItem(storageKey)).toBeNull()
     },
   )
+
+  it('최신 입력의 다음 단계가 바뀌어도 접수 자료 복구를 숨기지 않는다', async () => {
+    let reads = 0
+    serve((path) => {
+      if (path === `${profilePath}/documents/texts`)
+        return Response.json(accepted(), { status: 202 })
+      if (path === profilePath) {
+        reads++
+        if (reads === 1) return new Response(null, { status: 503 })
+        if (reads === 2)
+          return Response.json({
+            ...profile,
+            revision: 2,
+            intake_state: {
+              ...profile.intake_state,
+              next_action: 'generate_question',
+            },
+          })
+        return Response.json(registered())
+      }
+      throw new Error(`Unexpected ${path}`)
+    })
+    render(<Harness />)
+    await ready()
+    typeText()
+    fireEvent.click(button())
+    await screen.findByText(
+      '현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
+    )
+    fireEvent.click(button('최신 입력 확인'))
+    await waitFor(() => expect(changed).toHaveBeenCalledTimes(1))
+    await ready()
+    expect(button('자료 없이 진행').disabled).toBe(true)
+    fireEvent.click(button('등록한 자료 다시 확인'))
+    await screen.findByText(confirmedMessage)
+  })
 
   it('등록 자료가 빠진 목록은 완료 처리하지 않고 같은 조회를 다시 확인한다', async () => {
     let reads = 0

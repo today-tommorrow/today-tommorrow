@@ -803,7 +803,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       'review_sources',
       'resolve_conflict',
       'review',
-    ].includes(profile.intake_state.next_action) || profile.documents.length > 0
+    ].includes(profile.intake_state.next_action) ||
+    profile.documents.length > 0 ||
+    pendingDocument !== null
   const interpretationReady =
     interpretation?.profile_id === profile.id &&
     interpretation.status === 'ready' &&
@@ -1324,7 +1326,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           ))}
           {profile.documents.length === 0 && (
             <button
-              disabled={busy}
+              disabled={busy || !!pendingDocument}
               onClick={() =>
                 void perform(async (signal) => {
                   const next = await request<Profile>(path, {
