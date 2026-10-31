@@ -370,12 +370,14 @@ function ConditionChecks({ checks }: { checks: ConstraintCheck[] }) {
 
 function SaveCourse({
   courseId,
+  courseName,
   initiallySaved = false,
   onChange,
 }: {
   courseId: string
+  courseName: string
   initiallySaved?: boolean
-  onChange?: () => void
+  onChange?: (notice: string) => void
 }) {
   const [saved, setSaved] = useState(initiallySaved)
   const [busy, setBusy] = useState(false)
@@ -397,10 +399,11 @@ function SaveCourse({
       })
       if (!controller.signal.aborted) {
         setSaved(!saved)
-        setNotice(
-          saved ? '관심 교육에서 해제했습니다.' : '관심 교육에 저장했습니다.',
-        )
-        onChange?.()
+        const notice = saved
+          ? `${courseName}의 관심 해제 요청을 완료했습니다.`
+          : `${courseName}의 관심 저장 요청을 완료했습니다.`
+        if (onChange) onChange(notice)
+        else setNotice(notice)
       }
     } catch (error: unknown) {
       if (!controller.signal.aborted) setError(message(error))
@@ -409,10 +412,16 @@ function SaveCourse({
       operation.current = null
     }
   }
+  const action = saved ? '관심 교육 해제' : '관심 교육 저장'
   return (
     <div>
-      <button type="button" disabled={busy} onClick={() => void toggle()}>
-        {busy ? '처리 중…' : saved ? '관심 교육 해제' : '관심 교육 저장'}
+      <button
+        type="button"
+        disabled={busy}
+        aria-label={`${courseName} ${action}${busy ? ' 중' : ''}`}
+        onClick={() => void toggle()}
+      >
+        {busy ? '처리 중…' : action}
       </button>
       {error && <p role="alert">{error}</p>}
       {notice && <p role="status">{notice}</p>}
@@ -641,7 +650,10 @@ function ResultContent({ runId }: { runId: string }) {
                   >
                     교육 상세
                   </button>
-                  <SaveCourse courseId={item.course.id} />
+                  <SaveCourse
+                    courseId={item.course.id}
+                    courseName={item.course.name}
+                  />
                   <label>
                     <input
                       type="checkbox"
@@ -717,9 +729,11 @@ function ResultContent({ runId }: { runId: string }) {
 export function SavedCourses() {
   const remote = useRemote('/me/saved-courses', savedList)
   const [detailId, setDetailId] = useState<string | null>(null)
+  const [notice, setNotice] = useState('')
   return (
     <section className="stack" aria-label="관심 교육">
       <h1>관심 교육</h1>
+      {notice && <p role="status">{notice}</p>}
       <LoadMessage {...remote} />
       {remote.data?.items.length === 0 && <p>저장한 교육이 없습니다.</p>}
       {remote.data?.items.map((course) => (
@@ -733,8 +747,10 @@ export function SavedCourses() {
             </button>
             <SaveCourse
               courseId={course.id}
+              courseName={course.name}
               initiallySaved
-              onChange={() => {
+              onChange={(notice) => {
+                setNotice(notice)
                 setDetailId(null)
                 remote.retry()
               }}
