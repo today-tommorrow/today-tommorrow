@@ -1,0 +1,9 @@
+# Text document registration
+
+`POST /api/profiles/{id}/documents/texts` accepts `expected_revision`, `kind` (`resume`, `job_description`, `portfolio`, or `other`), and a nonempty `text` string. It requires the service session and CSRF protection. The default limit is 100,000 UTF-8 bytes per text and five documents per profile. Operators can set `DOCUMENT_MAX_TEXT_BYTES` (1–1,000,000) and `DOCUMENT_MAX_PER_PROFILE` (1–100). JSON transport has a separate bound so escaped Unicode at the text limit is accepted. NUL and invalid Unicode are rejected.
+
+A successful 202 response contains `document` and the new `profile_revision`. `GET /api/documents/{id}` and profile GET return public metadata only. Original text and chunks remain private in `today_app`; the SHA-256 digest and byte count cover the exact UTF-8 input. A private chunk records the complete text and its character offsets. All responses use `Cache-Control: no-store`; other owners receive 404. Invalid input, stale revisions, and capacity errors do not reveal text.
+
+An optional `Idempotency-Key` (1–128 printable ASCII characters) replays the accepted response for identical requests; reuse with different input returns 409. Without a key, profile, revision, kind and content digest form a deterministic identity. Registration, revision change, question invalidation and replay record commit together. Registration sets `document_decision` to `provided`; PATCH cannot set it to `none` while documents exist. Profiles with documents do not receive a review token.
+
+Text is stored for later processing. The public state is `queued` with `job_id: null`; no worker is running and semantic analysis is not yet available. File upload, URL extraction, deletion, retry, and model inference are outside this slice. The shared course catalog is unchanged.

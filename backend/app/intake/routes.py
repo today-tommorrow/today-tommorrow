@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.auth.dependencies import DB, authenticated, authenticated_write
 from app.auth.routes import PRIVATE
 from app.auth.store import SessionPrincipal
+from app.documents.config import max_documents
 from app.intake import store
 from app.intake.question_config import questions_enabled
 from app.intake.schemas import ProfilePatch, profile_patch_schema
@@ -119,6 +120,8 @@ def patch_profile(
         raise ProfileError(404, "profile_not_found") from None
     except store.RevisionConflict:
         raise ProfileError(409, "revision_conflict") from None
+    except store.DocumentsPresent:
+        raise ProfileError(422, "invalid_profile_input") from None
     except SQLAlchemyError:
         db.rollback()
         raise ProfileError(503, "profile_unavailable") from None
@@ -155,8 +158,8 @@ def onboarding_options(user: ReadUser):
             "entry_intents": options(intents),
             "allowed_file_extensions": [],
             "max_upload_bytes": 0,
-            "max_profile_documents": 0,
-            "upload_limit_note": "자료 등록은 아직 지원하지 않습니다.",
+            "max_profile_documents": max_documents(),
+            "upload_limit_note": "텍스트만 저장됩니다. 분석 기능은 아직 제공되지 않아 대기 상태에서 자동 처리되지 않습니다.",
             "branch_rules_version": "1",
             "intake_policy_version": "1",
             "allowed_catalog_sources": ["work24"],

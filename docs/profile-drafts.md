@@ -42,7 +42,7 @@ PATCH의 `answers`는 일부 필드를 합치는 patch가 아니라 **현재까�
 
 분야를 바꾸면 기존 경험·목표 답변을 보존하고 `unresolved_conflicts`로 재확인을 요구한다. 같은 전체 답변을 다시 보내는 것으로 재확인을 해제하지 않는다. 관련 키를 제거해 다시 선택하거나 다른 값을 명시하면 해당 재확인이 해제된다. 선택형 질문과 답변 적용은 [질문 API·Worker](question-jobs.md)에서 이 revision 계약과 연결한다.
 
-선택형 질문 생성·작업 조회/취소·답변 API는 [질문 API·Worker 안내](question-jobs.md)에 구현되어 있다. 옵션의 `question_generation_enabled`는 실제 모델 URL과 모델 ID가 설정된 경우에만 true다. 해석·자료 API는 아직 미구현이며, 업로드 한도와 개수는 0이다. 자료 없는 입력이 완료되면 현재 revision과 답변·선택 문구에 묶인 `review_token`을 반환한다. 제출·취소·재시도·저장된 결과 조회는 [추천 작업](recommendation-jobs.md)을 따른다. 완료 구역 표시만으로 제출 가능하다고 판단하지 않고 token과 현재 입력 상태를 함께 확인한다. `documents`는 비어 있고 `latest_interpretation_id`는 null이다. `selection_summaries`는 현재 답변과 일치하는 최신 질문 선택을 슬롯별로 보여주며, 직접 수정으로 달라진 선택의 라벨은 표시하지 않는다. GET은 모델을 호출하거나 새 질문을 만들지 않는다.
+Question generation is described in [question jobs](question-jobs.md). Text registration is available as described in [text documents](text-documents.md). Registered documents appear in `documents`; their semantic analysis is not yet available and `latest_interpretation_id` remains null. A profile with documents has no review token, and it cannot switch to `document_decision:none`. Document-free completed profiles receive a revision-bound review token. `selection_summaries` shows matching current question selections. GET does not invoke a model or create questions.
 
 ## 다시 열기(D06)
 
