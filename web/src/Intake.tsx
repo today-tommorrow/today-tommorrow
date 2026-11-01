@@ -264,6 +264,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     'loading' | 'ready' | 'error'
   >(profile.status === 'submitted' ? 'loading' : 'ready')
   const [recoveryAttempt, setRecoveryAttempt] = useState(0)
+  const [recoveryError, setRecoveryError] = useState('')
   const pendingJobRef = useRef(pendingJob)
   pendingJobRef.current = pendingJob
   const active = useRef<AbortController | null>(null)
@@ -531,6 +532,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   useEffect(() => {
     if (profile.status !== 'submitted') {
       setRecoveryState('ready')
+      setRecoveryError('')
       return
     }
     const controller = new AbortController()
@@ -560,6 +562,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         ) {
           throw new Error('추천 작업 응답이 현재 입력과 맞지 않아요.')
         }
+        setRecoveryError('')
         // Do not replace an active or locally remembered question job.
         // Keep recovery blocked until the user can explicitly check again.
         if (value.job && (pendingJobRef.current || active.current)) {
@@ -580,7 +583,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           latest.current.revision === revision
         ) {
           setRecoveryState('error')
-          setError(
+          setRecoveryError(
             cause instanceof Error
               ? cause.message
               : '추천 작업을 불러오지 못했어요.',
@@ -1151,6 +1154,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         {error && (
           <p role="alert" className="error">
             {error}
+          </p>
+        )}
+        {recoveryError && (
+          <p role="alert" className="error">
+            {recoveryError}
           </p>
         )}
         {!options && (
