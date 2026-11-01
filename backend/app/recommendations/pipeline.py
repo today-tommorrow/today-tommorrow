@@ -209,6 +209,7 @@ def safe_url(value: object) -> str | None:
         return None
     try:
         parsed = urlsplit(value)
+        _ = parsed.port
         return value if parsed.scheme in {"https", "http"} and parsed.hostname and not parsed.username and not parsed.password else None
     except ValueError:
         return None
@@ -225,23 +226,24 @@ def candidate_view(candidate: CourseCandidate, catalog: CatalogSnapshot) -> Json
     mode = {"온라인": "online", "서울 집체": "offline"}.get(str(metadata.get("mode")), "unknown")
     evidence: list[JsonObject] = []
 
-    def add_evidence(key: str, text: str | None, kind: str, inferred: bool = False) -> None:
+    def add_evidence(key: str, text: str | None, kind: str, source: str | None, inferred: bool = False) -> None:
         if not text:
             return
         excerpt = text[:int(CONFIG["excerpt_chars"])]
         evidence.append({
             "id": identity("evidence", catalog.dataset_id, candidate.source_course_id, candidate.source_tme, key),
-            "field_path": key, "quote": excerpt, "source_url": url, "source_system": "work24",
+            "field_path": key, "quote": excerpt, "source_url": source, "source_system": "work24",
             "checked_at": None, "verification_state": "unknown" if inferred else "observed", "kind": kind,
         })
 
-    add_evidence("course_name", name, "title")
-    add_evidence("objective", metadata_text(metadata.get("objective")), "content")
-    add_evidence("metadata.훈련대상요건", metadata_text(nested.get("훈련대상요건")), "prerequisite")
-    add_evidence("mode", metadata_text(metadata.get("mode")), "mode")
+    add_evidence("course_name", name, "title", url)
+    add_evidence("objective", metadata_text(metadata.get("objective")), "content", url)
+    add_evidence("metadata.훈련대상요건", metadata_text(nested.get("훈련대상요건")), "prerequisite", url)
+    add_evidence("mode", metadata_text(metadata.get("mode")), "mode", url)
     for unit in candidate.evidence:
         prefix = "inferred_units" if unit.is_inferred else "units"
-        add_evidence(f"{prefix}.{unit.unit_key}", unit.embed_text, "inferred" if unit.is_inferred else "content", unit.is_inferred)
+        add_evidence(f"{prefix}.{unit.unit_key}", unit.embed_text, "inferred" if unit.is_inferred else "content",
+                     safe_url(unit.source) or (None if unit.is_inferred else url), unit.is_inferred)
     start, end = source_date(metadata.get("start_date")), source_date(metadata.get("end_date"))
     return {
         "course": {"id": str(candidate.course_id), "name": name,
