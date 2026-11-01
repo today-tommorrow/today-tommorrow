@@ -3,6 +3,7 @@ import { courseDetailFixture } from './Courses.fixtures'
 import type {
   AuthSession,
   CourseDetail,
+  CoursePage,
   CourseSummary,
   Document,
   IntakeQuestion,
@@ -588,10 +589,12 @@ export function createFlowFixture(faults: Faults = {}) {
       )
     if (path === '/api/me/saved-courses')
       return Response.json({
+        next_cursor: null,
+        catalog_version_id: flowIds.catalog,
         items: flowCourses
           .filter((course) => saved.has(course.id))
           .map(summary),
-      })
+      } satisfies CoursePage)
     if (path.startsWith('/api/me/saved-courses/')) {
       if (remainingFaults.saveUnauthorized) {
         authenticated = false
