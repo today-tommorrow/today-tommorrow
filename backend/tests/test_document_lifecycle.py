@@ -1,6 +1,7 @@
 """Document lifecycle using synthetic content and real PostgreSQL."""
 
 import io
+import unittest
 from datetime import UTC, datetime
 from unittest.mock import patch
 from uuid import UUID, uuid4
@@ -11,11 +12,29 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 from test_file_documents import FileDocumentsTests
 
+from app.documents.lifecycle import scrub
 from app.documents.models import Document, DocumentChunk
 from app.intake.models import IntakeProfile
 from app.intake.question_models import IntakeQuestion, IntakeRequest
 from app.jobs.models import Job
 from app.recommendations.models import RecommendationRun
+
+
+class ScrubTests(unittest.TestCase):
+    def test_identifier_fields_match_exactly_and_text_redacts_quotes(self):
+        value = {
+            "source_item_ids": ["deleted-item", "another-item"],
+            "job_id": "another-job",
+            "question_id": "deleted-item",
+            "label": "sample",
+        }
+        self.assertEqual(
+            scrub(value, {"deleted-item"}, {"a"}),
+            {"source_item_ids": ["another-item"], "job_id": "another-job"},
+        )
+
+    def test_root_id_still_removes_record(self):
+        self.assertIsNone(scrub({"id": "deleted-item"}, {"deleted-item"}, {"a"}))
 
 
 class DocumentLifecycleTests(FileDocumentsTests):
@@ -552,6 +571,11 @@ class DocumentLifecycleTests(FileDocumentsTests):
                         {"id": "0", "text": "a"},
                         {"id": "other-item", "text": "sample"},
                         {"source_item_ids": ["other-item"], "label": "sample"},
+                        {
+                            "source_item_ids": ["0", "another-item"],
+                            "job_id": "another-job",
+                            "label": "sample",
+                        },
                     ],
                     "reviewed_items": [
                         {
@@ -609,6 +633,7 @@ class DocumentLifecycleTests(FileDocumentsTests):
                 [
                     {"id": "other-item", "text": "sample"},
                     {"source_item_ids": ["other-item"], "label": "sample"},
+                    {"source_item_ids": ["another-item"], "job_id": "another-job"},
                 ],
             )
             self.assertIsNone(db.get(Job, mixed_id).result_json)

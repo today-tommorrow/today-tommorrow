@@ -13,6 +13,21 @@ from app.intake.question_service import invalidate
 from app.jobs.models import Job
 from app.recommendations.models import RecommendationRun
 
+IDENTIFIER_FIELDS = frozenset(
+    {
+        "id",
+        "document_id",
+        "chunk_id",
+        "source_item_id",
+        "source_item_ids",
+        "job_id",
+        "question_id",
+        "active_question_id",
+        "run_id",
+        "recommendation_run_id",
+    }
+)
+
 
 def contains(value, markers):
     if isinstance(value, str):
@@ -32,18 +47,7 @@ def references(value, identifiers):
         for key, item in value.items():
             if key in {"answers", "confirmed_answers"}:
                 continue
-            if key in {
-                "id",
-                "document_id",
-                "chunk_id",
-                "source_item_id",
-                "source_item_ids",
-                "job_id",
-                "question_id",
-                "active_question_id",
-                "run_id",
-                "recommendation_run_id",
-            } and contains(item, identifiers):
+            if key in IDENTIFIER_FIELDS and contains(item, identifiers):
                 return True
             if references(item, identifiers):
                 return True
@@ -120,7 +124,12 @@ def scrub(value, identifiers, quotes, *, source_record=False):
                 clean := (
                     deepcopy(v)
                     if k in {"answers", "confirmed_answers"}
-                    else scrub(v, identifiers, quotes, source_record=k == "sources")
+                    else scrub(
+                        v,
+                        identifiers,
+                        set() if k in IDENTIFIER_FIELDS else quotes,
+                        source_record=k == "sources",
+                    )
                 )
             )
             is not None
