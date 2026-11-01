@@ -34,6 +34,7 @@ SAFE_ERRORS = frozenset(
         "document_provider_unavailable",
         "invalid_document_input",
         "document_context_too_large",
+        "document_chunk_limit",
         "generation_cancelled",
         "invalid_model_response",
         "invalid_model_grounding",

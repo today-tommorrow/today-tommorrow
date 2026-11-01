@@ -200,8 +200,10 @@ class GemmaDocumentAnalyzer:
             "other",
         }:
             raise DocumentAnalysisError("invalid_document_input")
-        if not isinstance(chunks, tuple) or not 1 <= len(chunks) <= 100:
+        if not isinstance(chunks, tuple) or not chunks:
             raise DocumentAnalysisError("invalid_document_input")
+        if len(chunks) > 256:
+            raise DocumentAnalysisError("document_chunk_limit")
         seen_ids = set()
         for chunk in chunks:
             if not isinstance(chunk, DocumentChunkInput):

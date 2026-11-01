@@ -6,6 +6,7 @@ import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest.mock import patch
+from uuid import UUID
 
 from app.ai.document_analysis import (
     SYSTEM_PROMPT,
@@ -174,6 +175,52 @@ class DocumentAnalysisTests(unittest.TestCase):
             [(p.label, p.suggested_state, p.evidence_quote) for p in result.proposals],
             [(x["label"], x["suggested_state"], x["evidence_quote"]) for x in items],
         )
+
+    def test_chunk_limit_is_256_without_network_or_partial_result(self):
+        chunks = tuple(
+            DocumentChunkInput(str(UUID(int=index + 1)), "No relevant facts.")
+            for index in range(257)
+        )
+        with patch.object(
+            self.client, "_request", return_value={"items": []}
+        ) as request:
+            result = self.client.analyze(DOCUMENT, "resume", chunks[:256])
+            self.assertEqual(result.proposals, ())
+            self.assertEqual(
+                result.processed_chunk_ids,
+                tuple(chunk.chunk_id for chunk in chunks[:256]),
+            )
+            self.assertEqual(request.call_count, 256)
+        with patch.object(self.client, "_request") as request:
+            with self.assertRaisesRegex(
+                DocumentAnalysisError, "^document_chunk_limit$"
+            ) as caught:
+                self.client.analyze(DOCUMENT, "resume", chunks)
+            request.assert_not_called()
+            self.assertIsNone(caught.exception.failed_chunk_id)
+            self.assertEqual(caught.exception.processed_chunk_ids, ())
+        self.assertEqual(self.requests, [])
+
+    def test_proposal_limit_remains_100_independently_of_chunk_limit(self):
+        chunks = tuple(
+            DocumentChunkInput(str(UUID(int=index + 1)), "x") for index in range(101)
+        )
+
+        def response(payload, _cancelled):
+            request = json.loads(payload)
+            context = json.loads(request["messages"][1]["content"])
+            return {"items": [item(context["chunk_id"], "x", "x")]}
+
+        with patch.object(self.client, "_request", side_effect=response):
+            result = self.client.analyze(DOCUMENT, "resume", chunks[:100])
+            self.assertEqual(len(result.proposals), 100)
+            with self.assertRaisesRegex(
+                DocumentAnalysisError, "^document_output_too_large$"
+            ) as caught:
+                self.client.analyze(DOCUMENT, "resume", chunks)
+            self.assertEqual(len(caught.exception.processed_chunk_ids), 100)
+            self.assertEqual(caught.exception.failed_chunk_id, chunks[100].chunk_id)
+        self.assertEqual(self.requests, [])
 
     def test_invalid_provider_budgets_are_rejected_safely(self):
         base = {"timeout": 1, "max_tokens": 512, "max_response_bytes": 65536}

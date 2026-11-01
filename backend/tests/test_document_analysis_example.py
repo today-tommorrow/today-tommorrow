@@ -1,15 +1,19 @@
 """Tests for the opt-in synthetic demonstration; no model service required."""
 
 import importlib.util
+import io
 import json
 import os
 import subprocess
 import sys
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from app.ai.document_analysis import (
     DocumentAnalysis,
+    DocumentAnalysisError,
     DocumentChunkInput,
     DocumentProposal,
 )
@@ -172,6 +176,20 @@ class DocumentAnalysisExampleTests(unittest.TestCase):
             self.assertNotIn("sensitive-secret", response.stdout + response.stderr)
             self.assertEqual(response.stderr, "")
             self.assertIn("failure_code", json.loads(response.stdout))
+
+    def test_example_reports_chunk_limit_as_safe_failure(self):
+        captured = io.StringIO()
+        with (
+            patch.object(sys, "argv", [str(SCRIPT), "--live"]),
+            patch.object(
+                demo, "run", side_effect=DocumentAnalysisError("document_chunk_limit")
+            ),
+            redirect_stdout(captured),
+        ):
+            self.assertEqual(demo.main(), 1)
+        result = json.loads(captured.getvalue())
+        self.assertEqual(result["failure_code"], "document_chunk_limit")
+        self.assertEqual(result["processed_chunk_count"], 0)
 
     def test_no_live_flag_cannot_call_model(self):
         env = os.environ.copy()
