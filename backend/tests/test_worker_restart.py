@@ -4,6 +4,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 import unittest
 from datetime import UTC, datetime, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -13,7 +14,7 @@ from unittest.mock import patch
 from uuid import UUID
 
 import test_profile_drafts as profiles
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session
 from test_database_boundary import local_engine
 from test_question_flow import QuestionProvider
@@ -49,7 +50,7 @@ class WorkerRestartTests(unittest.TestCase):
         self.profile = self.fixture.create()
 
     def test_restarted_worker_reclaims_killed_attempt_and_saves_one_question(self):
-        entered, release, finished = Event(), Event(), Event()
+        entered, release, finished, retried = Event(), Event(), Event(), Event()
         calls = []
         draft = (
             QuestionProvider()
@@ -73,6 +74,8 @@ class WorkerRestartTests(unittest.TestCase):
                 first = not entered.is_set()
                 if first:
                     entered.set()
+                else:
+                    retried.set()
                 try:
                     if first and not release.wait(timeout=15):
                         return
@@ -112,6 +115,7 @@ class WorkerRestartTests(unittest.TestCase):
                 "QUESTION_MODEL_TIMEOUT_SECONDS": "5",
                 "WORKER_LEASE_SECONDS": "5",
                 "WORKER_MAX_ATTEMPTS": "3",
+                "WORKER_POLL_SECONDS": "0.1",
             }
             with patch.dict(os.environ, env):
                 accepted = self.fixture.client.post(
@@ -159,15 +163,66 @@ class WorkerRestartTests(unittest.TestCase):
             self.assertTrue(
                 finished.wait(timeout=3), "first model handler did not stop"
             )
-            restarted = subprocess.run(
-                command,
-                cwd=backend,
-                env=env,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                timeout=15,
-            )
-            self.assertEqual(restarted.returncode, 0)
+            # Simulate contention for the physical execution guard after death.
+            # A one-shot worker can miss this window; the daemon keeps polling.
+            with self.engine.connect().execution_options(
+                isolation_level="AUTOCOMMIT"
+            ) as guard:
+                guard.execute(text("SET statement_timeout = '5s'"))
+                guard.execute(text("SELECT pg_advisory_lock(741201, 2)"))
+                try:
+                    once = subprocess.run(
+                        command,
+                        cwd=backend,
+                        env=env,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        timeout=15,
+                    )
+                    self.assertEqual(once.returncode, 0)
+                    with Session(self.engine) as db:
+                        job = db.get(Job, job_id)
+                        assert job is not None
+                        self.assertEqual((job.status, job.attempt), ("running", 1))
+                    worker = subprocess.Popen(
+                        command[:-1],
+                        cwd=backend,
+                        env={**env, "PGAPPNAME": str(job_id)},
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                    )
+                    deadline = time.monotonic() + 10
+                    observed_attempt = False
+                    while time.monotonic() < deadline:
+                        with self.engine.connect() as observer:
+                            observed_attempt = bool(
+                                observer.scalar(
+                                    text(
+                                        "SELECT EXISTS (SELECT 1 FROM pg_stat_activity "
+                                        "WHERE application_name = :name AND "
+                                        "query LIKE 'SELECT pg_try_advisory_lock%')"
+                                    ),
+                                    {"name": str(job_id)},
+                                )
+                            )
+                        if observed_attempt or worker.poll() is not None:
+                            break
+                        Event().wait(0.05)
+                    self.assertTrue(observed_attempt, "daemon did not try the guard")
+                    self.assertFalse(retried.is_set())
+                    self.assertIsNone(worker.poll())
+                finally:
+                    guard.execute(text("SELECT pg_advisory_unlock(741201, 2)"))
+                    guard.execute(text("RESET statement_timeout"))
+            self.assertTrue(retried.wait(timeout=10), "worker did not retry model HTTP")
+            deadline = time.monotonic() + 10
+            while True:
+                with Session(self.engine) as db:
+                    job = db.get(Job, job_id)
+                    assert job is not None
+                    if job.status != "running" or time.monotonic() >= deadline:
+                        break
+                Event().wait(0.05)
             with Session(self.engine) as db:
                 job = db.get(Job, job_id)
                 assert job is not None
