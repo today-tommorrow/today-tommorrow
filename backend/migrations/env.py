@@ -5,6 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
 from app.db import include_migration_name, include_migration_object
+from app.documents import models as document_models  # noqa: F401
 from app.recommendations import models as recommendation_models  # noqa: F401
 from app.saved_courses.models import Base
 
@@ -30,5 +31,9 @@ with migration_engine.begin() as connection:
     with context.begin_transaction():
         context.run_migrations()
     # Default app-table grants must not allow the runtime to rewrite migration history.
-    connection.exec_driver_sql("REVOKE ALL ON TABLE today_app.alembic_version FROM today_app")
-    connection.exec_driver_sql("GRANT SELECT ON TABLE today_app.alembic_version TO today_app")
+    connection.exec_driver_sql(
+        "REVOKE ALL ON TABLE today_app.alembic_version FROM today_app"
+    )
+    connection.exec_driver_sql(
+        "GRANT SELECT ON TABLE today_app.alembic_version TO today_app"
+    )

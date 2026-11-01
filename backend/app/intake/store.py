@@ -17,6 +17,10 @@ class RevisionConflict(Exception):
     pass
 
 
+class DocumentsPresent(Exception):
+    pass
+
+
 def get_profile(
     db: Session, profile_id: UUID, user_id: UUID, *, lock: bool = False
 ) -> IntakeProfile:
@@ -51,6 +55,12 @@ def replace_answers(
     current = get_profile(db, profile_id, user_id, lock=True)
     if current.revision != expected_revision:
         raise RevisionConflict()
+    from app.documents.service import list_documents
+
+    if answers.get("document_decision") == "none" and list_documents(
+        db, profile_id, user_id
+    ):
+        raise DocumentsPresent()
     old = current.answers_json
     conflicts = [
         key
@@ -139,7 +149,11 @@ def selection_summaries(db: Session, row: IntakeProfile) -> list[dict[str, Any]]
 def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str, Any]:
     state = evaluate(row.answers_json, row.unresolved_conflicts_json)
     summaries = []
+    documents = []
     if db is not None:
+        from app.documents.service import list_documents
+
+        documents = list_documents(db, row.id, row.user_id)
         from app.intake.question_models import IntakeQuestion
 
         ready = db.scalar(
@@ -159,9 +173,11 @@ def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str,
         "status": row.status,
         "answers": row.answers_json,
         "reviewed_items": row.reviewed_items_json,
-        "documents": [],
+        "documents": documents,
         "completed_sections": state["completed_sections"],
-        "review_token": review_token(row, summaries) if db is not None else None,
+        "review_token": review_token(row, summaries)
+        if db is not None and not documents
+        else None,
         "updated_at": row.updated_at.isoformat(),
         "slot_origins": row.slot_origins_json,
         "unresolved_conflicts": active_conflicts(

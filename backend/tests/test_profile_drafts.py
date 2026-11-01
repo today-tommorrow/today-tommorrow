@@ -361,7 +361,7 @@ class ProfileDraftTests(unittest.TestCase):
         self.assertFalse(body["question_generation_enabled"])
         self.assertFalse(body["interpretation_enabled"])
         self.assertEqual(body["allowed_file_extensions"], [])
-        self.assertEqual(body["max_profile_documents"], 0)
+        self.assertEqual(body["max_profile_documents"], 5)
 
     def test_expired_session_and_database_failure_are_sanitized(self):
         with Session(self.engine) as db, db.begin():

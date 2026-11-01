@@ -12,6 +12,9 @@ from app.courses.errors import CourseError
 from app.courses.routes import course_error_handler
 from app.courses.routes import router as course_router
 from app.db import get_session
+from app.documents.routes import error_handler as document_error_handler
+from app.documents.routes import router as document_router
+from app.documents.service import DocumentError
 from app.intake.question_routes import question_error_handler
 from app.intake.question_routes import router as question_router
 from app.intake.question_service import QuestionServiceError
@@ -30,6 +33,8 @@ app.add_exception_handler(AuthError, auth_error_handler)
 app.include_router(auth_router)
 app.add_exception_handler(ProfileError, profile_error_handler)
 app.include_router(intake_router)
+app.add_exception_handler(DocumentError, document_error_handler)
+app.include_router(document_router)
 app.add_exception_handler(QuestionServiceError, question_error_handler)
 app.include_router(question_router)
 app.add_exception_handler(JobHTTPError, job_error_handler)
