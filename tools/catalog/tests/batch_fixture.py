@@ -1,5 +1,6 @@
 """Small, public synthetic packages with the same vector/profile boundary as Work24."""
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -23,7 +24,6 @@ def package(root: Path, config: dict, parent: str, names: list[str], *, mode: st
                 "vector_row": index, "hours": None, "source": "page", "is_noise": False, "is_inferred": False,
                 "provenance": [{"file": "synthetic.json", "source_hash": course["source_hash"], "collected_at": course["collected_at"]}],
                 "embedding_profile_id": profile, "dataset_id": dataset}
-        import hashlib
         unit["text_sha256"] = hashlib.sha256(unit["embed_text"].encode()).hexdigest()
         unit["unit_key"] = value_hash([unit[key] for key in ("course_id", "tme", "unit_type", "ncs_unit_code", "unit_name", "embed_text")])
         courses.append(course)
@@ -52,3 +52,16 @@ def refresh(root: Path, manifest: dict) -> tuple[dict, str]:
                              for name in DATA_FILES - {"manifest.json"}}
     (root / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     return manifest, file_hash(root / "manifest.json")
+
+
+def rewrite_row(root: Path, manifest: dict, artifact: str, updates: dict) -> tuple[dict, str]:
+    """Alter a synthetic row while preserving valid content/artifact checksums."""
+    path = root / artifact
+    rows = [json.loads(line) for line in path.read_text().splitlines()]
+    rows[0].update(updates)
+    if artifact == "units.jsonl":
+        rows[0]["text_sha256"] = hashlib.sha256(rows[0]["embed_text"].encode()).hexdigest()
+        rows[0]["unit_key"] = value_hash([rows[0][key] for key in (
+            "course_id", "tme", "unit_type", "ncs_unit_code", "unit_name", "embed_text")])
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows))
+    return refresh(root, manifest)

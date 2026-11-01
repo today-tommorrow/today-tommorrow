@@ -15,7 +15,7 @@ CATALOG = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(CATALOG), str(CATALOG / "tests")]
 
 from artifacts import value_hash  # noqa: E402
-from batch_fixture import package, refresh  # noqa: E402
+from batch_fixture import package, refresh, rewrite_row  # noqa: E402
 from batches import activate, stage  # noqa: E402
 from database import attest, initialize_snapshot, local_connections  # noqa: E402
 
@@ -129,6 +129,39 @@ class BatchDatabaseTests(unittest.TestCase):
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0]["report"], failed)
         self.assertEqual(self.active(), self.parent)
+
+    def test_unreadable_metadata_is_quarantined_before_activation_and_search_is_preserved(self):
+        query = """SELECT u.unit_key,c.metadata,u.unit_name,u.embed_text,
+            1-(u.embedding <=> (SELECT embedding FROM work24_bge.snapshot_unit
+                WHERE dataset_id=%s ORDER BY unit_key LIMIT 1)) AS similarity
+            FROM work24_bge.snapshot_unit u JOIN work24_bge.snapshot_course c
+              ON (c.dataset_id,c.course_id,c.tme)=(u.dataset_id,u.course_id,u.tme)
+            WHERE u.dataset_id=(SELECT dataset_id FROM work24_bge.active_catalog) AND u.active
+            ORDER BY similarity DESC,u.unit_key LIMIT 3"""
+        before = self.conn.execute(query, (self.parent,)).fetchall()
+        self.assertTrue(before)
+        snapshots = self.conn.execute("SELECT count(*) FROM work24_bge.dataset_snapshot").fetchone()
+        cases = [("units.jsonl", field, "") for field in ("unit_name", "unit_type", "embed_text")]
+        cases += [("courses.jsonl", "course_name", value) for value in ("", " \t\n")]
+        cases += [("units.jsonl", "hours", float("inf"))]
+        for index, (artifact, field, value) in enumerate(cases):
+            with self.subTest(field=field, value=value):
+                root, manifest, _digest = self.batch(f"invalid-{index}", ["synthetic-A"])
+                _manifest, digest = rewrite_row(root, manifest, artifact, {field: value})
+                report = stage(self.conn, root, digest)
+                self.assertEqual(report["state"], "failed", report)
+                self.assertEqual(report["error"], "invalid_catalog_metadata")
+                self.conn.commit()
+                failed = self.conn.execute("SELECT state,dataset_id,failure_history FROM work24_bge.catalog_batch WHERE batch_id=%s",
+                                           (report["batch_id"],)).fetchone()
+                self.assertEqual(failed[:2], ("failed", None))
+                self.assertEqual(failed[2][0]["report"], report)
+                with self.assertRaisesRegex(ValueError, "batch_not_ready"):
+                    activate(self.conn, report["batch_id"])
+                self.conn.rollback()
+                self.assertEqual(self.active(), self.parent)
+                self.assertEqual(self.conn.execute(query, (self.parent,)).fetchall(), before)
+                self.assertEqual(self.conn.execute("SELECT count(*) FROM work24_bge.dataset_snapshot").fetchone(), snapshots)
 
     def test_cli_stages_then_activates_with_atomic_reports(self):
         root, _manifest, digest = self.batch("cli", ["synthetic-A"])

@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from batch_fixture import package, refresh
+from batch_fixture import package, refresh, rewrite_row
 from batches import coverage, read_manifest, validate_provenance
 
 
@@ -48,3 +48,43 @@ class BatchContractTests(unittest.TestCase):
             refresh(root, manifest)
             with self.assertRaisesRegex(ValueError, "empty_catalog_batch"):
                 load_artifacts(root, pinned=False)
+
+    def test_checksum_valid_packages_reject_required_empty_metadata(self):
+        from artifacts import load_artifacts
+        cases = [("units.jsonl", field, "") for field in ("unit_name", "unit_type", "embed_text")]
+        cases += [("courses.jsonl", "course_name", value) for value in ("", " \t\n", None, 0)]
+        for artifact, field, value in cases:
+            with self.subTest(field=field, value=value), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp) / "invalid"
+                manifest, _digest = package(root, {}, "a" * 64, ["A"])
+                rewrite_row(root, manifest, artifact, {field: value})
+                with self.assertRaisesRegex(ValueError, "invalid_catalog_metadata"):
+                    load_artifacts(root, pinned=False)
+
+    def test_checksum_valid_packages_reject_other_unreadable_unit_metadata(self):
+        from artifacts import load_artifacts
+        cases = [("hours", value) for value in (float("inf"), float("nan"), -1, True)]
+        cases += [("source", 1), ("ncs_unit_code", 1), ("unit_name", None), ("unit_type", None)]
+        for field, value in cases:
+            with self.subTest(field=field, value=value), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp) / "invalid"
+                manifest, _digest = package(root, {}, "a" * 64, ["A"])
+                rewrite_row(root, manifest, "units.jsonl", {field: value})
+                with self.assertRaisesRegex(ValueError, "invalid_catalog_metadata"):
+                    load_artifacts(root, pinned=False)
+
+    def test_validation_preserves_exact_strings_and_optional_unknowns(self):
+        from artifacts import load_artifacts
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "valid"
+            manifest, _digest = package(root, {}, "a" * 64, [" A "])
+            updates = {"unit_name": " ", "unit_type": " ", "embed_text": " \t\n",
+                       "source": "", "ncs_unit_code": "", "hours": 0}
+            rewrite_row(root, manifest, "units.jsonl", updates)
+            rewrite_row(root, manifest, "courses.jsonl", {"course_name": " Title ", "institution": None, "url": None})
+            _manifest, courses, units, _vectors, _query = load_artifacts(root, pinned=False)
+            self.assertEqual(courses[0]["course_id"], " A ")
+            self.assertEqual(courses[0]["tme"], "01")
+            self.assertEqual((units[0]["course_id"], units[0]["tme"]), (" A ", "01"))
+            self.assertEqual(courses[0]["course_name"], " Title ")
+            self.assertEqual({field: units[0][field] for field in updates}, updates)
