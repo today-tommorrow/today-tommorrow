@@ -232,7 +232,7 @@ class FileDocumentsTests(ProfileDraftTests):
             document["content_sha256"], hashlib.sha256(original).hexdigest()
         )
         self.assertEqual(document["status"], "queued")
-        self.assertIsNone(document["job_id"])
+        self.assertIsNotNone(document["job_id"])
         self.assertNotIn("private", response.text)
         other, csrf, _, _ = self.login()
         self.assertEqual(other.get("/api/documents/" + document["id"]).status_code, 404)

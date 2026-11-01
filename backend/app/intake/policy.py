@@ -40,7 +40,9 @@ def active_conflicts(answers: dict[str, Any], conflicts: list[str]) -> list[str]
     return [key for key in conflicts if key in slots]
 
 
-def evaluate(answers: dict[str, Any], conflicts: list[str]) -> dict[str, Any]:
+def evaluate(
+    answers: dict[str, Any], conflicts: list[str], documents_ready: bool = False
+) -> dict[str, Any]:
     groups = _section_slots(answers)
     conflicts = active_conflicts(answers, conflicts)
 
@@ -68,6 +70,7 @@ def evaluate(answers: dict[str, Any], conflicts: list[str]) -> dict[str, Any]:
         "direction" in completed
         and "experience" in completed
         and answers.get("document_decision") != "none"
+        and not documents_ready
     ):
         section, action, eligible = "experience", "collect_documents", []
     return {

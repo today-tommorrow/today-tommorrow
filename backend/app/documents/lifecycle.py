@@ -233,7 +233,7 @@ def redact_document(db, profile, row):
     def run_values(r):
         return [r.input_json, r.public_json, r.provenance_json]
 
-    linked_jobs = set()
+    linked_jobs = {job.id for job in jobs if job.document_id == row.id}
     while True:
         record_ids = (
             {str(job_id) for job_id in linked_jobs}
@@ -291,6 +291,13 @@ def redact_document(db, profile, row):
                 clean_input[key] = job.input_json[key]
         job.input_json = clean_input
         job.result_json = None
+        if job.document_id == row.id and job.status in {"queued", "running"}:
+            job.status, job.phase, job.finished_at = (
+                "cancelled",
+                "cancelled",
+                datetime.now(UTC),
+            )
+            job.lease_token, job.lease_expires_at = None, None
     for run in runs:
         if run.job_id not in linked_jobs:
             continue

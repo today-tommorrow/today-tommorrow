@@ -139,7 +139,17 @@ def exact_keys(value: JsonObject, keys: set[str]) -> None:
 
 def confirmed_sources(snapshot: JsonObject) -> tuple[list[JsonObject], str]:
     answers = object_value(snapshot.get("answers"))
-    if answers.get("document_decision") != "none" or snapshot.get("reviewed_items"):
+    documents = array_value(snapshot.get("documents", []))
+    decision = answers.get("document_decision")
+    if decision == "provided":
+        if not documents or any(
+            not isinstance(d, dict)
+            or d.get("status") != "ready"
+            or d.get("review_confirmed") is not True
+            for d in documents
+        ):
+            raise RecommendationError("recommendation_materials_unsupported")
+    elif decision != "none" or documents or snapshot.get("reviewed_items"):
         raise RecommendationError("recommendation_materials_unsupported")
     parts: list[tuple[str, str]] = []
     for key in ("goal_text", "interest_activity", "custom_field"):
@@ -161,9 +171,41 @@ def confirmed_sources(snapshot: JsonObject) -> tuple[list[JsonObject], str]:
         raise RecommendationError("recommendation_goal_missing")
     # Preserve confirmed wording. No generated query, synonym rewrite or stored-vector substitute.
     unique = list(dict.fromkeys(parts))
-    sources = [{"id": identity("user-source", str(snapshot.get("profile_id")), str(snapshot.get("profile_revision")), key, text),
-                "answer_key": key, "text": text} for key, text in unique]
-    query = "\n".join(text for _, text in unique)
+    sources = [
+        {
+            "id": identity(
+                "user-source",
+                str(snapshot.get("profile_id")),
+                str(snapshot.get("profile_revision")),
+                key,
+                text,
+            ),
+            "answer_key": key,
+            "text": text,
+        }
+        for key, text in unique
+    ]
+    document_ids = {str(d["id"]) for d in documents}
+    for raw in array_value(snapshot.get("reviewed_items", [])):
+        item = object_value(raw)
+        if item.get("document_id") not in document_ids:
+            raise RecommendationError("recommendation_materials_unsupported")
+        if item.get("state") not in {"have", "want_to_learn"}:
+            continue
+        label = text_value(item.get("label"), maximum=500)
+        source = {
+            "id": text_value(item.get("id")),
+            "answer_key": "reviewed_items",
+            "text": label,
+            "learner_state": item["state"],
+            "document_id": text_value(item.get("document_id")),
+            "chunk_id": text_value(item.get("chunk_id")),
+            "evidence_quote": text_value(item.get("evidence_quote")),
+            "source_locator": text_value(item.get("source_locator")),
+            "content_sha256": text_value(item.get("content_sha256")),
+        }
+        sources.append(source)
+    query = "\n".join(source["text"] for source in sources if source.get("learner_state") != "have")
     if len(query.encode()) > 10000:
         raise RecommendationError("recommendation_input_too_large")
     return sources, query
@@ -186,7 +228,7 @@ def profile_needs(output: JsonObject, sources: list[JsonObject]) -> list[JsonObj
             raise RecommendationError("invalid_model_grounding")
         seen.add((str(source["id"]), label))
         needs.append({"id": identity("need", str(source["id"]), label), "label": label,
-                      "basis": "user_requested", "learner_state": "want_to_learn",
+                      "basis": "user_requested", "learner_state": "self_reported_have" if source.get("learner_state") == "have" else "want_to_learn",
                       "source_item_ids": [source["id"]], "ncs_reference_ids": [], "mapping_state": "unmapped"})
     return needs
 

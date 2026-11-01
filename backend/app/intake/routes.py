@@ -161,7 +161,7 @@ def onboarding_options(user: ReadUser):
             "allowed_file_extensions": [".txt", ".docx", ".pdf"],
             "max_upload_bytes": 5 * 1024 * 1024,
             "max_profile_documents": max_documents(),
-            "upload_limit_note": "TXT, DOCX, 텍스트 PDF를 저장합니다. 분석 기능은 아직 제공되지 않아 대기 상태에서 자동 처리되지 않습니다.",
+            "upload_limit_note": "TXT, DOCX, 텍스트 PDF를 분석합니다. 분석 결과를 확인하고 수정할 수 있습니다.",
             "branch_rules_version": "1",
             "intake_policy_version": "1",
             "allowed_catalog_sources": ["work24"],
@@ -182,6 +182,7 @@ class ReviewItemEdit(ContractModel):
 class ReviewPatch(ContractModel):
     expected_revision: Annotated[int, Field(ge=0, le=2147483646)]
     items: list[ReviewItemEdit]
+    confirmed_document_ids: list[str] | None = None
 
 
 async def read_review_patch(request: Request) -> ReviewPatch:
@@ -228,6 +229,44 @@ def patch_review_items(
         existing = {item["id"] for item in profile.reviewed_items_json}
         if len(edits) != len(payload.items) or not set(edits).issubset(existing):
             raise ProfileError(422, "invalid_profile_input")
+        from sqlalchemy import select
+
+        from app.documents.models import Document
+
+        documents = list(
+            db.scalars(
+                select(Document)
+                .where(
+                    Document.profile_id == profile.id, Document.user_id == user.user.id
+                )
+                .order_by(Document.id)
+                .with_for_update()
+            )
+        )
+        document_map = {str(document.id): document for document in documents}
+        if payload.confirmed_document_ids is not None:
+            confirmed = set(payload.confirmed_document_ids)
+            if (
+                len(confirmed) != len(payload.confirmed_document_ids)
+                or not confirmed.issubset(document_map)
+                or any(document_map[id_].status != "ready" for id_ in confirmed)
+            ):
+                raise ProfileError(422, "invalid_profile_input")
+            for document in documents:
+                document.review_confirmed = str(document.id) in confirmed
+        else:
+            changed_documents = {
+                item.get("document_id")
+                for item in profile.reviewed_items_json
+                if item["id"] in edits
+                and (
+                    item["label"] != edits[item["id"]].label
+                    or item["state"] != edits[item["id"]].state
+                )
+            }
+            for document in documents:
+                if str(document.id) in changed_documents:
+                    document.review_confirmed = False
         profile.reviewed_items_json = [
             {**item, "label": edits[item["id"]].label, "state": edits[item["id"]].state}
             if item["id"] in edits

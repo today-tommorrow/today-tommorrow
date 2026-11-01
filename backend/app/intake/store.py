@@ -148,6 +148,16 @@ def selection_summaries(db: Session, row: IntakeProfile) -> list[dict[str, Any]]
     return summaries
 
 
+def intake_state(db: Session, profile: IntakeProfile) -> dict[str, Any]:
+    from app.documents.service import list_documents
+
+    documents = list_documents(db, profile.id, profile.user_id)
+    ready = bool(documents) and all(
+        d["status"] == "ready" and d["review_confirmed"] for d in documents
+    )
+    return evaluate(profile.answers_json, profile.unresolved_conflicts_json, ready)
+
+
 def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str, Any]:
     state = evaluate(row.answers_json, row.unresolved_conflicts_json)
     summaries = []
@@ -156,6 +166,10 @@ def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str,
         from app.documents.service import list_documents
 
         documents = list_documents(db, row.id, row.user_id)
+        docs_ready = bool(documents) and all(
+            d["status"] == "ready" and d["review_confirmed"] for d in documents
+        )
+        state = evaluate(row.answers_json, row.unresolved_conflicts_json, docs_ready)
         from app.intake.question_models import IntakeQuestion
 
         ready = db.scalar(
@@ -177,8 +191,8 @@ def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str,
         "reviewed_items": row.reviewed_items_json,
         "documents": documents,
         "completed_sections": state["completed_sections"],
-        "review_token": review_token(row, summaries)
-        if db is not None and not documents
+        "review_token": review_token(row, summaries, documents)
+        if db is not None
         else None,
         "updated_at": row.updated_at.isoformat(),
         "slot_origins": row.slot_origins_json,

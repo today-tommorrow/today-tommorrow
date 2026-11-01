@@ -46,7 +46,7 @@ class TextDocumentsTests(test_profile_drafts.ProfileDraftTests):
         )
         self.assertEqual(doc["size_bytes"], len(original.encode()))
         self.assertEqual(doc["status"], "queued")
-        self.assertIsNone(doc["job_id"])
+        self.assertIsNotNone(doc["job_id"])
         self.assertNotIn(original, response.text)
         self.assertEqual(response.headers["cache-control"], "no-store")
         self.assertEqual(
@@ -74,7 +74,9 @@ class TextDocumentsTests(test_profile_drafts.ProfileDraftTests):
             )
             self.assertEqual(row.content, original)
             self.assertEqual(chunk.text_content, original)
-            self.assertEqual(chunk.locator, f"text:chars:0:{len(original)}")
+            self.assertEqual(
+                chunk.locator, f"text:chars:0:{len(original)}:slice:0:{len(original)}"
+            )
 
     def test_limits_validation_and_capacity_replay(self):
         profile = self.create()

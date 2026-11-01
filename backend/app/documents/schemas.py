@@ -25,9 +25,10 @@ class DocumentResponse(ContractModel):
     source_url: str | None
     mime_type: str | None
     size_bytes: int | None
-    status: Literal["queued", "failed"]
+    status: Literal["queued", "processing", "ready", "failed"]
     extracted_preview: str | None
     job_id: str | None
+    review_confirmed: bool
     error_code: str | None
     content_sha256: str | None
     created_at: str

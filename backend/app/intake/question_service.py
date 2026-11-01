@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 from app.ai.gemma import PROMPT_VERSION
 from app.ai.questions import QuestionDraft, validate_question
 from app.intake import store
-from app.intake.policy import evaluate, has_answer
+from app.intake.policy import has_answer
 from app.intake.question_config import QuestionSettings
 from app.intake.question_models import IntakeAnswer, IntakeQuestion
 from app.intake.requests import digest, recorded, reserve
@@ -37,7 +37,7 @@ class QuestionServiceError(Exception):
 
 
 def generation_context(db: Session, profile) -> dict:
-    state = evaluate(profile.answers_json, profile.unresolved_conflicts_json)
+    state = store.intake_state(db, profile)
     confirmed = {
         key: value
         for key, value in profile.answers_json.items()
@@ -85,7 +85,7 @@ def generate(
         return request.status_code, request.response_json
     if expected_revision != profile.revision:
         raise QuestionServiceError(409, "revision_conflict")
-    state = evaluate(profile.answers_json, profile.unresolved_conflicts_json)
+    state = store.intake_state(db, profile)
     if state["next_action"] != "generate_question" or not state["eligible_slots"]:
         return recorded(request, 200, state)
     try:
@@ -159,7 +159,11 @@ def invalidate(db: Session, profile_id: UUID) -> None:
     )
     db.execute(
         update(Job)
-        .where(Job.profile_id == profile_id, Job.status.in_(["queued", "running"]))
+        .where(
+            Job.profile_id == profile_id,
+            Job.kind != "document_analysis",
+            Job.status.in_(["queued", "running"]),
+        )
         .values(
             status="superseded",
             result_json=None,
