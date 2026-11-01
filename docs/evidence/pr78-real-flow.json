@@ -1,0 +1,52 @@
+{
+  "pdf": {
+    "profile_status": "submitted",
+    "documents": 1,
+    "reviewed_items": 4,
+    "document_states": [
+      "ready"
+    ],
+    "confirmed": [
+      true
+    ],
+    "original_bytes_preserved": true,
+    "quotes_match_chunks": true,
+    "jobs": [
+      {
+        "kind": "document_analysis",
+        "state": "succeeded"
+      },
+      {
+        "kind": "recommendation",
+        "state": "queued"
+      }
+    ]
+  },
+  "retry": {
+    "profile_status": "submitted",
+    "documents": 1,
+    "reviewed_items": 2,
+    "document_states": [
+      "ready"
+    ],
+    "confirmed": [
+      true
+    ],
+    "original_bytes_preserved": true,
+    "quotes_match_chunks": true,
+    "jobs": [
+      {
+        "kind": "document_analysis",
+        "state": "failed"
+      },
+      {
+        "kind": "document_analysis",
+        "state": "succeeded"
+      },
+      {
+        "kind": "recommendation",
+        "state": "queued"
+      }
+    ]
+  }
+}
