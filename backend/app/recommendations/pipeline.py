@@ -92,14 +92,22 @@ STRING: JsonObject = {"type": "string", "minLength": 1}
 PROFILE_SCHEMA = object_schema({"needs": list_schema(object_schema({
     "source_id": STRING, "label": STRING,
 }), 8, 1)})
+AXIS_SCHEMA: JsonObject = {"anyOf": [
+    object_schema({
+        "axis": {"type": "string", "enum": ["goal", "prerequisite", "outcome"]},
+        "value": {"type": "null"},
+        "evidence_ids": list_schema(STRING, 0), "quotes": list_schema(STRING, 0),
+    }),
+    object_schema({
+        "axis": {"type": "string", "enum": ["goal", "prerequisite", "outcome"]},
+        "value": {"type": "number", "enum": [0, 0.5, 1]},
+        "evidence_ids": list_schema(STRING, 3, 1), "quotes": list_schema(STRING, 3, 1),
+    }),
+]}
 ASSESSMENT_SCHEMA = object_schema({"assessments": list_schema(object_schema({
     "course_id": STRING, "offering_id": STRING,
     "goal_basis": {"type": "string", "enum": ["content_supported", "topic_only", "unrelated"]},
-    "axes": list_schema(object_schema({
-        "axis": {"type": "string", "enum": ["goal", "prerequisite", "outcome"]},
-        "value": {"enum": [0, 0.5, 1, None]},
-        "evidence_ids": list_schema(STRING, 3), "quotes": list_schema(STRING, 3),
-    }), 3, 3),
+    "axes": list_schema(AXIS_SCHEMA, 3, 3),
 }), 2, 1)})
 EXPLANATION_SCHEMA = object_schema({"explanations": list_schema(object_schema({
     "course_id": STRING, "offering_id": STRING,
@@ -440,7 +448,14 @@ class RecommendationPipeline:
             except RecommendationError as error:
                 if str(error) not in {"invalid_model_response", "invalid_model_grounding", "invalid_recommendation_input"} or attempt:
                     raise
-                context = {**context, "validation_error": "Invalid structure or unsupported evidence. Return only the allowed grounded fields."}
+                hint = (
+                    "For every numeric axis value, including 0, return 1-3 actual evidence IDs and exact quotes. "
+                    "Without evidence use null with empty arrays, never unsupported zero. "
+                    "Unrelated cannot have a positive goal value. Preserve candidate IDs and every axis."
+                    if stage == "assessing" else
+                    "Invalid structure or unsupported evidence. Return only allowed IDs and exact source substrings."
+                )
+                context = {**context, "validation_error": hint}
         raise RecommendationError("invalid_model_response")
 
     def run(self, snapshot: JsonObject, report_phase: PhaseReporter) -> JsonObject:

@@ -188,6 +188,22 @@ class RecommendationPipelineTests(unittest.TestCase):
         self.assertEqual([stage for stage, _ in model.calls].count("assessing"), 2)
         self.assertNotIn("explaining", [stage for stage, _ in model.calls])
 
+    def test_unsupported_zero_receives_specific_repair_without_relaxing_grounding(self):
+        pipeline, _, model = self.make_pipeline()
+        def repair_zero(stage, result):
+            if stage == "assessing":
+                row = result["assessments"][0]
+                row["goal_basis"] = "unrelated"
+                repair = model.calls[-1][1].get("validation_error", "")
+                for axis in row["axes"]:
+                    axis.update(value=None if "including 0" in repair else 0, evidence_ids=[], quotes=[])
+            return result
+        model.mutate = repair_zero
+        result = pipeline.run(snapshot(pipeline), lambda _: None)
+        self.assertEqual([stage for stage, _ in model.calls].count("assessing"), 2)
+        self.assertEqual((result["result_state"], result["model_outcome"]), ("empty", "succeeded"))
+        self.assertTrue(all(axis["value"] is None for axis in result["_snapshot"]["assessments"][0]["axes"][:3]))
+
     def test_phase_fence_interrupts_after_model_before_next_stage(self):
         pipeline, _, model = self.make_pipeline()
         def report(stage):
