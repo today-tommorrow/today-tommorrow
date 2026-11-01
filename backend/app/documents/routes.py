@@ -51,7 +51,7 @@ async def body(request: Request) -> TextRequest:
     try:
         payload = TextRequest.model_validate_json(data)
         encoded = payload.text.encode("utf-8")
-        if "\x00" in payload.text:
+        if "\x00" in payload.text or not payload.text.strip():
             raise ValueError("invalid text")
     except ValidationError, UnicodeError, ValueError:
         raise DocumentError(422, "invalid_document_input") from None

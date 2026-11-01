@@ -73,7 +73,7 @@ class TextDocumentsTests(test_profile_drafts.ProfileDraftTests):
         profile = self.create()
         path = "/api/profiles/" + profile["id"] + "/documents/texts"
         headers = {"X-CSRF-Token": self.csrf}
-        for text in ("", "bad\x00text", "\ud800"):
+        for text in ("", "  \r\n ", "bad\x00text", "\ud800"):
             response = self.client.post(
                 path,
                 headers=headers,
