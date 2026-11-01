@@ -25,6 +25,50 @@ const conditionStates: Record<ConstraintCheck['status'], string> = {
   not_applicable: '해당 없음',
 }
 
+const missingFieldLabels: Record<string, string> = {
+  field_code: '교육 분야',
+  course_type: '교육 유형',
+  checked_at: '확인 시각',
+  description: '교육 설명',
+  prerequisites: '선수 지식',
+  learning_outcomes: '학습 결과',
+  provider_name: '교육기관',
+  external_offering_id: '회차 식별 정보',
+  cohort: '회차명',
+  start_date: '시작일',
+  end_date: '종료일',
+  enrollment_start: '모집 시작일',
+  enrollment_end: '모집 종료일',
+  delivery_mode: '교육 방식',
+  region: '교육 지역',
+  schedule: '수업 일정',
+  training_hours: '교육 시간',
+  tuition_krw: '교육비',
+  listed_self_pay_krw: '공시 자부담금',
+  eligibility_text: '참여 자격',
+  recruitment_status: '모집 상태',
+}
+
+function missingFieldLabelsForDisplay(fields: string[]) {
+  return [
+    ...new Set(
+      fields.map((field) => {
+        const match = /^offerings\.[^.]+\.(.+)$/.exec(field)
+        const key = match?.[1] ?? field
+        const label = Object.hasOwn(missingFieldLabels, key)
+          ? missingFieldLabels[key]
+          : undefined
+        return match ? `회차 ${label ?? '정보'}` : (label ?? '기타 정보')
+      }),
+    ),
+  ]
+}
+
+function MissingFields({ fields }: { fields: string[] }) {
+  const labels = missingFieldLabelsForDisplay(fields)
+  return labels.length > 0 ? <p>미확인 항목: {labels.join(', ')}</p> : null
+}
+
 function message(error: unknown) {
   return error instanceof Error
     ? error.message
@@ -468,9 +512,7 @@ function DetailBody({ course }: { course: CourseDetail }) {
       ) : (
         <p>등록된 회차 정보가 없습니다.</p>
       )}
-      {course.missing_fields.length > 0 && (
-        <p>미확인 항목: {course.missing_fields.join(', ')}</p>
-      )}
+      <MissingFields fields={course.missing_fields} />
       <h4>출처와 근거</h4>
       <EvidenceList items={course.evidence} />
     </div>
@@ -634,9 +676,7 @@ function ResultContent({ runId }: { runId: string }) {
                 ) : (
                   <p>회차 정보 미확인</p>
                 )}
-                {item.missing_fields.length > 0 && (
-                  <p>미확인 항목: {item.missing_fields.join(', ')}</p>
-                )}
+                <MissingFields fields={item.missing_fields} />
                 <ConditionChecks
                   checks={item.rank_breakdown.constraint_checks}
                 />

@@ -42,7 +42,17 @@ describe('교육 조회의 공통 계약 샘플', () => {
   })
 
   it('상세 성공 응답의 출처와 미확인 조건을 보존한다', async () => {
-    const fetch = respond(courseDetailFixture)
+    const fetch = respond({
+      ...courseDetailFixture,
+      missing_fields: [
+        'offerings.internal-uuid.tuition_krw',
+        'offerings.another-uuid.tuition_krw',
+        'description',
+        'description',
+        'unrecognized.technical_path',
+        'toString',
+      ],
+    })
     render(<CourseDetails courseId={courseDetailFixture.id} />)
 
     await screen.findByRole('heading', { name: courseDetailFixture.name })
@@ -52,7 +62,12 @@ describe('교육 조회의 공통 계약 샘플', () => {
     expect(fetch.mock.calls[0][1].credentials).toBe('include')
     expect(screen.getByText('교육기관 미확인')).toBeTruthy()
     expect(screen.getByText('교육 설명 미확인')).toBeTruthy()
-    expect(screen.getByText('미확인 항목: tuition_krw, schedule')).toBeTruthy()
+    expect(
+      screen.getByText('미확인 항목: 회차 교육비, 교육 설명, 기타 정보'),
+    ).toBeTruthy()
+    expect(
+      screen.queryByText(/internal-uuid|another-uuid|technical_path/),
+    ).toBeNull()
     expect(screen.getByText('합성 자료의 교육명')).toBeTruthy()
     expect(screen.getByText(/kmooc · observed · 2026-11-01/)).toBeTruthy()
     expect(
