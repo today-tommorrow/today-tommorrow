@@ -476,6 +476,147 @@ class RecommendationFlowTests(unittest.TestCase):
             self.assertEqual(run.input_json, frozen)
         self.assertEqual(self.job(accepted)["status"], "failed")
 
+    @unittest.skipUnless(
+        os.environ.get("ISSUE31_EXCLUSIVE_ACL_TEST") == "1",
+        "requires an explicitly designated exclusive local test database",
+    )
+    def test_denied_result_insert_rolls_back_and_retry_preserves_snapshot(self):
+        app_url = self.engine.url
+        owner = local_engine("MIGRATION_DATABASE_URL", "today_migrator")
+        self.addCleanup(owner.dispose)
+        self.assertEqual(app_url.host, "127.0.0.1")
+        self.assertEqual(owner.url.host, "127.0.0.1")
+        self.assertEqual(owner.url.port, app_url.port)
+        self.assertEqual(owner.url.database, app_url.database)
+        self.assertEqual(
+            str(app_url.port), os.environ.get("ISSUE31_EXCLUSIVE_ACL_PORT")
+        )
+        table = "today_app.recommendation_runs"
+        acl_query = text("""
+            SELECT coalesce(array_agg(a::text ORDER BY a::text), ARRAY[]::text[])
+            FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+            LEFT JOIN LATERAL unnest(c.relacl) a ON true
+            WHERE n.nspname='today_app' AND c.relname='recommendation_runs'
+        """)
+        with owner.connect() as db:
+            self.assertFalse(
+                db.scalar(
+                    text("SELECT rolsuper FROM pg_roles WHERE rolname='today_app'")
+                )
+            )
+            self.assertNotEqual(
+                db.scalar(
+                    text(
+                        "SELECT tableowner FROM pg_tables WHERE schemaname='today_app' AND tablename='recommendation_runs'"
+                    )
+                ),
+                "today_app",
+            )
+            self.assertTrue(
+                db.scalar(
+                    text("SELECT has_table_privilege('today_app', :table, 'INSERT')"),
+                    {"table": table},
+                )
+            )
+            self.assertEqual(
+                db.scalar(
+                    text(
+                        "SELECT count(*) FROM today_app.jobs WHERE status IN ('queued','running')"
+                    )
+                ),
+                0,
+            )
+            grant = db.execute(
+                text(
+                    "SELECT grantor,is_grantable FROM information_schema.role_table_grants WHERE table_schema='today_app' AND table_name='recommendation_runs' AND grantee='today_app' AND privilege_type='INSERT'"
+                )
+            ).one()
+            self.assertEqual(grant.grantor, db.scalar(text("SELECT current_user")))
+            original_acl = db.scalar(acl_query)
+
+        def restore_acl():
+            with owner.begin() as db:
+                current_acl = db.scalar(acl_query)
+                if current_acl != original_acl:
+                    db.execute(
+                        text(
+                            "GRANT INSERT ON TABLE today_app.recommendation_runs TO today_app"
+                            + (
+                                " WITH GRANT OPTION"
+                                if grant.is_grantable == "YES"
+                                else ""
+                            )
+                        )
+                    )
+                    self.assertEqual(db.scalar(acl_query), original_acl)
+
+        # Register recovery before any ACL mutation, including if an assertion fails.
+        self.addCleanup(restore_acl)
+        clock = patch("app.recommendations.service.datetime", wraps=datetime)
+        fixed_time = clock.start()
+        fixed_time.now.return_value = datetime.now(UTC)
+        self.addCleanup(clock.stop)
+        before = self.client.get(f"/api/profiles/{self.profile['id']}").json()
+        accepted = self.submit("db-insert-denied")
+        self.assertEqual(accepted.status_code, 202)
+        with Session(self.engine) as db:
+            frozen = deepcopy(db.get(Job, UUID(accepted.json()["job_id"])).input_json)
+        try:
+            with owner.begin() as db:
+                db.execute(
+                    text(
+                        "REVOKE INSERT ON TABLE today_app.recommendation_runs FROM today_app"
+                    )
+                )
+                self.assertFalse(
+                    db.scalar(
+                        text(
+                            "SELECT has_table_privilege('today_app', :table, 'INSERT')"
+                        ),
+                        {"table": table},
+                    )
+                )
+            with self.assertLogs("app.recommendations.worker", level="WARNING") as logs:
+                self.assertTrue(self.work())
+            self.assertIn("phase=persisting category=database_error", logs.output[0])
+            failed = self.job(accepted)
+            self.assertEqual(failed["status"], "failed")
+            self.assertEqual(failed["error"]["code"], "recommendation_failed")
+            self.assertEqual(self.count_results(), 0)
+            after = self.client.get(f"/api/profiles/{self.profile['id']}").json()
+            self.assertEqual(after["answers"], before["answers"])
+            self.assertEqual(after["revision"], before["revision"])
+            self.assertEqual(
+                after["selection_summaries"], before["selection_summaries"]
+            )
+            self.assertEqual(after["review_token"], before["review_token"])
+            self.assertEqual(frozen["answers"], before["answers"])
+        finally:
+            restore_acl()
+        with owner.connect() as db:
+            self.assertEqual(db.scalar(acl_query), original_acl)
+            self.assertTrue(
+                db.scalar(
+                    text("SELECT has_table_privilege('today_app', :table, 'INSERT')"),
+                    {"table": table},
+                )
+            )
+        retry = self.submit("db-insert-restored", after)
+        self.assertEqual(retry.status_code, 202)
+        self.assertNotEqual(retry.json()["job_id"], accepted.json()["job_id"])
+        self.assertTrue(self.work())
+        success = self.job(retry)
+        self.assertEqual(success["status"], "succeeded")
+        self.assertEqual(self.count_results(), 1)
+        with Session(self.engine) as db:
+            retry_job = db.get(Job, UUID(retry.json()["job_id"]))
+            run = db.get(
+                RecommendationRun, UUID(success["result"]["recommendation_run_id"])
+            )
+            self.assertEqual(retry_job.input_json, frozen)
+            self.assertEqual(run.input_json, frozen)
+            self.assertEqual(run.job_id, retry_job.id)
+
     def test_invalid_provider_output_cannot_be_persisted(self):
         accepted = self.submit()
         with patch.object(self.runner, "run", return_value={"result_state": "matches"}):
