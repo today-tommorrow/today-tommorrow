@@ -12,9 +12,11 @@
 
 [선택형 질문·비동기 작업 API와 Worker](docs/question-jobs.md)
 
+[자료 분석 Worker·원문 근거 확인](docs/document-analysis.md) · [확인·재시도·삭제 흐름](docs/document-lifecycle.md)
+
 ## macOS 개발 시작
 
-React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 프로필 초안과 선택형 질문 생성·작업·답변 API가 있으며, 질문 생성은 별도 Worker와 설정한 모델 서버가 필요하다. 추천·이미지 판정, GPU 실물 검증, Nginx 배포와 샘플 모드는 아직 없다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
+React/TypeScript/Vite/Tailwind 웹과 FastAPI/SQLAlchemy/PostgreSQL 기반이다. 웹은 실제 `GET /api/health`로 API·DB 연결을 확인한다. 프로필 초안, 선택형 질문, 자료 분석·근거 확인, 추천 작업 API가 있으며, 모델 작업은 별도 Worker와 설정한 모델 서버가 필요하다. TXT·DOCX·텍스트 PDF 자료를 분석한 뒤 사용자가 수정·확인하고 제출할 수 있다. OCR·이미지 판정, Nginx 배포와 샘플 모드는 아직 없다. 실행 증거와 미검증 범위는 각 기능 문서를 따른다. 코드 규칙은 [개발 가이드](docs/development.md), 작업·리뷰 책임은 [AGENTS.md](AGENTS.md)를 따른다.
 
 ### 다섯 MacBook의 공통 준비
 
@@ -54,6 +56,8 @@ Apple Silicon과 Intel은 같은 잠금 파일과 아래 명령을 사용한다.
 `./dev`는 웹과 API를 한 터미널에서 실행한다. Ctrl-C는 둘 다 종료하며 종료 코드 130을 반환한다. 한 서버가 실패하면 함께 시작한 서버도 종료하고 실패 코드를 반환한다. 포트가 사용 중이면 시작하지 않으며 기존 프로세스를 종료하지 않는다. DB는 종료하지 않으므로 재시작에 재사용할 수 있다. 기본 API 문서는 `http://127.0.0.1:8000/docs`다.
 
 `./dev`는 질문 Worker를 시작하지 않는다. 질문 생성이 필요하면 `.env`의 `QUESTION_MODEL_BASE_URL`과 `QUESTION_MODEL_ID`를 실제 서비스 값으로 채우고 별도 터미널에서 Worker를 실행한다. API와 Worker는 같은 루트 `.env`를 읽는다. 변수와 작업 방식은 [질문 API·Worker 안내](docs/question-jobs.md)를 따른다.
+
+자료 분석 Worker도 별도로 실행한다. `backend`에서 `uv run --env-file ../.env --locked python -m app.documents.worker`를 실행하며, `RECOMMENDATION_MODEL_BASE_URL`과 `RECOMMENDATION_MODEL_ID` 등 [자료 분석 설정](docs/document-analysis.md)을 사용한다. 처리 완료만으로 확인된 사실이 되지 않으며, 사용자가 원문 근거와 대조해 자료별 확인을 저장해야 제출할 수 있다.
 
 웹 연결 확인의 성공은 실제 DB `SELECT 1`의 `200 {"status":"ok"}`, DB 장애는 `503 {"detail":"database_unavailable"}`다. 로딩·성공·실패와 다시 확인을 제공하며 샘플 성공을 사용하지 않는다. Compose는 DB를 루프백에만 열고 새 `postgres16_data` 볼륨을 사용한다. 기존 PostgreSQL 17 볼륨은 연결·삭제하지 않는다. 기존 역할의 비밀번호는 `.env` 변경만으로 바뀌지 않으므로 오류 시 설정을 확인한다.
 
