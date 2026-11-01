@@ -71,7 +71,8 @@
                   "goal_known",
                   "explore",
                   "advance"
-                ]
+                ],
+                "description": "진입 목적: goal_known=구체적인 학습 목표가 있음, explore=관심 분야 탐색, advance=기존 경험 발전."
               },
               "field_code": {
                 "type": "string",
@@ -84,7 +85,8 @@
                   "digital_content",
                   "other",
                   "undecided"
-                ]
+                ],
+                "description": "교육 분야: ai_data=AI·데이터, software_cloud=소프트웨어·클라우드, security_network=보안·네트워크, robotics_manufacturing=로봇·제조, semiconductor=반도체, digital_content=디지털 콘텐츠, other=다른 분야, undecided=아직 미정. 출력 언어와 교육 분야는 다르다."
               },
               "custom_field": {
                 "anyOf": [
@@ -94,7 +96,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "other를 선택한 사용자가 직접 지정한 교육 분야."
               },
               "experience": {
                 "type": "string",
@@ -104,7 +107,8 @@
                   "project",
                   "work",
                   "unknown"
-                ]
+                ],
+                "description": "현재 경험: beginner=처음 시작, basic=기초 학습 경험, project=프로젝트 경험, work=업무 경험, unknown=아직 미정."
               },
               "previous_gap": {
                 "anyOf": [
@@ -120,7 +124,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "기존 학습의 아쉬움: application=실제 활용, depth=깊이 있는 이해, collaboration=협업, unknown=아직 미정."
               },
               "learning_goal": {
                 "type": "string",
@@ -129,7 +134,8 @@
                   "portfolio",
                   "collaboration",
                   "unknown"
-                ]
+                ],
+                "description": "학습 목표: foundation=기초 다지기, portfolio=직접 결과물 만들기, collaboration=협업 경험, unknown=아직 미정."
               },
               "availability": {
                 "type": "string",
@@ -138,7 +144,8 @@
                   "evening_weekend",
                   "flexible",
                   "unknown"
-                ]
+                ],
+                "description": "학습 가능 시간: weekday_day=평일 낮, evening_weekend=저녁·주말, flexible=시간 조정 가능, unknown=아직 미정."
               },
               "delivery_mode": {
                 "type": "string",
@@ -148,7 +155,8 @@
                   "hybrid",
                   "any",
                   "unknown"
-                ]
+                ],
+                "description": "수업 방식: online=온라인, offline=교육 장소 방문, hybrid=온라인과 방문 혼합, any=방식 무관, unknown=아직 미정. 온라인 실시간과 자율 학습은 모두 online이며 별도 값이 아니다."
               },
               "commute_region": {
                 "anyOf": [
@@ -158,7 +166,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "사용자가 방문 수강할 수 있는 지역. 온라인 수강을 특정 지역으로 제한하지 않는다."
               },
               "budget_status": {
                 "type": "string",
@@ -166,7 +175,8 @@
                   "amount",
                   "no_limit",
                   "unknown"
-                ]
+                ],
+                "description": "예산: amount=지출 상한 금액 있음(무료만 원하는 경우도 포함), no_limit=지출 상한 없음, unknown=아직 미정. no_limit은 무료라는 뜻이 아니다."
               },
               "budget_krw": {
                 "anyOf": [
@@ -177,7 +187,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "원 단위의 지출 상한 정수. 무료만 원하면 0. budget_status=amount일 때 사용한다. 금액을 같이 선택할 수 있으면 선택 문구에도 같은 상한을 명시한다."
               },
               "start_timing": {
                 "type": "string",
@@ -186,14 +197,16 @@
                   "one_to_three_months",
                   "browse",
                   "unknown"
-                ]
+                ],
+                "description": "시작 시점: soon=가까운 시일 내, one_to_three_months=1~3개월 이내, browse=우선 둘러보기, unknown=아직 미정."
               },
               "document_decision": {
                 "type": "string",
                 "enum": [
                   "provided",
                   "none"
-                ]
+                ],
+                "description": "자료 선택: provided=사용자가 자료 제공을 선택, none=자료 없이 진행. provided는 자료를 이미 읽거나 처리했다는 뜻이 아니다."
               },
               "goal_text": {
                 "anyOf": [
@@ -204,7 +217,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "선택 문구에 명시된 구체적인 학습 목표. 확인되지 않은 경력이나 기술을 덧붙이지 않는다."
               },
               "constraints_text": {
                 "anyOf": [
@@ -215,7 +229,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "선택 문구에 명시된 학습 제약."
               },
               "interest_activity": {
                 "anyOf": [
@@ -225,7 +240,8 @@
                   {
                     "type": "null"
                   }
-                ]
+                ],
+                "description": "사용자가 관심을 표현한 활동. 직무 능력이나 경험으로 추정하지 않는다."
               }
             },
             "required": [],
