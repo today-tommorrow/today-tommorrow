@@ -306,6 +306,18 @@ class RecommendationPipelineTests(unittest.TestCase):
         with self.assertRaisesRegex(RecommendationError, "invalid_model_grounding"):
             explanation_items(output, [candidate], sources)
 
+    def test_explanation_prompt_only_exposes_assessed_goal_outcome_evidence(self):
+        pipeline, _, model = self.make_pipeline()
+        result = pipeline.run(snapshot(pipeline), lambda _: None)
+        candidate = result["_snapshot"]["assessments"][0]
+        allowed = {eid for axis in candidate["axes"] if axis["axis"] in {"goal", "outcome"}
+                   for eid in axis["evidence_ids"]}
+        context = next(context for stage, context in model.calls if stage == "explaining")
+        exposed = {item["id"] for item in context["candidates"][0]["evidence"]}
+        self.assertEqual(exposed, allowed)
+        self.assertGreater(len(candidate["evidence"]), len(exposed))
+        self.assertEqual(len(result["items"][0]["evidence"]), len(candidate["evidence"]))
+
 
 if __name__ == "__main__":
     unittest.main()

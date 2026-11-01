@@ -289,6 +289,18 @@ def candidate_prompt(view: JsonObject) -> JsonObject:
                          for e in array_value(view["evidence"])]}
 
 
+def explanation_prompt(view: JsonObject) -> JsonObject:
+    """Expose exactly the evidence allowed by the explanation validator."""
+    allowed = {
+        str(eid) for axis in array_value(view["axes"])
+        if object_value(axis)["axis"] in {"goal", "outcome"}
+        for eid in array_value(object_value(axis)["evidence_ids"])
+    }
+    candidate = candidate_prompt(view)
+    return {**candidate, "evidence": [item for item in array_value(candidate["evidence"])
+                                     if str(object_value(item)["id"]) in allowed]}
+
+
 def assessments(output: JsonObject, views: list[JsonObject], *, experience_known: bool = False) -> list[JsonObject]:
     exact_keys(output, {"assessments"})
     expected = {str(object_value(view["course"])["id"]): view for view in views}
@@ -538,7 +550,7 @@ class RecommendationPipeline:
             for offset in range(0, len(selected), int(CONFIG["batch_size"])):
                 batch = selected[offset:offset + int(CONFIG["batch_size"])]
                 explanations.update(self._generate("explaining", {
-                    "sources": sources, "candidates": [candidate_prompt(row) for row in batch],
+                    "sources": sources, "candidates": [explanation_prompt(row) for row in batch],
                 }, EXPLANATION_SCHEMA, lambda output: explanation_items(output, batch, sources), report_phase))
             stage("explaining", len(selected), len(explanations), skipped=not selected)
         else:
