@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { ApiError, request, waitForJob } from './api'
 import type {
   Answers,
+  Document,
   DocumentAccepted,
   DocumentKind,
   IntakeQuestion,
@@ -21,6 +22,8 @@ type Props = {
 }
 
 type ReviewEdit = { label: string; state: ReviewedItem['state'] }
+type PendingDocument = DocumentAccepted & { operation: 'register' | 'retry' }
+type PendingDeletion = { id: string; minimumRevision: number }
 
 function httpUrl(value: string | null) {
   if (typeof value !== 'string') return null
@@ -240,7 +243,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const [file, setFile] = useState<File | null>(null)
   const [fileInputKey, setFileInputKey] = useState(0)
   const [pendingDocument, setPendingDocument] =
-    useState<DocumentAccepted | null>(null)
+    useState<PendingDocument | null>(null)
+  const [pendingDeletion, setPendingDeletion] =
+    useState<PendingDeletion | null>(null)
   const [reviewEdits, setReviewEdits] = useState<Record<string, ReviewEdit>>({})
   const [reviewRevision, setReviewRevision] = useState<number | null>(null)
   const [error, setError] = useState('')
@@ -676,6 +681,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   ) {
     if (!options) throw new Error('자료 등록 조건을 먼저 불러와야 해요.')
     if (pendingDocument) throw new Error('접수된 자료를 먼저 확인해 주세요.')
+    if (pendingDeletion) throw new Error('자료 삭제 결과를 먼저 확인해 주세요.')
     if (latest.current.documents.length >= options.max_profile_documents)
       throw new Error('등록 가능한 자료 수를 초과했어요.')
     if (source === 'texts' && !documentText.trim())
@@ -737,7 +743,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       throw new Error(
         '자료 등록 응답을 확인할 수 없어요. 최신 입력을 확인한 뒤 다시 시도해 주세요.',
       )
-    setPendingDocument(accepted)
+    const pending: PendingDocument = { ...accepted, operation: 'register' }
+    setPendingDocument(pending)
     setLinkFallback(false)
     if (document.job_id) rememberJob(document.job_id)
     if (source === 'texts')
@@ -748,15 +755,16 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       setFile(null)
       setFileInputKey((value) => value + 1)
     }
-    await confirmDocument(accepted, signal)
+    await confirmDocument(pending, signal)
   }
 
   async function confirmDocument(
-    accepted: DocumentAccepted,
+    accepted: PendingDocument,
     signal: AbortSignal,
   ) {
     const next = await request<Profile>(path, { signal })
     if (signal.aborted) return
+    const action = accepted.operation === 'retry' ? '재시도한' : '등록한'
     if (
       !Array.isArray(next?.documents) ||
       !next.documents.some(
@@ -766,19 +774,105 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       )
     )
       throw new Error(
-        '등록한 자료가 목록에서 확인되지 않아요. 등록한 자료를 다시 확인해 주세요.',
+        `${action} 자료가 목록에서 확인되지 않아요. ${action} 자료를 다시 확인해 주세요.`,
       )
     if (next.revision < accepted.profile_revision)
       throw new Error(
-        '등록한 자료의 최신 버전을 아직 확인하지 못했어요. 등록한 자료를 다시 확인해 주세요.',
+        `${action} 자료의 최신 버전을 아직 확인하지 못했어요. ${action} 자료를 다시 확인해 주세요.`,
       )
     applyProfile(next, accepted.profile_revision)
     setPendingDocument(null)
     setNotice(
-      '자료 등록을 확인했어요. 처리 상태와 추출 미리보기를 확인해 주세요.',
+      accepted.operation === 'retry'
+        ? '자료 재처리를 확인했어요. 처리 상태와 추출 미리보기를 확인해 주세요.'
+        : '자료 등록을 확인했어요. 처리 상태와 추출 미리보기를 확인해 주세요.',
     )
     if (accepted.document.job_id)
       await finishJob(accepted.document.job_id, signal)
+  }
+
+  async function retryDocument(document: Document, signal: AbortSignal) {
+    if (pendingDocument || pendingDeletion)
+      throw new Error('접수된 자료 처리 결과를 먼저 확인해 주세요.')
+    const current = latest.current.documents.find(
+      (item) => item.id === document.id,
+    )
+    if (
+      !current ||
+      current.profile_id !== latest.current.id ||
+      current.status !== 'failed'
+    )
+      throw new Error('현재 입력의 실패 자료를 다시 확인해 주세요.')
+    const expectedRevision = latest.current.revision
+    const accepted = await request<DocumentAccepted>(
+      `/documents/${encodeURIComponent(current.id)}/retry`,
+      { method: 'POST', body: { expected_revision: expectedRevision }, signal },
+    )
+    if (signal.aborted) return
+    const retried = accepted?.document
+    if (
+      !retried ||
+      retried.id !== current.id ||
+      retried.profile_id !== latest.current.id ||
+      !['queued', 'processing', 'ready', 'failed'].includes(retried.status) ||
+      (retried.job_id !== null &&
+        (typeof retried.job_id !== 'string' || !retried.job_id.trim())) ||
+      !Number.isInteger(accepted.profile_revision) ||
+      accepted.profile_revision <= expectedRevision
+    )
+      throw new Error(
+        '자료 재처리 응답을 확인할 수 없어요. 최신 입력을 확인해 주세요.',
+      )
+    const pending: PendingDocument = { ...accepted, operation: 'retry' }
+    setPendingDocument(pending)
+    if (retried.job_id) rememberJob(retried.job_id)
+    await confirmDocument(pending, signal)
+  }
+
+  async function confirmDeletion(
+    pending: PendingDeletion,
+    signal: AbortSignal,
+  ) {
+    const next = await request<Profile>(path, { signal })
+    if (signal.aborted) return
+    if (
+      !Array.isArray(next?.documents) ||
+      next.documents.some((item) => item.id === pending.id)
+    )
+      throw new Error(
+        '삭제한 자료가 아직 목록에 있어요. 삭제 후 목록을 다시 확인해 주세요.',
+      )
+    if (next.revision < pending.minimumRevision)
+      throw new Error(
+        '삭제 후 최신 버전을 아직 확인하지 못했어요. 목록을 다시 확인해 주세요.',
+      )
+    applyProfile(next, pending.minimumRevision)
+    setPendingDeletion(null)
+    setNotice('자료 삭제 결과를 확인했어요.')
+  }
+
+  async function deleteDocument(id: string, signal: AbortSignal) {
+    if (pendingDeletion) throw new Error('자료 삭제 결과를 먼저 확인해 주세요.')
+    const current = latest.current.documents.find((item) => item.id === id)
+    if (!current || current.profile_id !== latest.current.id)
+      throw new Error('현재 입력의 자료를 다시 확인해 주세요.')
+    const expectedRevision = latest.current.revision
+    await request<void>(
+      `/documents/${encodeURIComponent(id)}?expected_revision=${expectedRevision}`,
+      {
+        method: 'DELETE',
+        signal,
+      },
+    )
+    if (signal.aborted) return
+    const pending = { id, minimumRevision: expectedRevision + 1 }
+    setPendingDeletion(pending)
+    if (pendingDocument?.document.id === id) {
+      setPendingDocument(null)
+      if (pendingJob === pendingDocument.document.job_id) rememberJob(null)
+    }
+    if (current.job_id && pendingJob === current.job_id) rememberJob(null)
+    await confirmDeletion(pending, signal)
   }
 
   async function editAnswer(slot: string, signal: AbortSignal) {
@@ -807,10 +901,13 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   }
 
   async function saveReview(signal: AbortSignal) {
+    if (pendingDocument || pendingDeletion)
+      throw new Error('자료 처리 결과를 먼저 확인해 주세요.')
     if (reviewRevision !== null && reviewRevision !== latest.current.revision)
       throw new Error(
         '자료가 변경됐어요. 편집 취소 후 최신 내용을 확인하고 다시 수정해 주세요.',
       )
+    const expectedRevision = reviewRevision ?? latest.current.revision
     const items = latest.current.reviewed_items.map((item) => ({
       id: item.id,
       label: reviewEdits[item.id]?.label ?? item.label,
@@ -819,15 +916,16 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     const next = await request<Profile>(`${path}/review-items`, {
       method: 'PATCH',
       body: {
-        expected_revision: reviewRevision ?? latest.current.revision,
+        expected_revision: expectedRevision,
         items,
       },
       signal,
     })
     if (!signal.aborted) {
-      applyProfile(next)
+      applyProfile(next, expectedRevision + 1)
       setReviewEdits({})
       setReviewRevision(null)
+      setNotice('확인 내용을 저장했어요.')
     }
   }
 
@@ -836,7 +934,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     !!profile.review_token &&
     profile.unresolved_conflicts.length === 0 &&
     profile.documents.every((item) => item.status === 'ready') &&
-    reviewRevision === null
+    reviewRevision === null &&
+    pendingDocument === null &&
+    pendingDeletion === null
   const showDocuments =
     [
       'collect_documents',
@@ -846,6 +946,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     ].includes(profile.intake_state.next_action) ||
     profile.documents.length > 0 ||
     pendingDocument !== null ||
+    pendingDeletion !== null ||
+    reviewRevision !== null ||
     linkFallback
   const showLinkFallback =
     linkFallback ||
@@ -853,6 +955,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       (document) =>
         document.source_type === 'url' && document.status === 'failed',
     )
+  const reviewIsStale =
+    reviewRevision !== null && reviewRevision !== profile.revision
+  const showReview =
+    !pendingDeletion &&
+    (profile.reviewed_items.length > 0 || reviewRevision !== null)
   const interpretationReady =
     interpretation?.profile_id === profile.id &&
     interpretation.status === 'ready' &&
@@ -1228,7 +1335,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               />
             </label>
             <button
-              disabled={!file || !!pendingDocument}
+              disabled={!file || !!pendingDocument || !!pendingDeletion}
               onClick={() =>
                 void perform((signal) => addDocument('files', signal))
               }
@@ -1249,7 +1356,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               링크를 읽지 못하면 파일이나 텍스트로 대신 등록할 수 있어요.
             </p>
             <button
-              disabled={!documentUrl.trim() || !!pendingDocument}
+              disabled={
+                !documentUrl.trim() || !!pendingDocument || !!pendingDeletion
+              }
               onClick={() =>
                 void perform((signal) => addDocument('links', signal))
               }
@@ -1265,7 +1374,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               />
             </label>
             <button
-              disabled={!documentText.trim() || !!pendingDocument}
+              disabled={
+                !documentText.trim() || !!pendingDocument || !!pendingDeletion
+              }
               onClick={() =>
                 void perform((signal) => addDocument('texts', signal))
               }
@@ -1298,8 +1409,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           {pendingDocument && (
             <div className="stack">
               <p role="status">
-                자료 등록은 접수됐어요. 목록을 다시 확인하면 처리 상태를 볼 수
-                있어요.
+                {pendingDocument.operation === 'retry'
+                  ? '자료 재처리는 접수됐어요. 목록을 다시 확인하면 처리 상태를 볼 수 있어요.'
+                  : '자료 등록은 접수됐어요. 목록을 다시 확인하면 처리 상태를 볼 수 있어요.'}
               </p>
               <button
                 disabled={busy}
@@ -1309,7 +1421,26 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   )
                 }
               >
-                등록한 자료 다시 확인
+                {pendingDocument.operation === 'retry'
+                  ? '재시도한 자료 다시 확인'
+                  : '등록한 자료 다시 확인'}
+              </button>
+            </div>
+          )}
+          {pendingDeletion && (
+            <div className="stack">
+              <p role="status">
+                자료 삭제 요청은 처리됐어요. 최신 목록을 확인해 주세요.
+              </p>
+              <button
+                disabled={busy}
+                onClick={() =>
+                  void perform((signal) =>
+                    confirmDeletion(pendingDeletion, signal),
+                  )
+                }
+              >
+                삭제 후 목록 다시 확인
               </button>
             </div>
           )}
@@ -1338,18 +1469,19 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   파일이나 텍스트로 다시 등록할 수 있어요.
                 </p>
               )}
-              {document.status === 'ready' && (
-                <div>
-                  <p className="muted">
-                    추출 미리보기이며 원문 전체가 아닐 수 있어요.
-                  </p>
-                  {document.extracted_preview ? (
-                    <blockquote>{document.extracted_preview}</blockquote>
-                  ) : (
-                    <p>추출 미리보기가 제공되지 않았어요.</p>
-                  )}
-                </div>
-              )}
+              {document.status === 'ready' &&
+                document.id !== pendingDeletion?.id && (
+                  <div>
+                    <p className="muted">
+                      추출 미리보기이며 원문 전체가 아닐 수 있어요.
+                    </p>
+                    {document.extracted_preview ? (
+                      <blockquote>{document.extracted_preview}</blockquote>
+                    ) : (
+                      <p>추출 미리보기가 제공되지 않았어요.</p>
+                    )}
+                  </div>
+                )}
               <div className="buttons">
                 {document.job_id &&
                   ['queued', 'processing'].includes(document.status) && (
@@ -1366,45 +1498,21 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   )}
                 {document.status === 'failed' && (
                   <button
-                    disabled={busy}
+                    disabled={busy || !!pendingDocument || !!pendingDeletion}
                     onClick={() =>
-                      void perform(async (signal) => {
-                        const accepted = await request<DocumentAccepted>(
-                          `/documents/${encodeURIComponent(document.id)}/retry`,
-                          {
-                            method: 'POST',
-                            body: {
-                              expected_revision: latest.current.revision,
-                            },
-                            signal,
-                          },
-                        )
-                        await refresh(signal)
-                        if (accepted.document.job_id)
-                          await finishJob(accepted.document.job_id, signal)
-                      })
+                      void perform((signal) => retryDocument(document, signal))
                     }
                   >
                     다시 처리
                   </button>
                 )}
                 <button
-                  disabled={busy}
+                  disabled={busy || !!pendingDeletion}
                   onClick={() => {
                     if (window.confirm('이 자료와 추출 내용을 삭제할까요?'))
-                      void perform(async (signal) => {
-                        await request<void>(
-                          `/documents/${encodeURIComponent(document.id)}?expected_revision=${latest.current.revision}`,
-                          { method: 'DELETE', signal },
-                        )
-                        if (signal.aborted) return
-                        if (pendingDocument?.document.id === document.id) {
-                          setPendingDocument(null)
-                          if (pendingJob === pendingDocument.document.job_id)
-                            rememberJob(null)
-                        }
-                        await refresh(signal)
-                      })
+                      void perform((signal) =>
+                        deleteDocument(document.id, signal),
+                      )
                   }}
                 >
                   자료 삭제
@@ -1414,7 +1522,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           ))}
           {profile.documents.length === 0 && (
             <button
-              disabled={busy || !!pendingDocument}
+              disabled={busy || !!pendingDocument || !!pendingDeletion}
               onClick={() =>
                 void perform(async (signal) => {
                   const next = await request<Profile>(path, {
@@ -1435,9 +1543,15 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               자료 없이 진행
             </button>
           )}
-          {profile.reviewed_items.length > 0 && (
+          {showReview && (
             <div className="stack">
               <h3>추출한 내용을 확인해 주세요</h3>
+              {reviewIsStale && (
+                <p role="alert">
+                  자료가 변경됐어요. 작성한 내용을 확인한 뒤 편집 취소로 최신
+                  내용을 불러와 주세요.
+                </p>
+              )}
               {profile.reviewed_items.map((item) => {
                 const edit = reviewEdits[item.id] ?? {
                   label: item.label,
@@ -1446,6 +1560,14 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                 return (
                   <fieldset key={item.id} disabled={busy}>
                     <legend>{item.label}</legend>
+                    <p>
+                      출처:{' '}
+                      {item.origin === 'user'
+                        ? '직접 입력'
+                        : (profile.documents.find(
+                            (document) => document.id === item.document_id,
+                          )?.display_name ?? '출처 자료 확인 필요')}
+                    </p>
                     {item.evidence_quote && (
                       <blockquote>{item.evidence_quote}</blockquote>
                     )}
@@ -1483,7 +1605,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               })}
               <div className="buttons">
                 <button
-                  disabled={busy}
+                  disabled={busy || !!pendingDocument || reviewIsStale}
                   onClick={() => void perform(saveReview)}
                 >
                   확인 내용 저장
