@@ -22,3 +22,9 @@ Cleanup determines dependency from document/chunk/review-item references and per
 Explicitly unrelated source subtrees remain unchanged, including `document_id`, `source_item_ids`, and historical `{id, text}` entries inside `sources`. Independent direct answers are preserved. An arbitrary root `id` does not exempt an otherwise linked snapshot from cleanup. Regressions cover the two reviewer examples (short embedded Korean quotation and an unrelated `sample` input when the removed quote is `a`), mixed sources, downstream question/job references, and local quotation isolation. The focused lifecycle PostgreSQL suite passed 25 tests, and an independent targeted review found no remaining blocker.
 
 Final follow-up validation: `./check` exited 0; web 276 passed, backend 340 run (two conditional skips), launcher 22 passed, catalog unit 32 passed, catalog integration 13 run (three conditional skips), TypeScript/Vite build passed. Logs are retained locally under `.outline/pr78-review-verification/`. No worker or pipeline code changed.
+
+### Identifier-value preservation
+
+The follow-up to inline comment 4434260623 shares the identifier field set between reference detection and cleanup. Identifier values are removed only on exact identifier matches; quote substring matching continues for ordinary text. Regression checks cover a mixed `source_item_ids` list, all supported scalar identifier fields, exact target-ID removal, and unchanged text/record-level redaction behavior. This prevents a removed quote such as `a` from deleting the unrelated identifier `another-item`.
+
+Identifier follow-up validation: full `./check` exited 0 (web 276 passed; backend 342 run with two conditional skips; launcher 22 passed; catalog unit 32 passed; catalog integration 13 run with three conditional skips; production build passed). Focused PostgreSQL and pure-function regressions plus independent review passed. Logs: `.outline/pr78-followup-verification/`.
