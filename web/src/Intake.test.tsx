@@ -330,8 +330,8 @@ it('문서 job 실패 후 같은 화면에서 실패 이유와 다시 처리 버
   await waitFor(() => expect(failed).toBe(true))
   const retry = await screen.findByRole('button', { name: '다시 처리' })
   await waitFor(() => expect((retry as HTMLButtonElement).disabled).toBe(false))
-  expect(screen.getByText(/자료를 읽지 못했어요/).textContent).toContain(
-    'extraction_failed',
+  expect(screen.getByText(/자료를 읽지 못했어요/).textContent).toBe(
+    '자료를 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.',
   )
 })
 

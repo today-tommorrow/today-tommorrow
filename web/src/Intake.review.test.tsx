@@ -536,6 +536,44 @@ describe('추출 내용 원문 대조와 저장', () => {
 })
 
 describe('실패 자료 재시도', () => {
+  it.each([
+    [
+      'analysis_failed',
+      '자료는 읽었지만 분석을 완료하지 못했어요. 잠시 후 다시 처리를 눌러 주세요.',
+    ],
+    [
+      'analysis_interrupted',
+      '자료 분석이 중단됐어요. 다시 처리를 눌러 분석을 다시 시작해 주세요.',
+    ],
+    [
+      'document_chunk_limit',
+      '자료가 너무 길어 분석하지 못했어요. 필요한 내용을 나누거나 줄여 새 자료로 등록해 주세요.',
+    ],
+    [
+      'extraction_failed',
+      '자료를 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.',
+    ],
+  ])('실패 원인 %s에 맞는 복구 안내를 표시한다', async (code, message) => {
+    serve(() => {
+      throw new Error('No request expected')
+    })
+    render(
+      <Harness
+        initial={{
+          ...profile,
+          documents: [{ ...source, error_code: code }],
+          reviewed_items: [],
+        }}
+      />,
+    )
+    await ready()
+    const alert = within(targetCard()).getByRole('alert')
+    expect(alert.textContent).toBe(message)
+    expect(alert.textContent).not.toContain(code)
+    expect(targetButton('다시 처리').disabled).toBe(false)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+  })
+
   it('다시 연 처리 중 자료의 분석 작업을 자동 조회하고 완료된 원문과 항목을 불러온다', async () => {
     const processing: Document = {
       ...source,

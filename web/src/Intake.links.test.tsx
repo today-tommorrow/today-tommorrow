@@ -411,9 +411,7 @@ describe('공개 URL 등록과 대체 입력', () => {
     })
     typeUrl()
     fireEvent.click(button())
-    await screen.findByText(
-      /링크 본문을 읽지 못했어요 \(synthetic_link_failure\)/,
-    )
+    await screen.findByText(/링크 본문을 읽지 못했어요/)
     await ready()
     expect(screen.queryByText(link.extracted_preview!)).toBeNull()
     expect(

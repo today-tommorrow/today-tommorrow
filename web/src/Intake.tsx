@@ -54,6 +54,21 @@ function DocumentSource({ url }: { url: string | null }) {
   )
 }
 
+function documentFailureMessage(document: Document) {
+  switch (document.error_code) {
+    case 'analysis_failed':
+      return '자료는 읽었지만 분석을 완료하지 못했어요. 잠시 후 다시 처리를 눌러 주세요.'
+    case 'analysis_interrupted':
+      return '자료 분석이 중단됐어요. 다시 처리를 눌러 분석을 다시 시작해 주세요.'
+    case 'document_chunk_limit':
+      return '자료가 너무 길어 분석하지 못했어요. 필요한 내용을 나누거나 줄여 새 자료로 등록해 주세요.'
+    default:
+      return document.source_type === 'url'
+        ? '링크 본문을 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.'
+        : '자료를 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.'
+  }
+}
+
 function interpretationMatches(
   value: Interpretation,
   id: string,
@@ -1641,13 +1656,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                 }
               </p>
               {(document.error_code || document.status === 'failed') && (
-                <p role="alert">
-                  {document.source_type === 'url'
-                    ? '링크 본문을 읽지 못했어요'
-                    : '자료를 읽지 못했어요'}
-                  {document.error_code ? ` (${document.error_code})` : ''}.
-                  파일이나 텍스트로 다시 등록할 수 있어요.
-                </p>
+                <p role="alert">{documentFailureMessage(document)}</p>
               )}
               {document.status === 'ready' &&
                 document.id !== pendingDeletion?.id && (
