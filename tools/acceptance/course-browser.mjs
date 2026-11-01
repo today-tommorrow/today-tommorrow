@@ -1,5 +1,5 @@
-// Real course API/DB acceptance; only the recommendation selection scaffold is synthetic.
-// Config is a private JSON file: {origin, web_root, cookies, course_ids}.
+// Real course API/DB acceptance, with either a persisted recommendation or a synthetic scaffold.
+// Config is private: {origin, web_root, cookies, recommendation_run_id} or {origin, web_root, cookies, course_ids}.
 import assert from 'node:assert/strict'
 import { readFile, writeFile, unlink, mkdir } from 'node:fs/promises'
 import path from 'node:path'
@@ -7,15 +7,20 @@ import path from 'node:path'
 const config = JSON.parse(await readFile(process.argv[2], 'utf8'))
 const output = path.resolve(process.argv[3])
 const { chromium } = await import(process.env.PLAYWRIGHT_MODULE || 'playwright')
-const runId = '00000000-0000-4000-8000-000000000099'
-assert.equal(config.course_ids.length, 3)
+const realRunMode = Boolean(config.recommendation_run_id)
+assert(realRunMode !== Boolean(config.course_ids), 'configure exactly one of recommendation_run_id or course_ids')
+if (!realRunMode) assert.equal(config.course_ids.length, 3)
+const runId = config.recommendation_run_id || '00000000-0000-4000-8000-000000000099'
+assert.match(runId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
 await mkdir(output, { recursive: true })
 const browser = await chromium.launch({ headless: true })
 const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } })
 await context.addCookies(config.cookies)
 const page = await context.newPage()
 const report = {
-  mode: 'Actual Chromium, real authenticated course API and PostgreSQL; synthetic recommendation selection scaffold only',
+  mode: realRunMode
+    ? 'Actual Chromium, persisted successful real-model recommendation and authenticated course API'
+    : 'Actual Chromium, real authenticated course API and PostgreSQL; synthetic recommendation selection scaffold only',
   browser: browser.version(),
   checks: [],
   course_responses: [],
@@ -29,8 +34,25 @@ page.on('response', (response) => {
 const harness = path.join(config.web_root, '.course-browser-harness.tsx')
 let created = false
 try {
+  let run = null
+  if (realRunMode) {
+    const response = await context.request.get(`${config.origin}/api/recommendations/${encodeURIComponent(runId)}`)
+    assert.equal(response.status(), 200)
+    run = await response.json()
+    assert.equal(run.id, runId)
+    assert.equal(run.runtime_mode, 'real_model')
+    assert.equal(run.model_outcome, 'succeeded')
+    assert(typeof run.model_id === 'string' && run.model_id.length > 0)
+    assert(typeof run.catalog_version_id === 'string' && run.catalog_version_id.length > 0)
+    assert(Array.isArray(run.items) && run.items.length > 0, 'real run must have recommendation items')
+    report.recommendation = { id: run.id, catalog_version_id: run.catalog_version_id,
+      model_id: run.model_id, runtime_mode: run.runtime_mode, model_outcome: run.model_outcome,
+      course_ids: run.items.map((item) => item.course.id) }
+  }
+  const courseIds = realRunMode ? run.items.map((item) => item.course.id) : config.course_ids
+  assert.equal(new Set(courseIds).size, courseIds.length)
   const details = []
-  for (const id of config.course_ids) {
+  for (const id of courseIds) {
     const response = await context.request.get(`${config.origin}/api/courses/${id}`)
     assert.equal(response.status(), 200)
     const course = await response.json()
@@ -39,7 +61,32 @@ try {
     assert(course.evidence.every((item) => item.checked_at === null))
     details.push(course)
   }
-  report.checks.push('three real course details preserve IDs, real-data flag and unknown evidence time')
+  report.checks.push('real course details preserve IDs, real-data flag and unknown evidence time')
+  if (realRunMode) {
+    for (const [index, item] of run.items.entries()) {
+      const detail = details[index]
+      assert.equal(detail.id, item.course.id)
+      const offering = detail.offerings.find((entry) => entry.id === item.offering.id)
+      assert(offering, `selected offering missing from detail: ${item.offering.id}`)
+      for (const [key, value] of Object.entries(item.offering)) {
+        assert.deepEqual(offering[key], value, `offering ${item.offering.id}: ${key}`)
+      }
+      const evidence = new Map(detail.evidence.map((entry) => [entry.id, entry]))
+      for (const entry of item.evidence) {
+        const match = evidence.get(entry.id)
+        assert(match, `evidence missing from detail: ${entry.id}`)
+        for (const key of ['field_path', 'source_url', 'source_system', 'checked_at']) {
+          assert.deepEqual(match[key], entry[key], `evidence ${entry.id}: ${key}`)
+        }
+        assert(entry.quote === null ? match.quote === null : typeof match.quote === 'string' && match.quote.startsWith(entry.quote),
+          `evidence ${entry.id}: excerpt does not match full quote`)
+        assert(match.verification_state === entry.verification_state ||
+          (entry.verification_state === 'observed' && match.verification_state === 'conflicting'),
+        `evidence ${entry.id}: verification state`)
+      }
+    }
+    report.checks.push('persisted recommendation items match selected offerings and evidence in real details')
+  }
   report.courses = details.map((course) => ({
     id: course.id, source_system: course.source_system, provider_name: course.provider_name,
     offering_ids: course.offerings.map((offering) => offering.id),
@@ -61,7 +108,7 @@ try {
     })),
   }
   // This fixture enables existing selection UI; it is neither persisted nor a model result.
-  await page.route(`**/api/recommendations/${runId}`, (route) => route.fulfill({ json: syntheticRun }))
+  if (!realRunMode) await page.route(`**/api/recommendations/${runId}`, (route) => route.fulfill({ json: syntheticRun }))
   await writeFile(harness, `import React from 'react'; import {createRoot} from 'react-dom/client';\nimport {Results} from './src/Courses';\nimport './src/style.css';\ncreateRoot(document.getElementById('root')!).render(<Results runId='${runId}'/>);\n`, { flag: 'wx' })
   created = true
   await page.route('**/__course_browser_acceptance__', (route) => route.fulfill({
@@ -70,15 +117,18 @@ try {
   }))
   await page.goto(`${config.origin}/__course_browser_acceptance__`)
   const checkboxes = page.getByRole('checkbox')
-  await checkboxes.nth(2).waitFor()
-  await page.getByRole('button', { name: '교육 상세', exact: true }).first().click()
+  await checkboxes.nth(courseIds.length - 1).waitFor()
   const detailPanel = page.getByRole('region', { name: '교육 상세', exact: true })
-  await detailPanel.getByRole('heading', { name: details[0].name, exact: true }).waitFor()
-  assert((await detailPanel.innerText()).includes('미확인'))
-  if (details[0].evidence.length) assert((await detailPanel.innerText()).includes('· 미확인'))
-  await page.screenshot({ path: path.join(output, 'detail.png'), fullPage: true })
-  await page.getByRole('button', { name: '상세 닫기', exact: true }).click()
-  report.checks.push('shipped CourseDetails renders actual detail and unknown evidence timestamp')
+  for (const [index, detail] of details.entries()) {
+    await page.getByRole('button', { name: '교육 상세', exact: true }).nth(index).click()
+    await detailPanel.getByRole('heading', { name: detail.name, exact: true }).waitFor()
+    assert((await detailPanel.innerText()).includes('미확인'))
+    if (detail.evidence.length) assert((await detailPanel.innerText()).includes('· 미확인'))
+    if (index === 0) await page.screenshot({ path: path.join(output, 'detail.png'), fullPage: true })
+    await page.getByRole('button', { name: '상세 닫기', exact: true }).click()
+  }
+  report.checks.push('shipped CourseDetails renders every actual result and unknown evidence timestamp')
+  if (courseIds.length >= 3) {
   await checkboxes.nth(0).check()
   await checkboxes.nth(1).check()
   await page.getByRole('button', { name: '선택한 교육 비교', exact: true }).click()
@@ -98,11 +148,12 @@ try {
   assert.equal(await panel.locator('article').count(), 3)
   await page.screenshot({ path: path.join(output, 'compare.png'), fullPage: true })
   report.checks.push('two and three real courses compare; close, deselect and reselect use current IDs')
+  }
   for (const [suffix, expected] of [
-    [`/${config.course_ids[0]}`, 200],
-    [`/compare?ids=${config.course_ids.join(',')}`, 200],
-    [`/compare?ids=${config.course_ids[0]},00000000-0000-4000-8000-000000000000`, 404],
-    [`/compare?ids=${config.course_ids[0]},${config.course_ids[0]}`, 422],
+    [`/${courseIds[0]}`, 200],
+    ...(courseIds.length >= 2 ? [[`/compare?ids=${courseIds.slice(0, 3).join(',')}`, 200]] : []),
+    [`/compare?ids=${courseIds[0]},00000000-0000-4000-8000-000000000000`, 404],
+    [`/compare?ids=${courseIds[0]},${courseIds[0]}`, 422],
     ['/compare?ids=invalid', 422],
   ]) {
     const response = await page.goto(`${config.origin}/api/courses${suffix}`)

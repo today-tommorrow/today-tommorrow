@@ -2,7 +2,7 @@
 
 `tools/acceptance/course-browser.mjs` exercises the shipped `Results`, `CourseDetails`, and comparison components in Chromium against the running authenticated course API and real local PostgreSQL catalog. It requires the normal Vite development server and API proxy.
 
-The recommendation response is an explicitly synthetic selection scaffold built from three actual course responses. It supplies selectable cards because this API change does not implement recommendation generation. It is not persisted and is not evidence of model execution, recommendation quality, Google login, or completion of issue #26. Course detail and comparison requests are never intercepted. GPU execution is not applicable to this acceptance test.
+The runner offers a persisted recommendation mode and a separate synthetic selection scaffold built from three actual course responses. In scaffold mode, the recommendation response is explicitly synthetic. It supplies selectable cards because this API change does not implement recommendation generation. It is not persisted and is not evidence of model execution, recommendation quality, Google login, or completion of issue #26. Course detail and comparison requests are never intercepted. GPU execution is not applicable to this acceptance test.
 
 ## Run
 
@@ -28,23 +28,26 @@ Prepare a private, untracked JSON configuration with permissions `0600`:
 }
 ```
 
+For persisted-run mode, replace `course_ids` with `"recommendation_run_id": "<persisted run UUID>"`. The authenticated user must own that run. The runner fetches it from the real API, requires a nonempty successful `real_model` result, and derives course IDs from its items. It does not intercept recommendation requests. The configuration must contain exactly one of `course_ids` and `recommendation_run_id`.
+
 Use a synthetic user session issued by the real authentication store in the disposable test database. Do not use a person's Google session or commit the configuration. The course IDs must identify actual records in the pinned package; include nullable cost/source metadata among the selected courses.
 
 ```sh
 node tools/acceptance/course-browser.mjs /private/test-config.json /private/evidence-directory
 ```
 
-The runner creates a temporary `.course-browser-harness.tsx` in the configured web root and removes it in `finally`. It writes `course-browser.json`, `detail.png`, and `compare.png` to the evidence directory. Cookies are never included in the report.
+The runner creates a temporary `.course-browser-harness.tsx` in the configured web root and removes it in `finally`. It writes `course-browser.json` and `detail.png` to the evidence directory, plus `compare.png` when at least three courses are available. Cookies are never included in the report.
 
 ## Checks and limits
 
 - Actual course UUIDs, real-data flags, and unknown source verification dates survive HTTP retrieval.
+- In persisted-run mode, every selected offering and recommendation evidence ID, field path, source, verification state and excerpt is checked against its detail response, and every result is opened in the shipped UI. Cross-offering conflicts may make detail evidence conflicting where the single-offering recommendation reports observed.
 - The existing detail component displays source metadata and unknown dates.
 - Selecting two or three courses, closing comparison, deselecting, and selecting different courses produces the matching real API results.
 - Direct browser navigation to detail/comparison API URLs preserves successful retrieval, all-or-nothing missing-ID errors, and invalid/duplicate-input errors.
 - Existing component tests separately cover null amounts versus explicit zero and online mode versus explicit asynchronous schedules.
 
-Direct URL checks here mean the documented HTTP API URLs. The application does not gain a new standalone course or comparison page route from this change. Catalog pinning and database permissions require backend integration checks; this browser harness does not substitute for those checks or establish historical recommendation-version correspondence.
+Direct URL checks here mean the documented HTTP API URLs. The application does not gain a new standalone course or comparison page route from this change. Catalog pinning and database permissions require backend integration checks; this browser harness does not substitute for those checks. A persisted run must be executed in this mode to produce recommendation/detail correspondence evidence.
 
 ## Recorded verification — 2026-11-01
 
