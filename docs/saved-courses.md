@@ -67,6 +67,10 @@ uv run --locked ruff check . ../scripts ../tools/catalog
 
 이후 main `b43249d`를 합치면서 `App.flow`의 관심 목록 fixture를 `SavedCoursePage` 계약에 맞췄다. `App.flow`, 관심 교육 기본·페이지 이동, 교육 기본·카탈로그, 추천 제출 UI 검사가 통과했고 TypeScript, fixture ESLint·Prettier, backend 설정을 사용한 Ruff도 통과했다. Alembic의 단일 head와 병합 revision의 스키마 변경 부재, 두 기능의 모델 metadata·API 경로 등록을 확인했다.
 
+병합 commit `4c43be4`를 새 격리 PostgreSQL에서 다시 검증했다. 빈 DB와 각 공개 `0007` revision에서 `upgrade head`가 모두 성공했다. 관심 교육 경로에서는 사용자·세션·저장 snapshot과 API 목록을, 추천 경로에서는 사용자·세션·입력·작업·결과 snapshot을 전후 비교해 보존을 확인했다. 모든 migration 경로 전후 원본 교육·단위 테이블의 내용 fingerprint가 동일했다.
+
+같은 commit의 `./check`가 웹 267개, backend 218개(표준 재적재 검사 1개 제외), 실행 도구 22개, catalog 단위 11개·통합 4개와 전체 lint·typecheck·build를 통과했다. 별도로 환경 변수를 설정한 backend 전체 `L0_DATABASE_TESTS=1 L0_REIMPORT_TESTS=1 uv run --locked python -m unittest discover -s tests -v`도 218개 모두 제외 없이 통과했다. `./dev`의 실제 API·웹 응답과 아래 React 실제 HTTP 검사를 다시 확인했고, 합성 계정·세션 파일과 검증용 서버·DB는 검사 후 정리했다. 추천 검사의 provider는 합성 주입이며 실제 모델·GPU 검증을 의미하지 않는다.
+
 별도 실제 uvicorn HTTP 요청 47개로 반복·동시 PUT, DELETE, 계정 격리, 인증·CSRF, 오류 상태, keyset 페이지, 카탈로그 교체와 snapshot 복구를 확인했다. 검사 후 원본 카탈로그 버전과 fingerprint를 복구했다. 실행 환경은 Python 3.14.6, Node 26.5.0, npm 11.17.0, uv 0.12.5, PostgreSQL 16.14, pgvector 0.6.0이다.
 
 원본 패키지는 commit `043f8b8e96620994aff06b0edc2d235f793f0b5a`, ZIP SHA256 `c6cd4618bc4b9fcca925161ee09ed683faf77f8ebf45cfa5831bb6bffdbaeb8e`다. Dataset은 `7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80`, embedding profile은 `770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90`으로 고정했다.
