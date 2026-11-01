@@ -1,0 +1,17 @@
+{
+  "status": "not_run",
+  "reason": "catalog_database_unavailable",
+  "investigation": "Existing remote work24 database lacks work24_bge.active_catalog; migration was not applied. An isolated local catalog and an SSH tunnel require separate authorized access.",
+  "actual_bge_results": false,
+  "evaluation_dataset_sha256": "597133d3c63833e7d7ab1d2e73648c0f7b2984db63726bed0f7c051ebae25ca5",
+  "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+  "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+  "embedding_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+  "code_commit": "e84a008",
+  "query_count": 20,
+  "metric_eligible_cases": 13,
+  "unjudged_cases": 7,
+  "metrics": null,
+  "search_outcomes": null,
+  "verification": "GPU-free evaluator tests use synthetic responses and do not measure search quality."
+}
