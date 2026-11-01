@@ -1,0 +1,9 @@
+# Document lifecycle decisions
+
+D11: Deleting a document removes its retained raw bytes, extracted text, and chunks. Source-linked review items and citations in retained snapshots are removed in the same transaction. Dependent generated explanations are replaced with a fixed notice; catalog facts remain historical. Requests whose saved responses contain deleted source material retain only a non-sensitive tombstone, and replay returns 409. This is application-level deletion, not a claim about PostgreSQL backups or storage media.
+
+D07: A recommendation tied to an earlier profile revision remains historical. Its result includes a notice requesting regeneration when the profile revision has changed. Deletion also removes affected generated explanations and adds a deletion notice.
+
+Retries re-run the existing bounded extractor over retained file bytes. An extraction failure remains failed; extraction success is queued and is not a model-ready result. Text documents and non-failed documents cannot be retried. Parsing, review fixtures, and the submission recovery test use synthetic data. Document analysis/model generation is not implemented by this change; GPU verification is N/A.
+
+Validation: with `DATABASE_URL` pointing to disposable PostgreSQL and from `backend`, run `L0_DATABASE_TESTS=1 PYTHONPATH=.:tests python -m unittest test_document_lifecycle.DocumentLifecycleTests`; 25 tests passed on local PostgreSQL. The fixture represents server-owned reviewed items with `id`, `document_id`, `chunk_id`, `evidence_quote`, `label`, and `state`; historical source records may also carry `id` and `text`. These are synthetic fixtures, not output from a document-analysis model. Tests require the local test environment described in the repository. The test suite uses a synthetic provider and does not establish end-to-end model readiness for uploaded documents.

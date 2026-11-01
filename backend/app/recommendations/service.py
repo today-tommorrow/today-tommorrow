@@ -142,4 +142,10 @@ def get_result(db: Session, run_id: UUID, user_id: UUID) -> dict:
     )
     if row is None:
         raise RecommendationServiceError(404, "recommendation_not_found")
-    return deepcopy(row.public_json)
+    result = deepcopy(row.public_json)
+    profile = store.get_profile(db, row.profile_id, user_id)
+    if row.profile_revision != profile.revision:
+        result.setdefault("notices", []).append(
+            "입력이 변경되어 이 결과는 이전 결과입니다. 다시 추천을 생성해주세요."
+        )
+    return result

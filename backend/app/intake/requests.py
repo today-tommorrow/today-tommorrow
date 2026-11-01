@@ -56,6 +56,8 @@ def reserve(
             IntakeRequest.idempotency_key == key,
         )
     ).one()
+    if row.response_json == {"source_deleted": True}:
+        raise IdempotencyConflict()
     if row.request_hash != request_hash:
         raise IdempotencyConflict()
     return row, created is not None

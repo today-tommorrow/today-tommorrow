@@ -9,8 +9,8 @@ from typing import Annotated
 from uuid import UUID, uuid4
 
 import psutil
-from fastapi import APIRouter, Depends, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import JSONResponse, Response
 from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
@@ -27,9 +27,10 @@ from app.documents.schemas import (
     DocumentAccepted,
     DocumentResponse,
     FileRequest,
+    RetryRequest,
     TextRequest,
 )
-from app.documents.service import DocumentError, public, register, register_file
+from app.documents.service import DocumentError, public, register, register_file, retry
 from app.intake import store
 from app.intake.requests import IdempotencyConflict
 
@@ -358,6 +359,78 @@ def get_document(id: str, user: ReadUser, db: DB):
         if row is None:
             raise DocumentError(404, "document_not_found")
         return JSONResponse(public(row), headers=PRIVATE)
+    except SQLAlchemyError:
+        db.rollback()
+        raise DocumentError(503, "document_unavailable") from None
+
+
+async def retry_body(request: Request) -> RetryRequest:
+    data = bytearray()
+    async for chunk in request.stream():
+        data.extend(chunk)
+        if len(data) > 8192:
+            raise DocumentError(413, "payload_too_large")
+    try:
+        return RetryRequest.model_validate_json(data)
+    except ValidationError, ValueError:
+        raise DocumentError(422, "invalid_document_input") from None
+
+
+@router.post(
+    "/documents/{id}/retry",
+    status_code=202,
+    response_model=DocumentAccepted,
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {
+                "application/json": {"schema": RetryRequest.model_json_schema()}
+            },
+        }
+    },
+)
+def retry_document(
+    id: str,
+    payload: Annotated[RetryRequest, Depends(retry_body)],
+    user: WriteUser,
+    db: DB,
+    key: Annotated[str | None, Depends(request_key)],
+):
+    try:
+        status, result = retry(
+            db,
+            identifier(id),
+            user.user.id,
+            payload.expected_revision,
+            key,
+            extract_file,
+        )
+        db.commit()
+        return JSONResponse(result, status_code=status, headers=PRIVATE)
+    except store.ProfileNotFound:
+        raise DocumentError(404, "document_not_found") from None
+    except IdempotencyConflict:
+        raise DocumentError(409, "idempotency_conflict") from None
+    except SQLAlchemyError:
+        db.rollback()
+        raise DocumentError(503, "document_unavailable") from None
+
+
+@router.delete("/documents/{id}", status_code=204)
+def delete_document(
+    id: str,
+    user: WriteUser,
+    db: DB,
+    expected_revision: Annotated[int, Query(ge=0, le=2147483646)],
+):
+    from app.documents.lifecycle import remove_document
+
+    try:
+        remove_document(db, identifier(id), user.user.id, expected_revision)
+        db.commit()
+        return Response(status_code=204, headers=PRIVATE)
+    except store.ProfileNotFound:
+        raise DocumentError(404, "document_not_found") from None
     except SQLAlchemyError:
         db.rollback()
         raise DocumentError(503, "document_unavailable") from None

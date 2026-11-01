@@ -36,3 +36,7 @@ class DocumentResponse(ContractModel):
 class DocumentAccepted(ContractModel):
     document: DocumentResponse
     profile_revision: int
+
+
+class RetryRequest(ContractModel):
+    expected_revision: Annotated[int, Field(ge=0, le=2147483646)]

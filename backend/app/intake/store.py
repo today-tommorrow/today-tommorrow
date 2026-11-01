@@ -133,7 +133,9 @@ def selection_summaries(db: Session, row: IntakeProfile) -> list[dict[str, Any]]
             for key, value in answer.applied_patch_json.items()
         ):
             continue
-        binding = question.option_bindings_json[str(answer.selected_option_id)]
+        binding = question.option_bindings_json.get(str(answer.selected_option_id))
+        if not isinstance(binding, dict) or not isinstance(binding.get("label"), str):
+            continue
         summaries.append(
             {
                 "question_id": str(question.id),
