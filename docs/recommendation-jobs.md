@@ -32,3 +32,28 @@ The original intermittent run's transient trigger remains unconfirmed. The inval
 ### Recover a submitted profile in another tab
 
 `GET /api/profiles/{id}/recommendation-job` requires the authenticated owner and returns `{"profile_id": "…", "revision": 1, "job": null}` when there is no recommendation job for the current profile revision. Otherwise `job` is the same public job shape as `GET /api/jobs/{id}`, including `profile_revision`, terminal errors or a completed recommendation run ID. The additive `profile_revision` field is also returned by `GET /api/jobs/{id}`; clients must verify it before opening a remembered recommendation result. The newest job is selected by creation time and then ID, both descending. Another owner's or missing profile returns 404; anonymous access returns 401. Responses are `no-store`. The client must compare profile ID and revision, and treat a failed lookup as unknown rather than as no job. This endpoint neither starts nor retries work.
+
+## Failure and explicit retry regression (#31)
+
+The browser regression uses different first-attempt and retry job IDs. It requires the reviewed goal, budget, selected wording, revision and review token to remain unchanged, verifies that failure does not trigger an automatic submission or result navigation, and follows only the result from an explicit new-key retry. This is a synthetic UI test, not GPU evidence.
+
+The database regression sends a real HTTP request to a loopback server returning 503 through `GemmaRecommendations`. It verifies the safe terminal error, unchanged profile inputs and zero saved results. An explicit retry uses a new job and key; the retry and its sole saved result must match the frozen input captured immediately after the first submission. The successful retry runner is synthetic; actual GPU evidence is recorded separately.
+
+### Actual browser failure and GPU recovery, 2026-11-01
+
+Verified on main `7828d59` plus the regression tests in this change, using a synthetic authenticated session and an HTTP-seeded complete profile with no documents. This run starts at the review/submit screen; it does not re-verify Google OAuth or question acquisition. Its seeded profile has an empty selection-summary list. Nonempty selected wording is covered by the synthetic UI regression, not by this live recovery run.
+
+Reproduction procedure:
+
+1. Configure the API and recommendation worker with the same owned loopback model proxy URL before creating/submitting the profile. The model URL and budgets are frozen in each submission context. Keep them fixed so both attempts have equivalent inputs; changing worker configuration after submission can trigger context mismatch instead of provider failure. Keep the actual GPU services running.
+2. Make that proxy return HTTP 503 for model generation. Submit through the browser. Require a terminal public `recommendation_failed`, preserved answers, selection summaries and profile revision, no result navigation, and zero saved recommendation runs.
+3. Switch only the proxy behavior to forward to the actual model, keeping its URL and configuration unchanged. Explicitly press the browser recommendation button again. Require a new idempotency key and job ID, identical frozen input, and exactly one saved run associated with the successful retry.
+4. Compare two authenticated result reads with the saved database result. Reload the result page and require the same run and course cards.
+
+Observed: the first job failed with zero runs; the retry succeeded with two course items in one run. Both jobs and the saved run retained the same frozen input; answers and selection summaries remained unchanged. Two API reads matched the database, and the browser navigated to the saved result and reloaded it successfully. Pipeline duration was 176120 ms; worker job duration was 176.776 seconds. These timings describe one recovery run, not a latency distribution or reliability estimate.
+
+The real-model record reports `gemma4-checklist`, revision `29d097773436b69ff9feafd636ab4cf873786537`, prompt `work24-recommendation-grounded-4`; the environment used the existing remote Gemma/BGE services. The local PostgreSQL test databases were upgraded additively from `0008` to `0009_text_documents`; the earlier browser profile and result were preserved. The injected failure was confined to an owned loopback proxy; no shared GPU service was stopped.
+
+Private local evidence: `.outline/issue31-failure-recovery/failure-recovery-evidence.json`, `failure-preserved-input.jpg`, and `retry-result-reloaded.jpg`. Environment/session files and database dumps stay outside version control.
+
+Still unverified by this slice: material registration/interpretation/deletion, real Google OAuth, an independent teammate's complete A/B walkthrough, DB outage, physical GPU cancellation, and the full cross-system failure matrix. Issue #31 remains partially complete.

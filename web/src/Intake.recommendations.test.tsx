@@ -97,11 +97,13 @@ function Harness({
 
 function serve(
   handler: (path: string, init: RequestInit) => Response | Promise<Response>,
+  currentProfile: Profile = profile,
 ) {
   const fetch = vi.fn(async (url: string, init: RequestInit) => {
     const path = new URL(url).pathname
     if (path === '/api/onboarding/options') return Response.json(options)
-    if (path === `/api/profiles/${profile.id}`) return Response.json(profile)
+    if (path === `/api/profiles/${profile.id}`)
+      return Response.json(currentProfile)
     return handler(path, init)
   })
   vi.stubGlobal('fetch', fetch)
@@ -383,35 +385,98 @@ describe('추천 제출과 저장된 결과 복구', () => {
   })
 
   it.each(['failed', 'cancelled'] as const)(
-    '%s가 확정된 뒤 새 멱등 키로 다시 제출한다',
+    '%s 뒤 확인한 입력을 보존하고 새 키와 작업으로 명시적으로 재시도한다',
     async (status) => {
       const onRun = vi.fn()
+      const retryJobId = 'synthetic-retry-job'
+      const retryRunId = 'synthetic-retry-run'
+      const selectedLabel = '합성 사용자 선택: 예산 상한 100000원'
+      const reviewed: Profile = {
+        ...profile,
+        answers: {
+          ...profile.answers,
+          goal_text: '합성 소프트웨어 학습 목표',
+          budget_status: 'amount',
+          budget_krw: 100000,
+        },
+        selection_summaries: [
+          {
+            question_id: 'synthetic-budget-question',
+            selected_option_id: 'synthetic-budget-option',
+            target_slot: 'budget_status',
+            label: selectedLabel,
+            revision: profile.revision,
+          },
+        ],
+      }
       let attempts = 0
       const fetch = serve((path) => {
         if (path.endsWith('/submit')) {
           attempts += 1
           return Response.json({
-            job_id: jobId,
+            job_id: attempts === 1 ? jobId : retryJobId,
             status: 'queued',
             poll_after_ms: 1000,
           })
         }
         if (path === `/api/jobs/${jobId}`)
-          return Response.json(job(attempts === 1 ? status : 'succeeded'))
+          return Response.json({
+            ...job(status),
+            error:
+              status === 'failed'
+                ? {
+                    code: 'recommendation_failed',
+                    message: '합성 추천 처리 실패',
+                    request_id: jobId,
+                  }
+                : null,
+          })
+        if (path === `/api/jobs/${retryJobId}`)
+          return Response.json({
+            ...job('succeeded'),
+            id: retryJobId,
+            result: { recommendation_run_id: retryRunId },
+          })
         throw new Error(`Unexpected path: ${path}`)
-      })
-      render(<Harness onRun={onRun} />)
+      }, reviewed)
+      render(<Harness onRun={onRun} initial={reviewed} />)
       fireEvent.click(submitButton())
       await screen.findByRole('alert')
       await waitFor(() => expect(submitButton().disabled).toBe(false))
       expect(onRun).not.toHaveBeenCalled()
+      expect(attempts).toBe(1)
+      expect(sessionStorage.getItem(storageKey)).toBeNull()
+      expect(screen.getAllByText(selectedLabel).length).toBeGreaterThan(0)
+      expect(screen.getByText('합성 소프트웨어 학습 목표')).toBeTruthy()
+      expect(screen.getByText('100,000')).toBeTruthy()
       fireEvent.click(submitButton())
-      await waitFor(() => expect(onRun).toHaveBeenCalledWith(runId))
-      const keys = fetch.mock.calls
-        .filter(([url]) => url.endsWith('/submit'))
-        .map(([, init]) => new Headers(init.headers).get('Idempotency-Key'))
+      await waitFor(() => expect(onRun).toHaveBeenCalledWith(retryRunId))
+      expect(onRun).toHaveBeenCalledTimes(1)
+      const submissions = fetch.mock.calls.filter(([url]) =>
+        url.endsWith('/submit'),
+      )
+      const keys = submissions.map(([, init]) =>
+        new Headers(init.headers).get('Idempotency-Key'),
+      )
       expect(keys).toHaveLength(2)
+      expect(keys[0]).toBeTruthy()
+      expect(keys[1]).toBeTruthy()
       expect(keys[0]).not.toBe(keys[1])
+      for (const [, init] of submissions)
+        expect(init.body).toBe(
+          JSON.stringify({
+            expected_revision: reviewed.revision,
+            review_token: reviewed.review_token,
+          }),
+        )
+      expect(
+        fetch.mock.calls
+          .map(([url]) => new URL(url).pathname)
+          .filter((path) => path.startsWith('/api/jobs/')),
+      ).toEqual([`/api/jobs/${jobId}`, `/api/jobs/${retryJobId}`])
+      expect(
+        fetch.mock.calls.filter(([, init]) => init.method === 'PATCH'),
+      ).toHaveLength(0)
     },
   )
 
