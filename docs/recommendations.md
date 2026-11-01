@@ -29,7 +29,7 @@ The runner retrieves at most ten distinct course candidates, preserving exact se
 
 Assessments preserve `0`, `0.5`, `1` and `null`. Goal, prerequisite and outcome use weights `0.45`, `0.25`, `0.20`; the server computes the `0.10` preference axis only from a confirmed delivery-mode match. Prerequisite assessment remains unknown without both explicit prerequisite evidence and user-described experience. Lower/upper bounds and coverage use the frozen weights: `1/null/0.5/1` yields `0.65/0.90/0.75`. These are internal ordering values, not ability or employment probabilities.
 
-The server excludes unrelated courses, preserves all seven public condition states, orders by grounded goal basis, score lower bound, coverage, unknown-condition count, dense retrieval similarity and stable IDs, then applies a maximum of five courses and two per known institution. Unknown institutions are not assumed identical. Caps are never relaxed. Unknown personal cost, schedule, recruitment and eligibility are not converted into confirmed matches; institution regions are not treated as verified commuting locations.
+The server excludes unrelated courses and preserves pass, fail, unknown and not-applicable states across the seven public condition checks. It orders by grounded goal basis, score lower bound, coverage, unknown-condition count, dense retrieval similarity and stable IDs, then applies a maximum of five courses and two per known institution. Unknown institutions are not assumed identical. Caps are never relaxed. Unknown personal cost, schedule, recruitment and eligibility are not converted into confirmed matches; institution regions are not treated as verified commuting locations.
 
 Model JSON has a strict schema. Duplicate keys, non-finite values, foreign IDs, duplicate candidates, nonexistent quotations, unsupported non-null assessments and ungrounded content claims fail validation. A validation failure permits one bounded repair attempt; transport errors do not. The phase callback checks worker ownership/cancellation before and immediately after each blocking call. The remote GPU operation itself is not cancelled by a Python callback.
 
@@ -41,7 +41,7 @@ Explanations contain only model-selected goal/source IDs and exact quotations. T
 
 `validate_result` validates injected runners as well as production output. `sample` providers stay labelled `sample`; the production factory has no fixture fallback. A zero-candidate result has `model_outcome=not_needed`. When the model assessed candidates but excluded all as unrelated, the `empty` result truthfully records `model_outcome=succeeded`. A bounded candidate set cannot prove an entire field is unsupported; `unsupported_field` requires reviewed coverage information that this corpus does not supply. Unavailable models or invalid output stay failures and never become successful recommendation cards.
 
-Source evidence `checked_at` is nullable. Snapshot creation and query dates do not establish source verification dates. Existing frontend evidence types must accept null and display it as unknown. Public catalog UUIDs are deterministic over the pinned dataset, profile and manifest; original 64-character dataset/profile hashes remain internal provenance.
+Source evidence `checked_at` is nullable. Snapshot creation and query dates do not establish source verification dates. The frontend accepts null and displays `미확인`. Public catalog UUIDs are deterministic over the pinned dataset, profile and manifest; original 64-character dataset/profile hashes remain internal provenance.
 
 ## Verification scope
 
@@ -53,3 +53,13 @@ ruff check app/recommendations tests/test_recommendation_pipeline.py tests/test_
 ```
 
 Pipeline tests inject explicitly synthetic providers. HTTP adapter tests use a loopback test server; they verify transport contracts, not actual GPU inference. Their results do not satisfy issue #26's final web-to-GPU acceptance criterion or its material-input path. Actual model quality, full application integration and durable lifecycle checks must be reported separately.
+
+### Integrated verification, 2026-11-01
+
+The combined repository passed `./check`: 253 frontend tests, 203 backend tests, 22 launcher tests, 11 catalog unit tests, four catalog integration tests, formatting/lint/type checks, and the web build. Subsequent live-model fixes were checked separately with the recommendation tests.
+
+The final live run used prompt `work24-recommendation-grounded-4`, actual remote BGE-M3 and Gemma over an SSH tunnel, and the pinned corpus in an isolated PostgreSQL 16.14/pgvector 0.6.0 database. A synthetic authenticated service session exercised the real FastAPI routes through TestClient: profile save, reviewed submission, identical-key replay, worker processing, job polling, and two saved-result reads. The replay returned the original accepted job, and both result reads were identical. Four courses were saved with `runtime_mode=real_model`, `model_outcome=succeeded`, and `result_state=unknown_conditions`; unknown conditions were preserved. One complete run took 218.486 seconds. This is a single integration observation, not a latency percentile or a recommendation-quality benchmark.
+
+Live testing exposed zero scores without evidence, contradictory relevance/score combinations, and explanations selecting evidence outside the assessed subset. The output schema now constrains those score combinations, and explanation input contains only assessed evidence. Exact ID/quotation validation remains in place; invalid output still fails after the bounded repair attempt.
+
+Evidence is retained outside Git under `.outline/recommendation-verification` in the parent working workspace, including `live-flow.json`, per-call synthetic/public model traces, and failed-case replay records. Test users and their results were removed after verification. No remote application migration or service deployment was performed. Browser Google login, the complete browser-to-GPU journey, material-input recommendations, broader relevance evaluation, and latency improvement remain separate work; issue #26 is not complete on this evidence alone.
