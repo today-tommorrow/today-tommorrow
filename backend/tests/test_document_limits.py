@@ -8,7 +8,7 @@ from app.ai.document_analysis import (
     DocumentChunkInput,
     GemmaDocumentAnalyzer,
 )
-from app.documents.service import split_chunks
+from app.documents.service import retry_chunks, split_chunks
 from app.recommendations.pipeline import confirmed_sources
 
 
@@ -19,6 +19,16 @@ class DocumentLimitsTests(unittest.TestCase):
         self.assertLessEqual(len(chunks), 256)
         self.assertEqual("".join(chunk for chunk, _ in chunks), text)
         self.assertTrue(all(len(chunk) <= 600 for chunk, _ in chunks))
+
+    def test_retry_repairs_redundant_slices_and_upgrades_legacy_sources(self):
+        chunks = [("example", "text:chars:0:7:slice:0:7:slice:0:7:slice:0:7")]
+        self.assertEqual(
+            retry_chunks(chunks), [("example", "text:chars:0:7:slice:0:7")]
+        )
+        self.assertEqual(
+            retry_chunks([("example", "text:chars:0:7")]),
+            [("example", "text:chars:0:7:slice:0:7")],
+        )
 
     def test_excess_chunks_fail_before_model_request(self):
         provider = GemmaDocumentAnalyzer(

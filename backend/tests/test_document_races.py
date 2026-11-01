@@ -1,5 +1,6 @@
 """Document ownership races and explicit submit on a disposable database."""
 
+import hashlib
 from datetime import UTC, datetime, timedelta
 from unittest.mock import patch
 from uuid import UUID
@@ -128,6 +129,62 @@ class DocumentRaceTests(ProfileDraftTests):
         self.assertEqual(response.status_code, 202, response.text)
         self.work(SyntheticProvider())
         self.assertEqual(self.current(profile_id)["documents"][0]["status"], "ready")
+
+    def test_repeated_file_retry_preserves_locators_and_original_hash(self):
+        class Failed:
+            def analyze(self, *args, **kwargs):
+                raise TimeoutError("synthetic failure")
+
+        profile = self.create()
+        raw = ("Python experience " * 75).encode()
+        response = self.client.post(
+            f"/api/profiles/{profile['id']}/documents/files",
+            headers={"X-CSRF-Token": self.csrf},
+            data={"expected_revision": str(profile["revision"]), "kind": "resume"},
+            files={"file": ("synthetic.txt", raw, "text/plain")},
+        )
+        self.assertEqual(response.status_code, 202, response.text)
+        doc = response.json()["document"]
+
+        def source():
+            with Session(self.engine) as db:
+                row = db.get(Document, UUID(doc["id"]))
+                chunks = db.scalars(
+                    select(DocumentChunk)
+                    .where(DocumentChunk.document_id == row.id)
+                    .order_by(DocumentChunk.ordinal)
+                ).all()
+                return (
+                    row.raw_content,
+                    row.content_sha256,
+                    [
+                        (chunk.text_content, chunk.content_sha256, chunk.locator)
+                        for chunk in chunks
+                    ],
+                )
+
+        expected = source()
+        self.assertEqual(expected[0], raw)
+        self.assertEqual(expected[1], hashlib.sha256(raw).hexdigest())
+        self.assertGreater(len(expected[2]), 1)
+        for _ in range(2):
+            self.work(Failed())
+            current = self.current(profile["id"])
+            self.assertEqual(current["documents"][0]["status"], "failed")
+            retry = self.client.post(
+                f"/api/documents/{doc['id']}/retry",
+                headers={"X-CSRF-Token": self.csrf},
+                json={"expected_revision": current["revision"]},
+            )
+            self.assertEqual(retry.status_code, 202, retry.text)
+            self.assertEqual(source(), expected)
+        self.work(SyntheticProvider())
+        current = self.current(profile["id"])
+        self.assertEqual(current["documents"][0]["status"], "ready")
+        self.assertEqual(
+            current["reviewed_items"][0]["source_locator"], expected[2][0][2]
+        )
+        self.assertEqual(source(), expected)
 
     def test_source_change_during_analysis_never_publishes(self):
         profile_id, doc = self.create_document()

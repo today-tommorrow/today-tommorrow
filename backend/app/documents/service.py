@@ -60,6 +60,31 @@ def split_chunks(chunks):
     return result
 
 
+def retry_chunks(chunks):
+    """Keep existing bounded slices stable; upgrade older unsliced chunks."""
+    result = []
+    for text, locator in chunks:
+        suffix = f":slice:0:{len(text)}"
+        while locator.endswith(suffix) and ":slice:" in locator[: -len(suffix)]:
+            locator = locator[: -len(suffix)]
+        base, separator, span = locator.rpartition(":slice:")
+        start, colon, end = span.partition(":")
+        already_bounded = (
+            separator
+            and base
+            and colon
+            and start.isdecimal()
+            and end.isdecimal()
+            and int(end) - int(start) == len(text)
+            and len(text) <= 600
+        )
+        if already_bounded:
+            result.append((text, locator))
+        else:
+            result.extend(split_chunks([(text, locator)]))
+    return result
+
+
 def enqueue_analysis(db, profile, row):
     from app.jobs import store as jobs
 
@@ -291,6 +316,7 @@ def retry(db, document_id, user_id, expected_revision, key, extractor):
         if kind is None or row.raw_content is None:
             raise DocumentError(409, "document_retry_unavailable")
         info = extractor(row.raw_content, kind)
+        chunks = split_chunks(info["chunks"])
     else:
         existing = list(
             db.scalars(
@@ -305,6 +331,7 @@ def retry(db, document_id, user_id, expected_revision, key, extractor):
             "error": None,
             "chunks": [(chunk.text_content, chunk.locator) for chunk in existing],
         }
+        chunks = retry_chunks(info["chunks"])
     from app.documents.lifecycle import redact_document
 
     redact_document(db, profile, row)
@@ -318,7 +345,7 @@ def retry(db, document_id, user_id, expected_revision, key, extractor):
     ):
         db.delete(chunk)
     db.flush()
-    for ordinal, (chunk_text, locator) in enumerate(split_chunks(info["chunks"])):
+    for ordinal, (chunk_text, locator) in enumerate(chunks):
         db.add(
             DocumentChunk(
                 document_id=row.id,
