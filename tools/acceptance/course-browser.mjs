@@ -129,25 +129,39 @@ try {
   }
   report.checks.push('shipped CourseDetails renders every actual result and unknown evidence timestamp')
   if (courseIds.length >= 3) {
-  await checkboxes.nth(0).check()
-  await checkboxes.nth(1).check()
-  await page.getByRole('button', { name: '선택한 교육 비교', exact: true }).click()
-  const panel = page.getByRole('region', { name: '교육 비교 결과' })
-  await panel.getByRole('heading', { name: details[1].name, exact: true }).waitFor()
-  assert.equal(await panel.locator('article').count(), 2)
-  await page.getByRole('button', { name: '비교 닫기', exact: true }).click()
-  await checkboxes.nth(0).uncheck()
-  await checkboxes.nth(2).check()
-  await page.getByRole('button', { name: '선택한 교육 비교', exact: true }).click()
-  await panel.getByRole('heading', { name: details[2].name, exact: true }).waitFor()
-  assert.equal(await panel.getByRole('heading', { name: details[0].name, exact: true }).count(), 0)
-  await page.getByRole('button', { name: '비교 닫기', exact: true }).click()
-  await checkboxes.nth(0).check()
-  await page.getByRole('button', { name: '선택한 교육 비교', exact: true }).click()
-  await panel.getByRole('heading', { name: details[0].name, exact: true }).waitFor()
-  assert.equal(await panel.locator('article').count(), 3)
-  await page.screenshot({ path: path.join(output, 'compare.png'), fullPage: true })
-  report.checks.push('two and three real courses compare; close, deselect and reselect use current IDs')
+    const panel = page.getByRole('region', { name: '교육 비교 결과' })
+    const compare = async (indices) => {
+      const ids = indices.map((index) => courseIds[index])
+      const responsePromise = page.waitForResponse((response) => {
+        const url = new URL(response.url())
+        return url.pathname === '/api/courses/compare' && url.searchParams.get('ids') === ids.join(',')
+      })
+      await page.getByRole('button', { name: '선택한 교육 비교', exact: true }).click()
+      const response = await responsePromise
+      assert.equal(response.status(), 200)
+      const body = await response.json()
+      assert.deepEqual(body.items.map((item) => item.id), ids)
+      const articles = panel.locator('article')
+      await articles.nth(indices.length - 1).waitFor()
+      assert.equal(await articles.count(), indices.length)
+      for (const [position, index] of indices.entries()) {
+        const article = articles.nth(position)
+        await article.getByRole('heading', { name: details[index].name, exact: true }).waitFor()
+        assert((await article.innerText()).includes(details[index].provider_name ?? '교육기관 미확인'))
+      }
+    }
+    await checkboxes.nth(0).check()
+    await checkboxes.nth(1).check()
+    await compare([0, 1])
+    await page.getByRole('button', { name: '비교 닫기', exact: true }).click()
+    await checkboxes.nth(0).uncheck()
+    await checkboxes.nth(2).check()
+    await compare([1, 2])
+    await page.getByRole('button', { name: '비교 닫기', exact: true }).click()
+    await checkboxes.nth(0).check()
+    await compare([1, 2, 0])
+    await page.screenshot({ path: path.join(output, 'compare.png'), fullPage: true })
+    report.checks.push('two and three real courses compare; close, deselect and reselect use current IDs')
   }
   for (const [suffix, expected] of [
     [`/${courseIds[0]}`, 200],
