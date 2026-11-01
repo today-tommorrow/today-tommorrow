@@ -27,8 +27,15 @@ def extract(data: bytes, kind: str) -> list[tuple[str, str]]:
         reader = PdfReader(io.BytesIO(data), strict=True)
         if reader.is_encrypted or len(reader.pages) > 50:
             raise ExtractionError("limit" if not reader.is_encrypted else "invalid")
+        if "/AcroForm" in reader.trailer["/Root"]:
+            raise ExtractionError("invalid")
         result = []
         for index, page in enumerate(reader.pages):
+            if any(
+                annotation.get_object().get("/Subtype") == "/Widget"
+                for annotation in page.get("/Annots", [])
+            ):
+                raise ExtractionError("invalid")
             resources = page.get("/Resources")
             if resources:
                 objects = resources.get_object().get("/XObject")
@@ -149,9 +156,12 @@ def extract(data: bytes, kind: str) -> list[tuple[str, str]]:
                 if node.tag == W + "t"
                 else "\t"
                 if node.tag == W + "tab"
+                else "\u2011"
+                if node.tag == W + "noBreakHyphen"
                 else "\n"
                 for node in paragraph.iter()
-                if node.tag in {W + "t", W + "tab", W + "br", W + "cr"}
+                if node.tag
+                in {W + "t", W + "tab", W + "br", W + "cr", W + "noBreakHyphen"}
             )
             if value:
                 result.append((value, f"docx:paragraph:{index}:chars:0:{len(value)}"))

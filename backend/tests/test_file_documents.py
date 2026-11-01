@@ -40,6 +40,17 @@ DOCUMENT = '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessin
 
 
 class ExtractionTests(unittest.TestCase):
+    def test_docx_nonbreaking_hyphen(self):
+        body = DOCUMENT.replace(
+            "<w:t>one</w:t><w:tab/><w:t>two</w:t><w:br/><w:t>three</w:t>",
+            "<w:t>client</w:t><w:noBreakHyphen/><w:t>server</w:t>",
+        )
+        result = extract_file(docx(body), "docx")
+        self.assertEqual(result["text"], "client\u2011server")
+        self.assertEqual(
+            result["chunks"], [["client\u2011server", "docx:paragraph:0:chars:0:13"]]
+        )
+
     def test_docx_content_and_security(self):
         result = extract_file(docx(DOCUMENT), "docx")
         self.assertEqual(result["text"], "one\ttwo\nthree")
@@ -75,7 +86,13 @@ class ExtractionTests(unittest.TestCase):
 
     def test_pdf_text_blank_and_page_limit(self):
         from pypdf import PdfWriter
-        from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+        from pypdf.generic import (
+            ArrayObject,
+            DecodedStreamObject,
+            DictionaryObject,
+            NameObject,
+            TextStringObject,
+        )
 
         writer = PdfWriter()
         page = writer.add_blank_page(width=200, height=200)
@@ -102,6 +119,27 @@ class ExtractionTests(unittest.TestCase):
         result = extract_file(output.getvalue(), "pdf")
         self.assertIn("Synthetic PDF", result["text"])
         self.assertTrue(result["chunks"][0][1].startswith("pdf:page:1:"))
+        widget = DictionaryObject(
+            {
+                NameObject("/Subtype"): NameObject("/Widget"),
+                NameObject("/FT"): NameObject("/Tx"),
+                NameObject("/T"): TextStringObject("field"),
+                NameObject("/V"): TextStringObject("populated value"),
+            }
+        )
+        widget_ref = writer._add_object(widget)
+        page[NameObject("/Annots")] = ArrayObject([widget_ref])
+        writer._root_object[NameObject("/AcroForm")] = DictionaryObject(
+            {NameObject("/Fields"): ArrayObject([widget_ref])}
+        )
+        output = io.BytesIO()
+        writer.write(output)
+        self.assertEqual(extract_file(output.getvalue(), "pdf")["status"], "failed")
+        del writer._root_object[NameObject("/AcroForm")]
+        output = io.BytesIO()
+        writer.write(output)
+        self.assertEqual(extract_file(output.getvalue(), "pdf")["status"], "failed")
+        del page[NameObject("/Annots")]
         stream.set_data(
             b"BT /F1 12 Tf 10 100 Td (Synthetic PDF) Tj ET BI /W 1 /H 1 /CS /DeviceGray /BPC 8 ID \x00 EI"
         )
