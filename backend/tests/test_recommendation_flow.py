@@ -176,6 +176,7 @@ class RecommendationFlowTests(unittest.TestCase):
         self.assertEqual(public["profile_snapshot"], ANSWERS)
         self.assertEqual(public["profile_revision"], self.profile["revision"])
         self.assertEqual(public["runtime_mode"], "sample")
+        self.assertEqual(public["notices"], [])
         self.assertNotIn("_snapshot", public)
         self.assertNotIn("user_id", public)
         self.assertEqual(saved.headers["cache-control"], "no-store")
@@ -192,7 +193,20 @@ class RecommendationFlowTests(unittest.TestCase):
             self.profile, {**ANSWERS, "goal_text": "새로운 목표"}
         )
         self.assertEqual(changed.status_code, 200)
-        self.assertEqual(self.client.get(url).json(), public)
+        stale = self.client.get(url).json()
+        self.assertEqual(
+            stale,
+            {
+                **public,
+                "notices": [
+                    "입력이 변경되어 이 결과는 이전 결과입니다. 다시 추천을 생성해주세요."
+                ],
+            },
+        )
+        with Session(self.engine) as db:
+            self.assertEqual(
+                db.get(RecommendationRun, UUID(public["id"])).public_json, public
+            )
 
     def test_current_recommendation_job_owner_revision_and_newest(self):
         path = f"/api/profiles/{self.profile['id']}/recommendation-job"

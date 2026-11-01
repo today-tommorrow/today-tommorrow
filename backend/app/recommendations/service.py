@@ -57,7 +57,10 @@ def submit(
     if profile.revision != expected_revision:
         raise RecommendationServiceError(409, "revision_conflict")
     selections = store.selection_summaries(db, profile)
-    expected = review_token(profile, selections)
+    from app.documents.service import list_documents
+
+    documents = list_documents(db, profile.id, user_id)
+    expected = review_token(profile, selections, documents)
     if expected is None:
         state = evaluate(profile.answers_json, profile.unresolved_conflicts_json)
         incomplete = (
@@ -87,7 +90,7 @@ def submit(
     if job is None:
         try:
             context = runner_factory().capture_context()
-            snapshot = deepcopy(review_snapshot(profile, selections))
+            snapshot = deepcopy(review_snapshot(profile, selections, documents))
             snapshot.update(
                 context=context,
                 as_of=datetime.now(ZoneInfo("Asia/Seoul")).date().isoformat(),
@@ -142,4 +145,10 @@ def get_result(db: Session, run_id: UUID, user_id: UUID) -> dict:
     )
     if row is None:
         raise RecommendationServiceError(404, "recommendation_not_found")
-    return deepcopy(row.public_json)
+    result = deepcopy(row.public_json)
+    profile = store.get_profile(db, row.profile_id, user_id)
+    if row.profile_revision != profile.revision:
+        result.setdefault("notices", []).append(
+            "입력이 변경되어 이 결과는 이전 결과입니다. 다시 추천을 생성해주세요."
+        )
+    return result

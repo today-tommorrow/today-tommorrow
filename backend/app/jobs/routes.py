@@ -62,9 +62,44 @@ def get_job(id: str, user: ReadUser, db: DB):
 @router.post("/{id}/cancel")
 def cancel_job(id: str, user: WriteUser, db: DB):
     try:
-        result = store.public_job(
-            store.cancel(db, job_id(id), user.user.id, now=datetime.now(UTC))
+        from sqlalchemy import select
+
+        from app.documents.models import Document
+        from app.intake import store as profiles
+        from app.jobs.models import Job
+
+        identifier = job_id(id)
+        initial = db.scalar(
+            select(Job).where(Job.id == identifier, Job.user_id == user.user.id)
         )
+        if initial is None:
+            raise store.JobNotFound
+        if initial.kind == "document_analysis":
+            profile = profiles.get_profile(
+                db, initial.profile_id, user.user.id, lock=True
+            )
+            document = db.scalar(
+                select(Document)
+                .where(
+                    Document.id == initial.document_id,
+                    Document.profile_id == profile.id,
+                )
+                .with_for_update()
+            )
+            job = store.cancel(db, identifier, user.user.id, now=datetime.now(UTC))
+            if (
+                document is not None
+                and document.job_id == job.id
+                and job.status == "cancelled"
+            ):
+                document.status, document.error_code, document.review_confirmed = (
+                    "failed",
+                    "analysis_cancelled",
+                    False,
+                )
+        else:
+            job = store.cancel(db, identifier, user.user.id, now=datetime.now(UTC))
+        result = store.public_job(job)
         db.commit()
         return JSONResponse(result, headers=PRIVATE)
     except store.JobNotFound:

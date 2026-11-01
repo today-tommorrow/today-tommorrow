@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { StrictMode, useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   act,
@@ -17,6 +17,7 @@ import type {
   Job,
   OnboardingOptions,
   Profile,
+  ReviewPatch,
   ReviewedItem,
 } from './types'
 
@@ -40,6 +41,7 @@ const source: Document = {
   job_id: null,
   error_code: 'synthetic_extraction_failure',
   content_sha256: null,
+  review_confirmed: true,
   created_at: '2026-11-01T00:00:00Z',
 }
 const other: Document = {
@@ -59,6 +61,9 @@ const items: ReviewedItem[] = [
     chunk_id: '00000000-0000-4000-8000-000000000006',
     evidence_quote: '자료 A 원문 인용',
     origin: 'document',
+    suggested_state: 'have',
+    source_locator: 'text:1',
+    content_sha256: 'test-source-digest',
   },
   {
     id: '00000000-0000-4000-8000-000000000007',
@@ -68,6 +73,9 @@ const items: ReviewedItem[] = [
     chunk_id: null,
     evidence_quote: '자료 B 원문 인용',
     origin: 'document',
+    suggested_state: 'have',
+    source_locator: 'text:1',
+    content_sha256: 'test-source-digest',
   },
 ]
 const profile: Profile = {
@@ -250,6 +258,122 @@ afterEach(() => {
 })
 
 describe('추출 내용 원문 대조와 저장', () => {
+  it('AI 제안은 사용자 확인과 분리하고 편집·확인 저장 후 다시 조회한 값을 표시한다', async () => {
+    let persisted: Profile = {
+      ...readyProfile(),
+      documents: [
+        { ...readyProfile().documents[0], review_confirmed: false },
+        other,
+      ],
+      reviewed_items: [{ ...items[0], state: 'have' }, items[1]],
+    }
+    const fetch = serve((endpoint, init) => {
+      if (endpoint === path) return Response.json(persisted)
+      expect(endpoint).toBe(`${path}/review-items`)
+      const body = JSON.parse(init.body as string) as ReviewPatch
+      persisted = {
+        ...persisted,
+        revision: persisted.revision + 1,
+        reviewed_items: persisted.reviewed_items.map((item) => ({
+          ...item,
+          ...body.items.find((edit) => edit.id === item.id),
+        })),
+        documents: persisted.documents.map((document) => ({
+          ...document,
+          review_confirmed: body.confirmed_document_ids.includes(document.id),
+        })),
+      }
+      return Response.json(persisted)
+    })
+    render(<Harness initial={persisted} />)
+    await ready()
+    const confirmation = () =>
+      screen.getByRole('checkbox', {
+        name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+      }) as HTMLInputElement
+    expect(
+      within(reviewGroup()).getByText('AI 제안: 경험이 있어요'),
+    ).toBeTruthy()
+    expect(within(reviewGroup()).getByText('원문 위치: text:1')).toBeTruthy()
+    expect(confirmation().checked).toBe(false)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(confirmation())
+    editLabel()
+    expect(confirmation().checked).toBe(false)
+    fireEvent.change(within(reviewGroup()).getByLabelText('나의 상태'), {
+      target: { value: 'want_to_learn' },
+    })
+    fireEvent.click(button('확인 내용 저장'))
+    await screen.findByText('확인 내용을 저장했어요.')
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    expect(JSON.parse(writes(fetch)[0][1].body as string)).toEqual({
+      expected_revision: 2,
+      confirmed_document_ids: [otherId],
+      items: [
+        {
+          id: itemId,
+          label: '사용자가 확인한 기초 내용',
+          state: 'want_to_learn',
+        },
+        { id: items[1].id, label: items[1].label, state: items[1].state },
+      ],
+    })
+    fireEvent.click(confirmation())
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(button('확인 내용 저장'))
+    await waitFor(() =>
+      expect(button('확인하고 교육 추천 받기').disabled).toBe(false),
+    )
+    cleanup()
+    render(<Harness initial={persisted} />)
+    await ready()
+    fireEvent.click(button('최신 입력 확인'))
+    await waitFor(() => expect(changed).toHaveBeenLastCalledWith(persisted))
+    expect(confirmation().checked).toBe(true)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(false)
+    const savedGroup = reviewGroup('사용자가 확인한 기초 내용')
+    expect(
+      (within(savedGroup).getByLabelText('나의 상태') as HTMLSelectElement)
+        .value,
+    ).toBe('want_to_learn')
+    expect(within(savedGroup).getByText(items[0].evidence_quote!)).toBeTruthy()
+    expect(within(savedGroup).getByText('원문 위치: text:1')).toBeTruthy()
+    expect(within(savedGroup).getByText('AI 제안: 경험이 있어요')).toBeTruthy()
+  })
+
+  it('빈 분석 결과도 원문 확인을 명시적으로 저장하기 전에는 제출하지 않는다', async () => {
+    const initial: Profile = {
+      ...readyProfile(),
+      documents: [{ ...readyProfile().documents[0], review_confirmed: false }],
+      reviewed_items: [],
+    }
+    const next: Profile = {
+      ...initial,
+      revision: 3,
+      documents: [{ ...initial.documents[0], review_confirmed: true }],
+    }
+    const fetch = serve(() => Response.json(next))
+    render(<Harness initial={initial} />)
+    await ready()
+    expect(screen.getByText(/분석 결과에서 제안된 항목이 없어요/)).toBeTruthy()
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(
+      screen.getByRole('checkbox', {
+        name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+      }),
+    )
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(button('확인 내용 저장'))
+    await screen.findByText('확인 내용을 저장했어요.')
+    expect(JSON.parse(writes(fetch)[0][1].body as string)).toEqual({
+      expected_revision: 2,
+      items: [],
+      confirmed_document_ids: [documentId],
+    })
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(false)
+    expect(changed).toHaveBeenLastCalledWith(next)
+  })
+
   it('서버 ID·label·state만 PATCH하고 원문·출처·다른 답변을 보존한다', async () => {
     const next: Profile = {
       ...readyProfile(3),
@@ -275,12 +399,18 @@ describe('추출 내용 원문 대조와 저장', () => {
       target: { value: 'have' },
     })
     expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(
+      screen.getByRole('checkbox', {
+        name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+      }),
+    )
     fireEvent.click(button('확인 내용 저장'))
     await screen.findByText('확인 내용을 저장했어요.')
     const [, init] = writes(fetch)[0]
     expect(init.method).toBe('PATCH')
     expect(JSON.parse(init.body as string)).toEqual({
       expected_revision: 2,
+      confirmed_document_ids: [documentId, otherId],
       items: [
         { id: itemId, label: '사용자가 확인한 기초 내용', state: 'have' },
         { id: items[1].id, label: items[1].label, state: items[1].state },
@@ -310,6 +440,10 @@ describe('추출 내용 원문 대조와 저장', () => {
     render(<Harness initial={readyProfile()} />)
     await ready()
     editLabel()
+    const confirmation = screen.getByRole('checkbox', {
+      name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+    }) as HTMLInputElement
+    fireEvent.click(confirmation)
     const save = button('확인 내용 저장')
     fireEvent.click(save)
     fireEvent.click(save)
@@ -322,6 +456,8 @@ describe('추출 내용 원문 대조와 저장', () => {
       (within(reviewGroup()).getByLabelText('표시 내용') as HTMLInputElement)
         .value,
     ).toBe('사용자가 확인한 기초 내용')
+    expect(confirmation.checked).toBe(true)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
     fireEvent.click(button('확인 내용 저장'))
     await screen.findByText('확인 내용을 저장했어요.')
     expect(writes(fetch)[1][1].body).toBe(writes(fetch)[0][1].body)
@@ -400,6 +536,98 @@ describe('추출 내용 원문 대조와 저장', () => {
 })
 
 describe('실패 자료 재시도', () => {
+  it.each([
+    [
+      'analysis_failed',
+      '자료는 읽었지만 분석을 완료하지 못했어요. 잠시 후 다시 처리를 눌러 주세요.',
+    ],
+    [
+      'analysis_interrupted',
+      '자료 분석이 중단됐어요. 다시 처리를 눌러 분석을 다시 시작해 주세요.',
+    ],
+    [
+      'document_chunk_limit',
+      '자료가 너무 길어 분석하지 못했어요. 필요한 내용을 나누거나 줄여 새 자료로 등록해 주세요.',
+    ],
+    [
+      'extraction_failed',
+      '자료를 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.',
+    ],
+  ])('실패 원인 %s에 맞는 복구 안내를 표시한다', async (code, message) => {
+    serve(() => {
+      throw new Error('No request expected')
+    })
+    render(
+      <Harness
+        initial={{
+          ...profile,
+          documents: [{ ...source, error_code: code }],
+          reviewed_items: [],
+        }}
+      />,
+    )
+    await ready()
+    const alert = within(targetCard()).getByRole('alert')
+    expect(alert.textContent).toBe(message)
+    expect(alert.textContent).not.toContain(code)
+    expect(targetButton('다시 처리').disabled).toBe(false)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+  })
+
+  it('다시 연 처리 중 자료의 분석 작업을 자동 조회하고 완료된 원문과 항목을 불러온다', async () => {
+    const processing: Document = {
+      ...source,
+      status: 'processing',
+      review_confirmed: false,
+      extracted_preview: null,
+      error_code: null,
+      job_id: jobId,
+    }
+    const complete: Profile = {
+      ...readyProfile(3),
+      documents: [
+        {
+          ...processing,
+          status: 'ready',
+          extracted_preview: '완료된 자료 원문',
+        },
+      ],
+      reviewed_items: [items[0]],
+    }
+    let jobReads = 0
+    const fetch = serve((endpoint, init) => {
+      expect(init.method).toBe('GET')
+      if (endpoint === `/api/jobs/${jobId}`) {
+        jobReads += 1
+        return Response.json({
+          ...job,
+          kind: 'document_analysis',
+          status: jobReads === 1 ? 'running' : 'succeeded',
+          phase: jobReads === 1 ? 'analyzing' : 'completed',
+        } satisfies Job)
+      }
+      expect(endpoint).toBe(path)
+      return Response.json(complete)
+    })
+    render(
+      <StrictMode>
+        <Harness
+          initial={{ ...profile, documents: [processing], reviewed_items: [] }}
+        />
+      </StrictMode>,
+    )
+    await screen.findByText('자료의 근거와 학습 내용을 분석하고 있어요')
+    expect(screen.queryByText(items[0].evidence_quote!)).toBeNull()
+    await screen.findByText('완료된 자료 원문', {}, { timeout: 4000 })
+    expect(screen.getByText(items[0].evidence_quote!)).toBeTruthy()
+    expect(within(reviewGroup()).getByText('원문 위치: text:1')).toBeTruthy()
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    expect(jobReads).toBe(2)
+    expect(writes(fetch)).toHaveLength(0)
+    expect(sessionStorage.getItem(storageKey)).toBeNull()
+    expect(changed).toHaveBeenLastCalledWith(complete)
+  })
+
   it('재시도 접수 뒤 조회 실패는 job을 보존하고 POST 없이 복구한다', async () => {
     const processing: Document = {
       ...source,

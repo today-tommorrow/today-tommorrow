@@ -54,6 +54,21 @@ function DocumentSource({ url }: { url: string | null }) {
   )
 }
 
+function documentFailureMessage(document: Document) {
+  switch (document.error_code) {
+    case 'analysis_failed':
+      return '자료는 읽었지만 분석을 완료하지 못했어요. 잠시 후 다시 처리를 눌러 주세요.'
+    case 'analysis_interrupted':
+      return '자료 분석이 중단됐어요. 다시 처리를 눌러 분석을 다시 시작해 주세요.'
+    case 'document_chunk_limit':
+      return '자료가 너무 길어 분석하지 못했어요. 필요한 내용을 나누거나 줄여 새 자료로 등록해 주세요.'
+    default:
+      return document.source_type === 'url'
+        ? '링크 본문을 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.'
+        : '자료를 읽지 못했어요. 파일이나 텍스트로 다시 등록할 수 있어요.'
+  }
+}
+
 function interpretationMatches(
   value: Interpretation,
   id: string,
@@ -178,6 +193,7 @@ const phases: Record<Job['phase'], string> = {
   queued: '작업을 기다리고 있어요',
   fetching: '자료를 가져오고 있어요',
   extracting: '자료를 읽고 있어요',
+  analyzing: '자료의 근거와 학습 내용을 분석하고 있어요',
   interpreting: '입력 내용을 해석하고 있어요',
   freezing: '확인한 입력을 저장하고 있어요',
   profiling: '학습 목표를 확인하고 있어요',
@@ -247,6 +263,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const [pendingDeletion, setPendingDeletion] =
     useState<PendingDeletion | null>(null)
   const [reviewEdits, setReviewEdits] = useState<Record<string, ReviewEdit>>({})
+  const [documentConfirmations, setDocumentConfirmations] = useState<
+    Record<string, boolean>
+  >({})
   const [reviewRevision, setReviewRevision] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -268,6 +287,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const pendingJobRef = useRef(pendingJob)
   pendingJobRef.current = pendingJob
   const active = useRef<AbortController | null>(null)
+  const attemptedDocumentJobs = useRef(new Set<string>())
   const keys = useRef(new Map<string, string>())
   const interpretationInput = useRef<{
     jobId: string
@@ -390,6 +410,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     expectedRevision?: number,
   ) {
     if (signal.aborted) return
+    attemptedDocumentJobs.current.add(id)
     rememberJob(id)
     let terminalFailure = false
     const result = await waitForJob(
@@ -506,6 +527,23 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     }
     rememberJob(null)
   }
+
+  useEffect(() => {
+    if (busy || active.current || pendingDocument || pendingDeletion) return
+    const document = profile.documents.find(
+      (item) =>
+        (item.status === 'queued' || item.status === 'processing') &&
+        item.job_id &&
+        !attemptedDocumentJobs.current.has(item.job_id),
+    )
+    if (!document?.job_id) return
+    if (pendingJob && pendingJob !== document.job_id) return
+    const jobId = document.job_id
+    const timer = window.setTimeout(() => {
+      if (!active.current) void perform((signal) => finishJob(jobId, signal))
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [profile.documents, busy, pendingDocument, pendingDeletion, pendingJob])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -1004,6 +1042,17 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   function editReview(id: string, edit: ReviewEdit) {
     if (reviewRevision === null) setReviewRevision(profile.revision)
     setReviewEdits((value) => ({ ...value, [id]: edit }))
+    const documentId = profile.reviewed_items.find(
+      (item) => item.id === id,
+    )?.document_id
+    if (documentId)
+      setDocumentConfirmations((value) => ({ ...value, [documentId]: false }))
+  }
+
+  function documentConfirmed(document: Document) {
+    return (
+      documentConfirmations[document.id] ?? document.review_confirmed === true
+    )
   }
 
   async function saveReview(signal: AbortSignal) {
@@ -1024,12 +1073,19 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       body: {
         expected_revision: expectedRevision,
         items,
+        confirmed_document_ids: latest.current.documents
+          .filter(
+            (document) =>
+              document.status === 'ready' && documentConfirmed(document),
+          )
+          .map((document) => document.id),
       },
       signal,
     })
     if (!signal.aborted) {
       applyProfile(next, expectedRevision + 1)
       setReviewEdits({})
+      setDocumentConfirmations({})
       setReviewRevision(null)
       setNotice('확인 내용을 저장했어요.')
     }
@@ -1039,7 +1095,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     profile.intake_state.next_action === 'review' &&
     !!profile.review_token &&
     profile.unresolved_conflicts.length === 0 &&
-    profile.documents.every((item) => item.status === 'ready') &&
+    profile.documents.every(
+      (item) => item.status === 'ready' && item.review_confirmed === true,
+    ) &&
     pendingJob === null &&
     recoveryState === 'ready' &&
     reviewRevision === null &&
@@ -1067,7 +1125,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     reviewRevision !== null && reviewRevision !== profile.revision
   const showReview =
     !pendingDeletion &&
-    (profile.reviewed_items.length > 0 || reviewRevision !== null)
+    (profile.reviewed_items.length > 0 ||
+      profile.documents.some((document) => document.status === 'ready') ||
+      reviewRevision !== null)
   const interpretationReady =
     pendingDocument === null &&
     pendingDeletion === null &&
@@ -1596,19 +1656,13 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                 }
               </p>
               {(document.error_code || document.status === 'failed') && (
-                <p role="alert">
-                  {document.source_type === 'url'
-                    ? '링크 본문을 읽지 못했어요'
-                    : '자료를 읽지 못했어요'}
-                  {document.error_code ? ` (${document.error_code})` : ''}.
-                  파일이나 텍스트로 다시 등록할 수 있어요.
-                </p>
+                <p role="alert">{documentFailureMessage(document)}</p>
               )}
               {document.status === 'ready' &&
                 document.id !== pendingDeletion?.id && (
                   <div>
                     <p className="muted">
-                      추출 미리보기이며 원문 전체가 아닐 수 있어요.
+                      분석에 사용한 원문 미리보기이며 전체가 아닐 수 있어요.
                     </p>
                     {document.extracted_preview ? (
                       <blockquote>{document.extracted_preview}</blockquote>
@@ -1681,6 +1735,10 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           {showReview && (
             <div className="stack">
               <h3>추출한 내용을 확인해 주세요</h3>
+              <p>
+                AI가 제안한 내용이에요. 원문과 대조해 수정한 뒤 자료별 확인을
+                선택하고 저장해 주세요. AI의 제안만으로는 확인되지 않아요.
+              </p>
               {reviewIsStale && (
                 <p role="alert">
                   자료가 변경됐어요. 작성한 내용을 확인한 뒤 편집 취소로 최신
@@ -1705,6 +1763,21 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                     </p>
                     {item.evidence_quote && (
                       <blockquote>{item.evidence_quote}</blockquote>
+                    )}
+                    {item.source_locator && (
+                      <p className="muted">원문 위치: {item.source_locator}</p>
+                    )}
+                    {item.origin === 'document' && item.suggested_state && (
+                      <p className="muted">
+                        AI 제안:{' '}
+                        {
+                          {
+                            have: '경험이 있어요',
+                            want_to_learn: '배우고 싶어요',
+                            unknown: '아직 모르겠어요',
+                          }[item.suggested_state]
+                        }
+                      </p>
                     )}
                     <label>
                       표시 내용
@@ -1738,6 +1811,41 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   </fieldset>
                 )
               })}
+              {profile.documents
+                .filter((document) => document.status === 'ready')
+                .map((document) => (
+                  <div className="stack" key={document.id}>
+                    {!profile.reviewed_items.some(
+                      (item) => item.document_id === document.id,
+                    ) && (
+                      <p>
+                        {document.display_name}: 분석 결과에서 제안된 항목이
+                        없어요. 원문 미리보기를 확인한 뒤 계속할 수 있어요.
+                      </p>
+                    )}
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={documentConfirmed(document)}
+                        disabled={busy || reviewIsStale || !!pendingDocument}
+                        onChange={(event) => {
+                          if (reviewRevision === null)
+                            setReviewRevision(profile.revision)
+                          setDocumentConfirmations((value) => ({
+                            ...value,
+                            [document.id]: event.target.checked,
+                          }))
+                        }}
+                      />
+                      {document.display_name} 원문과 분석 결과를 확인했어요
+                    </label>
+                    <p className="muted">
+                      {document.review_confirmed && reviewRevision === null
+                        ? '자료 확인이 저장됐어요.'
+                        : '확인을 선택한 뒤 확인 내용 저장을 눌러 주세요.'}
+                    </p>
+                  </div>
+                ))}
               <div className="buttons">
                 <button
                   disabled={busy || !!pendingDocument || reviewIsStale}
@@ -1749,6 +1857,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   disabled={busy || reviewRevision === null}
                   onClick={() => {
                     setReviewEdits({})
+                    setDocumentConfirmations({})
                     setReviewRevision(null)
                   }}
                 >

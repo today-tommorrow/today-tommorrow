@@ -21,8 +21,14 @@ from app.intake.models import Base
 class Job(Base):
     __tablename__ = "jobs"
     __table_args__ = (
-        CheckConstraint("kind IN ('intake_question','recommendation')", name="job_kind"),
-        CheckConstraint("document_id IS NULL", name="job_document"),
+        CheckConstraint(
+            "kind IN ('intake_question','recommendation','document_analysis')",
+            name="job_kind",
+        ),
+        CheckConstraint(
+            "(kind = 'document_analysis' AND document_id IS NOT NULL) OR (kind <> 'document_analysis' AND document_id IS NULL)",
+            name="job_document",
+        ),
         CheckConstraint(
             "status IN ('queued','running','succeeded','failed','superseded','cancelled')",
             name="job_status",

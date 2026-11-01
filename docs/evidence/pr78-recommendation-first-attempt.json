@@ -1,0 +1,10 @@
+{
+  "profile_id": "159ad109-b5ca-4528-8f8a-e7d0b3e07568",
+  "job_id": "709eb901-eef6-4c0d-b49c-f5fca0c50357",
+  "state": "failed",
+  "error_code": "recommendation_failed",
+  "result": null,
+  "phase": "assessing",
+  "failure_category": "model_context_too_large",
+  "authorization": "one synthetic recommendation job"
+}

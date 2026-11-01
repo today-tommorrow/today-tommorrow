@@ -55,6 +55,7 @@ const link: Document = {
   job_id: null,
   error_code: null,
   content_sha256: null,
+  review_confirmed: true,
   created_at: '2026-11-01T00:00:00Z',
 }
 const options: OnboardingOptions = {
@@ -410,9 +411,7 @@ describe('공개 URL 등록과 대체 입력', () => {
     })
     typeUrl()
     fireEvent.click(button())
-    await screen.findByText(
-      /링크 본문을 읽지 못했어요 \(synthetic_link_failure\)/,
-    )
+    await screen.findByText(/링크 본문을 읽지 못했어요/)
     await ready()
     expect(screen.queryByText(link.extracted_preview!)).toBeNull()
     expect(

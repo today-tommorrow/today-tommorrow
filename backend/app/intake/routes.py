@@ -1,11 +1,13 @@
-from typing import Annotated
+from datetime import UTC, datetime
+from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+from pydantic import Field, ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.ai.questions import ContractModel
 from app.auth.dependencies import DB, authenticated, authenticated_write
 from app.auth.routes import PRIVATE
 from app.auth.store import SessionPrincipal
@@ -159,7 +161,7 @@ def onboarding_options(user: ReadUser):
             "allowed_file_extensions": [".txt", ".docx", ".pdf"],
             "max_upload_bytes": 5 * 1024 * 1024,
             "max_profile_documents": max_documents(),
-            "upload_limit_note": "TXT, DOCX, 텍스트 PDF를 저장합니다. 분석 기능은 아직 제공되지 않아 대기 상태에서 자동 처리되지 않습니다.",
+            "upload_limit_note": "TXT, DOCX, 텍스트 PDF를 분석합니다. 분석 결과를 확인하고 수정할 수 있습니다.",
             "branch_rules_version": "1",
             "intake_policy_version": "1",
             "allowed_catalog_sources": ["work24"],
@@ -169,3 +171,118 @@ def onboarding_options(user: ReadUser):
         },
         headers=PRIVATE,
     )
+
+
+class ReviewItemEdit(ContractModel):
+    id: str
+    label: Annotated[str, Field(min_length=1, max_length=500)]
+    state: Literal["have", "want_to_learn", "unknown", "excluded"]
+
+
+class ReviewPatch(ContractModel):
+    expected_revision: Annotated[int, Field(ge=0, le=2147483646)]
+    items: list[ReviewItemEdit]
+    confirmed_document_ids: list[str] | None = None
+
+
+async def read_review_patch(request: Request) -> ReviewPatch:
+    body = bytearray()
+    async for chunk in request.stream():
+        body.extend(chunk)
+        if len(body) > 65536:
+            raise ProfileError(413, "payload_too_large")
+    try:
+        return ReviewPatch.model_validate_json(body)
+    except ValidationError, ValueError:
+        raise ProfileError(422, "invalid_profile_input") from None
+
+
+def review_patch_schema():
+    schema = ReviewPatch.model_json_schema()
+    definitions = schema.pop("$defs")
+    schema["properties"]["items"]["items"] = definitions["ReviewItemEdit"]
+    return schema
+
+
+@router.patch(
+    "/profiles/{id}/review-items",
+    openapi_extra={
+        "requestBody": {
+            "required": True,
+            "content": {"application/json": {"schema": review_patch_schema()}},
+        }
+    },
+)
+def patch_review_items(
+    id: str,
+    payload: Annotated[ReviewPatch, Depends(read_review_patch)],
+    user: WriteUser,
+    db: DB,
+):
+    from app.intake.question_service import invalidate
+
+    try:
+        profile = store.get_profile(db, profile_id(id), user.user.id, lock=True)
+        if profile.revision != payload.expected_revision:
+            raise ProfileError(409, "revision_conflict")
+        edits = {item.id: item for item in payload.items}
+        existing = {item["id"] for item in profile.reviewed_items_json}
+        if len(edits) != len(payload.items) or not set(edits).issubset(existing):
+            raise ProfileError(422, "invalid_profile_input")
+        from sqlalchemy import select
+
+        from app.documents.models import Document
+
+        documents = list(
+            db.scalars(
+                select(Document)
+                .where(
+                    Document.profile_id == profile.id, Document.user_id == user.user.id
+                )
+                .order_by(Document.id)
+                .with_for_update()
+            )
+        )
+        document_map = {str(document.id): document for document in documents}
+        if payload.confirmed_document_ids is not None:
+            confirmed = set(payload.confirmed_document_ids)
+            if (
+                len(confirmed) != len(payload.confirmed_document_ids)
+                or not confirmed.issubset(document_map)
+                or any(document_map[id_].status != "ready" for id_ in confirmed)
+            ):
+                raise ProfileError(422, "invalid_profile_input")
+            for document in documents:
+                document.review_confirmed = str(document.id) in confirmed
+        else:
+            changed_documents = {
+                item.get("document_id")
+                for item in profile.reviewed_items_json
+                if item["id"] in edits
+                and (
+                    item["label"] != edits[item["id"]].label
+                    or item["state"] != edits[item["id"]].state
+                )
+            }
+            for document in documents:
+                if str(document.id) in changed_documents:
+                    document.review_confirmed = False
+        profile.reviewed_items_json = [
+            {**item, "label": edits[item["id"]].label, "state": edits[item["id"]].state}
+            if item["id"] in edits
+            else item
+            for item in profile.reviewed_items_json
+        ]
+        profile.revision += 1
+        profile.status = "draft"
+        profile.submitted_revision = None
+        profile.updated_at = datetime.now(UTC)
+        invalidate(db, profile.id)
+        result = store.profile_response(profile, db)
+        db.commit()
+        return JSONResponse(result, headers=PRIVATE)
+    except store.ProfileNotFound:
+        raise ProfileError(404, "profile_not_found") from None
+    except SQLAlchemyError:
+        db.rollback()
+        raise ProfileError(503, "profile_unavailable") from None

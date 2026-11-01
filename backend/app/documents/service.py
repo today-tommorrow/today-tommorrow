@@ -1,6 +1,6 @@
 import hashlib
 from datetime import UTC, datetime
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -29,8 +29,9 @@ def public(row: Document) -> dict:
         "mime_type": row.mime_type,
         "size_bytes": row.size_bytes,
         "status": row.status,
-        "extracted_preview": None,
-        "job_id": None,
+        "extracted_preview": row.content[:500] if row.status == "ready" else None,
+        "job_id": str(row.job_id) if row.job_id else None,
+        "review_confirmed": row.review_confirmed,
         "error_code": row.error_code,
         "content_sha256": row.content_sha256,
         "created_at": row.created_at.isoformat(),
@@ -44,6 +45,64 @@ def list_documents(db: Session, profile_id: UUID, user_id: UUID) -> list[dict]:
         .order_by(Document.created_at, Document.id)
     )
     return [public(row) for row in rows]
+
+
+def split_chunks(chunks):
+    """Bound each source slice without dropping characters or its original locator."""
+    result = []
+    for text, locator in chunks:
+        start = 0
+        while start < len(text):
+            end = min(start + 600, len(text))
+            piece = text[start:end]
+            result.append((piece, f"{locator}:slice:{start}:{end}"))
+            start = end
+    return result
+
+
+def retry_chunks(chunks):
+    """Keep existing bounded slices stable; upgrade older unsliced chunks."""
+    result = []
+    for text, locator in chunks:
+        suffix = f":slice:0:{len(text)}"
+        while locator.endswith(suffix) and ":slice:" in locator[: -len(suffix)]:
+            locator = locator[: -len(suffix)]
+        base, separator, span = locator.rpartition(":slice:")
+        start, colon, end = span.partition(":")
+        already_bounded = (
+            separator
+            and base
+            and colon
+            and start.isdecimal()
+            and end.isdecimal()
+            and int(end) - int(start) == len(text)
+            and len(text) <= 600
+        )
+        if already_bounded:
+            result.append((text, locator))
+        else:
+            result.extend(split_chunks([(text, locator)]))
+    return result
+
+
+def enqueue_analysis(db, profile, row):
+    from app.jobs import store as jobs
+
+    job_key = f"document:{row.id}:{uuid4()}"
+    job = jobs.enqueue(
+        db,
+        profile_id=profile.id,
+        user_id=profile.user_id,
+        profile_revision=profile.revision,
+        idempotency_key=job_key,
+        request_hash=row.content_sha256,
+        input_json={"document_id": str(row.id)},
+        document_id=row.id,
+        kind="document_analysis",
+        now=datetime.now(UTC),
+    )
+    row.job_id = job.id
+    row.review_confirmed = False
 
 
 def register(
@@ -133,7 +192,7 @@ def persist(
         if file_info is None
         else file_info["chunks"]
     )
-    for ordinal, (chunk_text, locator) in enumerate(chunks):
+    for ordinal, (chunk_text, locator) in enumerate(split_chunks(chunks)):
         db.add(
             DocumentChunk(
                 document_id=row.id,
@@ -158,6 +217,8 @@ def persist(
     profile.submitted_revision = None
     profile.updated_at = now
     invalidate(db, profile_id)
+    if row.status == "queued":
+        enqueue_analysis(db, profile, row)
     return recorded(
         request, 202, {"document": public(row), "profile_revision": profile.revision}
     )
@@ -208,4 +269,103 @@ def register_file(db, profile_id, user_id, payload, key, data, info):
         data,
         content_hash,
         file_info=info,
+    )
+
+
+def retry(db, document_id, user_id, expected_revision, key, extractor):
+    initial = db.scalar(
+        select(Document).where(Document.id == document_id, Document.user_id == user_id)
+    )
+    if initial is None:
+        raise DocumentError(404, "document_not_found")
+    profile = store.get_profile(db, initial.profile_id, user_id, lock=True)
+    row = db.scalar(
+        select(Document)
+        .where(Document.id == document_id, Document.user_id == user_id)
+        .with_for_update()
+        .execution_options(populate_existing=True)
+    )
+    if row is None:
+        raise DocumentError(404, "document_not_found")
+    key = key or f"retry:{document_id}:{expected_revision}"
+    request, created = reserve(
+        db,
+        profile=profile,
+        operation="retry_document",
+        key=key,
+        request={
+            "document_id": str(document_id),
+            "expected_revision": expected_revision,
+        },
+    )
+    if not created:
+        return request.status_code, request.response_json
+    if profile.revision != expected_revision:
+        raise DocumentError(409, "revision_conflict")
+    if row.status not in {"failed", "queued"} or (
+        row.status == "queued" and row.job_id is not None
+    ):
+        raise DocumentError(409, "document_retry_unavailable")
+    if row.source_type == "file" and row.error_code == "extraction_failed":
+        kinds = {
+            "text/plain": "txt",
+            "application/pdf": "pdf",
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+        }
+        kind = kinds.get(row.mime_type)
+        if kind is None or row.raw_content is None:
+            raise DocumentError(409, "document_retry_unavailable")
+        info = extractor(row.raw_content, kind)
+        chunks = split_chunks(info["chunks"])
+    else:
+        existing = list(
+            db.scalars(
+                select(DocumentChunk)
+                .where(DocumentChunk.document_id == row.id)
+                .order_by(DocumentChunk.ordinal)
+            )
+        )
+        info = {
+            "text": row.content,
+            "status": "queued",
+            "error": None,
+            "chunks": [(chunk.text_content, chunk.locator) for chunk in existing],
+        }
+        chunks = retry_chunks(info["chunks"])
+    from app.documents.lifecycle import redact_document
+
+    redact_document(db, profile, row)
+    row.content, row.status, row.error_code = (
+        info["text"],
+        info["status"],
+        info["error"],
+    )
+    for chunk in db.scalars(
+        select(DocumentChunk).where(DocumentChunk.document_id == row.id)
+    ):
+        db.delete(chunk)
+    db.flush()
+    for ordinal, (chunk_text, locator) in enumerate(chunks):
+        db.add(
+            DocumentChunk(
+                document_id=row.id,
+                profile_id=profile.id,
+                user_id=user_id,
+                ordinal=ordinal,
+                text_content=chunk_text,
+                content_sha256=hashlib.sha256(chunk_text.encode("utf-8")).hexdigest(),
+                locator=locator,
+            )
+        )
+    profile.revision += 1
+    profile.status, profile.submitted_revision, profile.updated_at = (
+        "draft",
+        None,
+        datetime.now(UTC),
+    )
+    invalidate(db, profile.id)
+    if row.status == "queued":
+        enqueue_analysis(db, profile, row)
+    return recorded(
+        request, 202, {"document": public(row), "profile_revision": profile.revision}
     )

@@ -48,6 +48,10 @@ class Document(Base):
     )
     status: Mapped[str] = mapped_column(Text, nullable=False, server_default="queued")
     error_code: Mapped[str | None] = mapped_column(Text)
+    job_id: Mapped[UUID | None]
+    review_confirmed: Mapped[bool] = mapped_column(
+        nullable=False, server_default="false"
+    )
     raw_content: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     content_sha256: Mapped[str] = mapped_column(Text, nullable=False)

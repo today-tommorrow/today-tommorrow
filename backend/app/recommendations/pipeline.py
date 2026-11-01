@@ -139,7 +139,17 @@ def exact_keys(value: JsonObject, keys: set[str]) -> None:
 
 def confirmed_sources(snapshot: JsonObject) -> tuple[list[JsonObject], str]:
     answers = object_value(snapshot.get("answers"))
-    if answers.get("document_decision") != "none" or snapshot.get("reviewed_items"):
+    documents = array_value(snapshot.get("documents", []))
+    decision = answers.get("document_decision")
+    if decision == "provided":
+        if not documents or any(
+            not isinstance(d, dict)
+            or d.get("status") != "ready"
+            or d.get("review_confirmed") is not True
+            for d in documents
+        ):
+            raise RecommendationError("recommendation_materials_unsupported")
+    elif decision != "none" or documents or snapshot.get("reviewed_items"):
         raise RecommendationError("recommendation_materials_unsupported")
     parts: list[tuple[str, str]] = []
     for key in ("goal_text", "interest_activity", "custom_field"):
@@ -161,12 +171,52 @@ def confirmed_sources(snapshot: JsonObject) -> tuple[list[JsonObject], str]:
         raise RecommendationError("recommendation_goal_missing")
     # Preserve confirmed wording. No generated query, synonym rewrite or stored-vector substitute.
     unique = list(dict.fromkeys(parts))
-    sources = [{"id": identity("user-source", str(snapshot.get("profile_id")), str(snapshot.get("profile_revision")), key, text),
-                "answer_key": key, "text": text} for key, text in unique]
-    query = "\n".join(text for _, text in unique)
+    sources = [
+        {
+            "id": identity(
+                "user-source",
+                str(snapshot.get("profile_id")),
+                str(snapshot.get("profile_revision")),
+                key,
+                text,
+            ),
+            "answer_key": key,
+            "text": text,
+        }
+        for key, text in unique
+    ]
+    document_ids = {str(d["id"]) for d in documents}
+    for raw in array_value(snapshot.get("reviewed_items", [])):
+        item = object_value(raw)
+        if item.get("document_id") not in document_ids:
+            raise RecommendationError("recommendation_materials_unsupported")
+        if item.get("state") not in {"have", "want_to_learn"}:
+            continue
+        label = text_value(item.get("label"), maximum=500)
+        source = {
+            "id": text_value(item.get("id")),
+            "answer_key": "reviewed_items",
+            "text": label,
+            "learner_state": item["state"],
+            "document_id": text_value(item.get("document_id")),
+            "chunk_id": text_value(item.get("chunk_id")),
+            "evidence_quote": text_value(item.get("evidence_quote")),
+            "source_locator": text_value(item.get("source_locator")),
+            "content_sha256": text_value(item.get("content_sha256")),
+        }
+        sources.append(source)
+    query = "\n".join(source["text"] for source in sources if source.get("learner_state") != "have")
     if len(query.encode()) > 10000:
         raise RecommendationError("recommendation_input_too_large")
     return sources, query
+
+
+def model_sources(sources: list[JsonObject]) -> list[JsonObject]:
+    """Send only decision-relevant text and IDs; keep source bindings server-side."""
+    return [
+        {key: source[key] for key in ("id", "text", "answer_key", "learner_state") if key in source}
+        for source in sources
+    ]
 
 
 def profile_needs(output: JsonObject, sources: list[JsonObject]) -> list[JsonObject]:
@@ -186,7 +236,7 @@ def profile_needs(output: JsonObject, sources: list[JsonObject]) -> list[JsonObj
             raise RecommendationError("invalid_model_grounding")
         seen.add((str(source["id"]), label))
         needs.append({"id": identity("need", str(source["id"]), label), "label": label,
-                      "basis": "user_requested", "learner_state": "want_to_learn",
+                      "basis": "user_requested", "learner_state": "self_reported_have" if source.get("learner_state") == "have" else "want_to_learn",
                       "source_item_ids": [source["id"]], "ncs_reference_ids": [], "mapping_state": "unmapped"})
     return needs
 
@@ -507,6 +557,7 @@ class RecommendationPipeline:
         except (KeyError, ValueError):
             raise RecommendationError("invalid_recommendation_input") from None
         sources, query = confirmed_sources(snapshot)
+        prompt_sources = model_sources(sources)
         answers = object_value(snapshot["answers"])
         stages: list[JsonObject] = []
 
@@ -536,7 +587,7 @@ class RecommendationPipeline:
         explanations: dict[str, list[JsonObject]] = {}
         excluded = dict(found.excluded_counts)
         if views:
-            needs = self._generate("profiling", {"sources": sources}, PROFILE_SCHEMA,
+            needs = self._generate("profiling", {"sources": prompt_sources}, PROFILE_SCHEMA,
                                    lambda output: profile_needs(output, sources), report_phase)
             stage("profiling", len(sources), len(needs))
             report_phase("mapping_needs")
@@ -545,7 +596,7 @@ class RecommendationPipeline:
             for offset in range(0, len(views), int(CONFIG["batch_size"])):
                 batch = views[offset:offset + int(CONFIG["batch_size"])]
                 assessed.extend(self._generate("assessing", {
-                    "sources": sources, "needs": needs,
+                    "sources": prompt_sources, "needs": needs,
                     "confirmed_experience": answers.get("experience"),
                     "self_description": answers.get("self_description"),
                     "constraints_text": answers.get("constraints_text"),
@@ -561,7 +612,7 @@ class RecommendationPipeline:
             for offset in range(0, len(selected), int(CONFIG["batch_size"])):
                 batch = selected[offset:offset + int(CONFIG["batch_size"])]
                 explanations.update(self._generate("explaining", {
-                    "sources": sources, "candidates": [explanation_prompt(row) for row in batch],
+                    "sources": prompt_sources, "candidates": [explanation_prompt(row) for row in batch],
                 }, EXPLANATION_SCHEMA, lambda output: explanation_items(output, batch, sources), report_phase))
             stage("explaining", len(selected), len(explanations), skipped=not selected)
         else:

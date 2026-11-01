@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.jobs.models import Job
 
-JOB_KINDS = frozenset({"intake_question", "recommendation"})
+JOB_KINDS = frozenset({"intake_question", "recommendation", "document_analysis"})
 TERMINAL_STATUSES = frozenset({"succeeded", "failed", "superseded", "cancelled"})
 ERROR_CODES = frozenset(
     {
@@ -81,6 +81,7 @@ def enqueue(
     input_json: dict[str, Any],
     now: datetime,
     kind: str = "intake_question",
+    document_id: UUID | None = None,
 ) -> Job:
     _time(now)
     if kind not in JOB_KINDS:
@@ -100,6 +101,7 @@ def enqueue(
             user_id=user_id,
             profile_revision=profile_revision,
             kind=kind,
+            document_id=document_id,
             idempotency_key=idempotency_key,
             request_hash=request_hash,
             input_json=deepcopy(input_json),
@@ -133,9 +135,11 @@ def accepted(job: Job) -> dict[str, Any]:
 def public_job(job: Job) -> dict[str, Any]:
     result = None
     if job.status == "succeeded" and job.result_json:
-        key = (
-            "question_id" if job.kind == "intake_question" else "recommendation_run_id"
-        )
+        key = {
+            "intake_question": "question_id",
+            "recommendation": "recommendation_run_id",
+            "document_analysis": "document_id",
+        }[job.kind]
         value = job.result_json.get(key)
         if isinstance(value, str):
             try:
@@ -163,6 +167,8 @@ def public_job(job: Job) -> dict[str, Any]:
         "completed_stages": (
             ["generating_question"]
             if job.kind == "intake_question"
+            else ["analyzing"]
+            if job.kind == "document_analysis"
             else [
                 stage
                 for stage in (job.result_json or {}).get("completed_stages", [])
@@ -243,7 +249,11 @@ def claim(
             db.flush()
             continue
         row.status = "running"
-        row.phase = "generating_question" if kind == "intake_question" else "freezing"
+        row.phase = {
+            "intake_question": "generating_question",
+            "recommendation": "freezing",
+            "document_analysis": "analyzing",
+        }[kind]
         row.started_at = row.started_at or now
         row.lease_expires_at = expires_at
         token = uuid4()

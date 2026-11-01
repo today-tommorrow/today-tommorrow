@@ -1,6 +1,7 @@
 """Synthetic provider tests; no live model, source database or fallback results."""
 
 import copy
+import json
 import unittest
 from dataclasses import replace
 from datetime import date
@@ -13,6 +14,7 @@ from app.recommendations.contracts import (
     score_bounds,
     validate_result,
 )
+from app.recommendations.model import SYSTEM_PROMPT
 from app.recommendations.pipeline import (
     RecommendationPipeline,
     assessments,
@@ -20,6 +22,7 @@ from app.recommendations.pipeline import (
     conditions,
     confirmed_sources,
     explanation_items,
+    model_sources,
     ranked_selection,
 )
 
@@ -126,6 +129,39 @@ class RecommendationPipelineTests(unittest.TestCase):
         self.assertEqual(result["_snapshot"]["search"]["candidates"][0]["metadata"]["training_fee"], 100000)
         self.assertEqual([stage for stage, _ in model.calls], ["profiling", "assessing", "explaining"])
         self.assertEqual(phases[-1], "validating")
+
+    def test_document_source_provenance_stays_server_side_across_all_model_stages(self):
+        pipeline, _, model = self.make_pipeline()
+        source = snapshot(pipeline)
+        source["answers"]["document_decision"] = "provided"
+        source["documents"] = [{"id": "document-1", "status": "ready", "review_confirmed": True}]
+        source["reviewed_items"] = [
+            {"id": f"item-{index}", "state": state, "label": label, "document_id": "document-1",
+             "chunk_id": f"chunk-{index}", "evidence_quote": "합성 근거 " * 150,
+             "source_locator": f"pdf:page:{index}:chars:0:600:slice:0:600",
+             "content_sha256": "a" * 64}
+            for index, (label, state) in enumerate((("파이썬", "have"), ("데이터 분석", "want_to_learn")), 1)
+        ]
+        def first_assessment_needs_repair(stage, output):
+            if stage == "assessing" and sum(call_stage == "assessing" for call_stage, _ in model.calls) == 1:
+                output["assessments"][0]["axes"][0]["quotes"] = ["unsupported"]
+            return output
+
+        model.mutate = first_assessment_needs_repair
+        result = pipeline.run(source, lambda _: None)
+        self.assertEqual(sum(stage == "assessing" for stage, _ in model.calls), 2)
+        self.assertTrue(any("validation_error" in context for stage, context in model.calls if stage == "assessing"))
+        frozen, _ = confirmed_sources(source)
+        self.assertEqual(result["_snapshot"]["sources"], frozen)
+        self.assertEqual(len([s for s in frozen if "document_id" in s]), 2)
+        for stage, context in model.calls:
+            self.assertEqual(context["sources"], model_sources(frozen), stage)
+            self.assertTrue(all(set(s) <= {"id", "text", "answer_key", "learner_state"} for s in context["sources"]))
+            self.assertNotIn("evidence_quote", json.dumps(context, ensure_ascii=False))
+            self.assertLess(len(json.dumps({"stage": stage, "context": context}, ensure_ascii=False).encode())
+                            + len(SYSTEM_PROMPT.encode())
+                            + 2048 + 256, 8192)
+        self.assertTrue(any(s.get("learner_state") == "have" for s in model.calls[1][1]["sources"]))
 
     def test_capture_context_does_not_call_models_and_rejects_drift(self):
         pipeline, search, model = self.make_pipeline()

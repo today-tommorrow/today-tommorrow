@@ -437,6 +437,7 @@ export function createFlowFixture(faults: Faults = {}) {
         job_id: flowId(file ? 40 : 41),
         error_code: null,
         content_sha256: null,
+        review_confirmed: true,
         created_at: timestamp,
       }
       profile.documents.push(doc)
@@ -579,6 +580,9 @@ export function createFlowFixture(faults: Faults = {}) {
             chunk_id: null,
             evidence_quote: doc.extracted_preview,
             origin: 'document',
+            suggested_state: 'have',
+            source_locator: 'text:1',
+            content_sha256: 'synthetic-digest',
           })
       }
       if (result.kind === 'recommendation' && result.status === 'succeeded') {
