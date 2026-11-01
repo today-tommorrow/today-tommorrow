@@ -336,7 +336,8 @@ function EvidenceList({ items }: { items: Evidence[] }) {
         <li key={item.id}>
           {item.quote && <blockquote>{item.quote}</blockquote>}
           <p>
-            {item.source_system} · {item.verification_state} · {item.checked_at}
+            {item.source_system} · {item.verification_state} ·{' '}
+            {item.checked_at ?? '미확인'}
           </p>
           <SourceLink url={item.source_url} label="근거 원문 보기" />
         </li>
@@ -592,7 +593,7 @@ function ResultContent({ runId }: { runId: string }) {
         <>
           <section className="panel">
             <h2>{resultNames[run.result_state]}</h2>
-            <p>교육 정보 기준: {run.as_of}</p>
+            <p>추천 기준일: {run.as_of}</p>
             <p>추천 생성: {run.created_at}</p>
             {run.notices.map((notice, index) => (
               <p key={index}>{notice}</p>

@@ -24,7 +24,7 @@ export type Evidence = {
   quote: string | null
   source_url: string | null
   source_system: 'kmooc' | 'work24' | 'ncs'
-  checked_at: string
+  checked_at: string | null
   verification_state: 'observed' | 'verified' | 'unknown' | 'conflicting'
 }
 
