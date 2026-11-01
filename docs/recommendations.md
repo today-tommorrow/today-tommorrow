@@ -1,4 +1,4 @@
-# Document-free recommendation processing
+# Confirmed-input recommendation processing
 
 The backend recommendation runner implements the L4 processing boundary after final input submission. The lifecycle owns authentication, review tokens, idempotency, worker leases and atomic result persistence. The runner owns frozen catalog/configuration validation, live embeddings, evidence-bound assessment and result construction. It never publishes partial candidates or writes the source catalog.
 
@@ -25,7 +25,7 @@ Model-stage source inputs contain only the reviewed source ID, text, answer key 
 
 ## Processing and grounding
 
-The supported input has `document_decision=none` and no reviewed material items. Materials are rejected explicitly until their separate implementation is connected. Confirmed goal text, relevant selected wording and server-defined field/goal labels form the query; the model does not rewrite it. BGE-M3 uses the existing revision-pinned 512-token dense provider.
+The runner accepts document-free input, or retained ready documents that the user explicitly confirmed. Confirmed document learning wishes join goal text, relevant selected wording and server-defined field/goal labels in the query; confirmed experience is retained as evidence rather than converted into a learning wish. Unconfirmed, pending or failed materials are rejected. The model does not rewrite the query. BGE-M3 uses the existing revision-pinned 512-token dense provider.
 
 The runner retrieves at most ten distinct course candidates, preserving exact search ranking and metadata. Empty retrieval skips all recommendation-model calls. Otherwise, the model selects learning needs as exact substrings of confirmed goal sources, assesses one candidate at a time, and selects exact source quotations for explanations. NCS identifiers are never invented; absent external mappings remain unmapped.
 
@@ -77,3 +77,9 @@ This verifies the bounded browser submission → real GPU → persisted result �
 The recommendation worker now logs a fixed `recommendation_failed` event with the job ID, last accepted processing phase and an allowlisted failure category. Known model/validation codes remain distinguishable; unknown exceptions use a fixed fallback. It logs no exception message, model payload, prompt or traceback, and the public job error remains `recommendation_failed`. These diagnostics improve future failure investigation; they do not retrospectively identify the first attempt's cause or change validation and retry behavior.
 
 After the recovery change, a new browser tab opened only the existing profile URL, without a tab-local job ID. The owner- and revision-scoped lookup automatically recovered the previously saved real-GPU run and displayed the same two results without another submission or model call. This checks the completed-job recovery path with the actual API and browser; queued/running recovery, failed lookup, cross-user isolation and revision races are covered by automated tests. The model worker and tunnel were stopped during this read-only recovery check. `fixed-new-tab-recovery.jpg` records the result outside Git beside the earlier evidence.
+
+## Document-source context regression
+
+One explicitly approved synthetic real-model job failed during assessment with `model_context_too_large`. Source projection now keeps model-facing `id`, `text`, `answer_key` and `learner_state`, while full document/chunk IDs, quotations, locators and hashes remain in frozen server provenance and validation. The prompt identity was bumped; old snapshots cannot silently use the changed prompt. The original context guard remains unchanged.
+
+The stored-source projection reduced its JSON size from 1,762 to 828 bytes. These are source-list measurements, not the actual failed candidate prompt, which was not retained. A synthetic-candidate pipeline replay covers all stages, validation repair, immutable provenance and budget checks without further model calls. Actual post-fix recommendation success remains unverified pending another user-approved execution. Full `./check` passed after the fix: web 283, backend 447 run (two conditional skips), launcher 22, catalog unit 32, catalog integration 13 run (three conditional skips), and production build.
