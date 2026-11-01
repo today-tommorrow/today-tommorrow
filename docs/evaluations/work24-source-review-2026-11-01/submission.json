@@ -1,0 +1,4962 @@
+{
+  "schema_version": 1,
+  "artifact_type": "offline_relevance_submission",
+  "binding": {
+    "result_sha256": "109da31886fd783ac61ee2c0ccd31da8902dfe3427dbafbe4bda105b2d52bc5d",
+    "evaluation_dataset": {
+      "id": "work24-search-evaluation",
+      "version": "1.0.0",
+      "sha256": "597133d3c63833e7d7ab1d2e73648c0f7b2984db63726bed0f7c051ebae25ca5"
+    },
+    "snapshot": {
+      "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+      "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "manifest_sha256": "f4a79774ae2a470d7a9b80626cece532ad821900923069ba6875c9c9816cd88c",
+      "snapshot_created_on": "2026-11-01"
+    }
+  },
+  "packet_sha256": "58fc4c2f09895cac688e028e50254eabc92cd2f550721ebe4bffae1eb44e811f",
+  "judgments": [
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ABA20253001133529",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ABA20263001218989",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ABA20263001257334",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ABA20263001326184",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ABA20263001480712",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20253001137374",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 조직 내 교육 설계와 리더십 목표는 확인되지만 질의가 이직할 직무를 특정하지 않아 이 과정의 적합성을 판정할 수 없다. B: 새 직무의 분야가 특정되지 않아 리더십 과정의 적합성을 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001157754",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001170703",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001251684",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001301737",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001317880",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001317885",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001321328",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001336657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001409315",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001432982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001486235",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "ACG20263001502405",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20240000459227",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20240000498076",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000505103",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 법률사무직 취업 과정임은 확인되지만 질의에 희망 직무·현재 경력·필요 역량이 없어 적합성을 결정할 수 없다. B: 희망 직무가 특정되지 않아 법률사무 교육의 적합성을 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000507509",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000511160",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 법률사무직 취업 과정임은 확인되지만 이직 희망 분야가 명시되지 않은 질의만으로 개인에게 적합한 교육인지 판정할 수 없다. B: 새 직무의 종류가 특정되지 않아 법률사무 취업 과정의 적합성을 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000520935",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000530986",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000533945",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AIG20250000536132",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-career-goal",
+      "source_course_id": "AVA20253001150462",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABA20263001165508",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABA20263001317646",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABA20263001317922",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABA20263001336416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABA20263001407603",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: AI 활용 내용은 실제로 있지만 의료기관 환자경험·CS에 특화돼 있다. 질의의 직무나 업무가 정해지지 않아 이 과정의 적합성을 단정할 수 없다. B: 희망 업무 분야가 특정되지 않아 의료기관에 특화된 AI 활용 과정의 적합성을 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABA20263001409316",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ABB20263001168816",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 질의가 AI 활용이라는 넓은 목표만 제시하고 업무를 특정하지 않았다. 또한 원문 목표가 비어 있고 실제 비추정 교과가 없어 제목과 추정 NCS만으로 적합성을 판정할 수 없다. B: AI 활용을 원하는 업무와 목표가 특정되지 않아 영상 제작 과정의 적합성을 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20253001137374",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20253001151607",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001179833",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001201126",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001317885",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001340793",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001384938",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001407830",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: AI로 기획서 작성·업무 효율 개선을 배우는 내용은 확인되나 질의가 구체적인 업무나 목표를 특정하지 않아 개별 과정의 적합성은 결정할 수 없다. B: AI로 일을 개선한다는 목표만으로 특정 업무나 교육 분야를 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001410572",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001417922",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001455544",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001495422",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "ACG20263001504112",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20250000501387",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20250000506847",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20250000533945",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20250000535947",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20260000545806",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AIG20263001398086",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AVA20253001150451",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "source_course_id": "AVA20253001150484",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABA20253001133529",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABA20253001145266",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABA20263001298516",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABA20263001393089",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABA20263001502338",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABB20253001144423",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABB20253001150106",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ABB20263001162744",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001154048",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001170703",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001324866",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001374066",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001407502",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001417820",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "ACG20263001441413",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20240000459227",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20240000498178",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000501486",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표는 반도체 산업의 품질 불량 이슈 해결과 데이터 분석이다. 망원경 보정·외계행성 분광 관측이라는 천문 관측 대상과 다르다. B: 반도체 품질 불량 데이터 분석 교육으로 천체 관측과 외계행성 분광 분석 분야가 다르다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000501486",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000501486;field=objective",
+        "excerpt": "반도체 계측 및 품질에 대한 전반적인 지식을 보유한 훈련생은 반도체 산업 데이터 분석 역량을 활용하여 공정에서 발생하는 품질 불량에 대한 이슈를 해결할 수 있다.\n데이터 분석 프로그램(Spotfire) 등을 활용하여 반도체 산업 데이터 분석 및 시각화 역량을 기름으로써 반도체 품질 평가 분야 직무에 취업할 수 있다. (NCS 5수준)"
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000505527",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000522925",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000529679",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000531434",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000539889",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 교과는 반도체 공정 데이터를 대상으로 한 회귀분석이다. 전파망원경 보정·외계행성 분광 관측이라는 천문 관측 과제와 대상이 다르다. B: 반도체 제조 공정 데이터 분석 과정으로 천체 관측과 분광 분석 교육이 아니다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539889",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20250000539889;unit_key=1f5eadf1df43eaa1250ac9f565fd16edf87c671a67a57786ccff72ce8b07e474;field=unit_name",
+        "excerpt": "다항/로지스틱 회귀분석의 이해와 반도체 공정 데이터 분석"
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20250000543113",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표는 환경법에 따른 수질오염물질 측정·분석이다. 전파망원경과 외계행성 분광 관측이라는 학습 대상과 다르다. B: 수질오염물질 측정과 분석이 교육 목표로 천문 분광 관측과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000543113",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000543113;field=objective",
+        "excerpt": "환경법률적 근거를 통해 수질오염물질을 측정·분석하는 방침과 목표를 설정하고, 이를 수행하기위한 세부계획 및 방법을 수립하고 수질측정 및 분석업무를 수행할 수 있다."
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20260000543299",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AIG20260000545294",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "source_course_id": "AVA20263001321903",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ABA20263001298516",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ABB20253001150106",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20253001127473",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20253001148336",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20253001149370",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 목표와 교과는 민사·형사·가사 소송 등 법률사무와 전자소송이다. 양피지 필사본의 물리적 분석·복원과 다른 학습 분야이다. B: 민법과 소송 등 법률사무 교육으로 양피지 필사본 분석 및 복원과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ACG20253001149370",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ACG20253001149370;field=objective",
+        "excerpt": "1. 민법, 민사소송, 민사집행, 보전처분(가압류/가처분), 형법과 형사소송, 가사소송, 회생파산 이론과 실무에 대해서 알아본다.\n2. 법률용어 및 절차, 법령을 이해하여 실무에 적용할 수 있다.\n3. 다양한 사례 및 판례를 학습하고, 실무에서 활용할 수 있다.\n4. 전자소송 사이트를 학습하며, 전자소송에 필요한 서류 작성법 및 실무 활용 등에 대해 알아본다."
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001160403",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001205908",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001250931",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001324611",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표와 실제 교과는 작물 재배·토양·비료 관리와 유기농업 자격 대비이다. 양피지 안료 분석·고문서 복원과 학습 대상이 다르다. B: 작물 재배와 유기농업 자격시험 과정으로 고문서 안료 분석 및 복원 교육과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ACG20263001324611",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ACG20263001324611;field=objective",
+        "excerpt": "1. 본 교육과정은 작물의 생리·재배환경과 파종·정식·시비·결실관리 등 재배기술의 원리를 이해하고 현장에 적용할 수 있도록 한다.\n2. 토양·비료·병해충·잡초 관리와 유기농업 원칙 및 인증 기준을 종합해 유기재배 체계를 설계하고, 토양·비료 실습 등 실기 수행능력까지 갖추어 필기·실기 시험 대응 역량을 완성한다."
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001350349",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001374066",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001407533",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "ACG20263001419176",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20240000498178",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000503345",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000503520",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000505103",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000511629",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000519976",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표와 실제 교과는 장례지도 현장실무와 장례지도사 자격 취득이다. 고문서 안료 분석·복원과 학습 대상이 다르다. B: 장례지도사 자격과 장례 실무 교육으로 중세 고문서의 분석 및 복원과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000519976",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000519976;field=objective",
+        "excerpt": "장례지도사 표준교육을 이수하여 장례지도 현장실무능력을 함양하고 장례지도사 국가자격을 취득할 수 있다."
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000522280",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000529679",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000535154",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000535850",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000539889",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000542534",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20250000543113",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20260000545294",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AIG20260000545806",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "source_course_id": "AVA20253001150478",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABA20263001165508",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABA20263001317646",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABA20263001326184",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABA20263001407603",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABB20253001145832",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABB20263001168816",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ABB20263001252783",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001251617",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001375433",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001384938",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001399623",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001407830",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문은 AI 기반 조직 업무·커뮤니케이션 과정으로 요청한 제목과 다르지만 자동화 활용 내용은 겹친다. 구글 AI 프로토타이핑과의 동일성이나 대체 관련성을 확정할 수 없다. B: AI를 활용한 업무 개선 과정이지만 요청한 특정 구글 AI 프로토타이핑 과정과 같다는 증거는 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001422327",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001495422",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001496587",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "ACG20263001504112",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20240000459227",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20240000498178",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000501387",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000501486",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000506847",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표와 실제 교과는 출판·영상 편집디자인과 콘텐츠 제작이다. 구글 AI를 통한 서비스 프로토타입 제작과 학습 결과물이 다르다. B: 출판·영상 편집디자인과 콘텐츠 제작이 명시된 학습 분야로 구글 AI 프로토타이핑과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000506847",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000506847;field=objective",
+        "excerpt": "1.편집디자인직무수행에 필요한 소프트웨어(포토샵,일러스트레이터,인디자인)를 활용할 수 있다.\n2.신문, 잡지, 서적, 그 외 책자 형식의 인쇄물을 타이포그래피,레이아웃, 일러스트레이션, 사진, 종이, 여백, 인쇄 방법을 고객의 요구와 출판물의 성격에 맞게 선택하여 시각적으로 아름답고 편하게 읽을 수 있도록 최적화된 결과물을 만들 수 있다.\n3.영상편집소프트웨어를 활용하여 영상편집디자인(영상제작)을 할 수 있다.\n4.생성형 AI 툴과 그래픽 및 영상 소프트웨어를 연계하여 콘텐츠 제작 작업을 효율적으로 수행할 수 있다."
+      }
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000513014",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000529679",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000535947",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000539888",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20250000543113",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-automation",
+      "source_course_id": "AIG20260000545806",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목이 요청한 과정명과 정확히 일치하며 실제 교과에 구글 AI 서비스 제작 프로젝트와 Apps Script 자동화가 명시돼 있다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20260000545806",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20260000545806;field=course_name",
+        "excerpt": "구글 AI로 시작하는 실전 프로토타이핑"
+      }
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ABA20253001133529",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ABA20263001218989",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문은 사내 정보보안과 디지털 데이터 관리 교육이다. 근로계약·인사관리 노동법이라는 요청의 학습 분야와 다르다. B: 사내 디지털 정보 보호가 학습 분야로 근로계약과 인사관리 노동법 교육과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ABA20263001218989",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ABA20263001218989;field=objective",
+        "excerpt": "- 정보 보안의 이해를 바탕으로 문서 및 지적 재산과 관련된 디지털 형식의 데이터 처리 및 관리 방안의 가이드라인을 운용할 수 있다.\n- 다양한 위험 요인과 가치 지향 기반 정보 인프라를 구축하여 생산, 관리, 보안 구성원들의 보완 능력을 강화하는 방안을 모색한다."
+      }
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ABA20263001317646",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ABA20263001404460",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ABA20263001500869",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목이 요청한 과정명과 정확히 일치하고 실제 목표와 교과도 근로계약·인사관리를 다룬다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "ABA20263001500869",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ABA20263001500869;field=course_name",
+        "excerpt": "노동법 A to Z 근로계약부터 인사관리까지 핵심 총정리"
+      }
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20253001149370",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20253001149583",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001153265",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001162002",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001180818",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001192107",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001205904",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001284249",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001300536",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001351063",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표와 실제 교과는 정보보안·디지털 데이터 관리이다. 근로계약과 인사관리를 위한 노동법 교육과 학습 분야가 다르다. B: 디지털 정보 보안과 데이터 관리 교육으로 근로계약 및 인사관리 노동법과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ACG20263001351063",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ACG20263001351063;field=objective",
+        "excerpt": "- 정보 보안의 이해를 바탕으로 문서 및 지적 재산과 관련된 디지털 형식의 데이터 처리 및 관리 방안의 가이드라인을 운용할 수 있다.\n- 다양한 위험 요인과 가치 지향 기반 정보 인프라를 구축하여 생산, 관리, 보안 구성원들의 보완 능력을 강화하는 방안을 모색한다."
+      }
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001366344",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001382176",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001382178",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001383217",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001400300",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001409315",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001419191",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001494223",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "ACG20263001504112",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "AIG20250000503785",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "AIG20250000505103",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "AIG20250000511160",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "AIG20250000517702",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-labor",
+      "source_course_id": "AIG20250000526515",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ABA20263001218982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ABA20263001383906",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ABA20263001422289",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001157754",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001192107",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001199855",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 다른 제목의 기업 보안 과정이며 실제 네트워크 보안 교과가 있어 일부 내용은 겹친다. 패킷 트레이서 기반 관리·설정 실습까지 확인할 근거는 충분하지 않다. B: 네트워크 보안은 포함되지만 패킷 트레이서를 이용한 관리 실습은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001246894",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001251617",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001256987",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001320140",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001321328",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001321344",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001366287",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001366293",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001382369",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001384657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001406007",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001406193",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001422327",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001425081",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001438173",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001447769",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문은 다른 제목의 기업 보안 전략 과정이다. 보안이라는 내용은 겹치지만 실제 패킷 트레이서·네트워크 설정 교과를 확인할 수 없어 동일 또는 대체 관련성을 확정할 수 없다. B: 기업 사이버 보안을 다루지만 패킷 트레이서 실습 여부는 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "ACG20263001458983",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "AIG20250000539886",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목이 요청한 과정명과 정확히 일치하고 실제 교과도 VLAN·라우팅·스위치 보안·SSH 설정을 포함한다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539886",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000539886;field=course_name",
+        "excerpt": "[완전정복] 패킷 트레이서를 활용한 네트워크 관리와 보안 끝장내기"
+      }
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "AVA20263001248400",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "AVA20263001406594",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-network",
+      "source_course_id": "AVA20263001406637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20253001142277",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20253001146101",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001153265",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001157386",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001172856",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001205904",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001226498",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001251433",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 목표는 전기기사·전기산업기사 자격과 전기관련 지식이다. 산업재해·인간공학·기계 안전을 다루는 요청 과정과 자격 분야가 다르다. B: 전기기사 자격과 전기 분야 학습이 목적이며 산업안전기사 학습과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ACG20263001251433",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ACG20263001251433;field=objective",
+        "excerpt": "1. 전기기사, 전기산업기사 자격증 취득에 대비할 수 있다.\n2. 전기관련 현장에서 유용하게 사용할 수 있는 지식을 습득할 수 있다."
+      }
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001254427",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목이 요청한 과정명과 정확히 일치하고 실제 목표·교과에 산업재해·인간공학·기계 안전이 명시돼 있다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "ACG20263001254427",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ACG20263001254427;field=course_name",
+        "excerpt": "산업안전기사 필수핵심 필기1 (산업재해, 인간공학, 기계·기구)"
+      }
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001316367",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001324611",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001324866",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001325060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001334135",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001407288",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001407533",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001407791",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001408590",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001409315",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001419176",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001441413",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001503900",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "ACG20263001513005",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AIG20250000503256",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AIG20250000503782",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AIG20250000517702",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AIG20250000527208",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AIG20250000528677",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AIG20250000533325",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 산업재해·인간공학·기계 안전을 실제 목표에 포함해 내용은 겹치지만 요청한 필수핵심 필기1과는 다른 제목의 종합 필기 과정이다. 정확한 동일성이나 대체 적합성을 확정하지 않는다. B: 산업안전기사 필기 대비에 산업재해, 인간공학, 기계기구 안전 학습이 명시되어 있다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-safety",
+      "source_course_id": "AVA20263001248377",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ABA20253001148235",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ABA20263001218989",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ABA20263001230511",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ABA20263001438191",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ABA20263001454530",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20253001127505",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001157754",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001201331",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001246894",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001321328",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001366293",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001384657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001417820",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001422215",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001458983",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "ACG20263001504136",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20240000498079",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목이 요청한 과정명과 정확히 일치하고 실제 교과에 웹 취약점 분석·모의해킹·보안로그 분석이 명시돼 있다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20240000498079",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20240000498079;field=course_name",
+        "excerpt": "[정보보안] 취약점분석 등 정보보안 전문가 취업캠프"
+      }
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20240000498178",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 요청한 제목과는 다르나 실제 교과에 웹 모의 침투와 취약점 헌팅이 있어 핵심 내용이 겹친다. 다른 과정이라는 이유만으로 무관하게 처리하지 않고 대체 적합성 판단을 보류한다. B: 정보보안 전문가 양성과 취약점 탐지가 실제 교과에 명시되어 있다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000501486",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000521517",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 요청한 제목과는 다른 과정이지만 실제 목표에 취약점 분석·침투 테스트가 있어 내용이 겹친다. 정확한 과정 동일성이나 대체 적합성은 확정하지 않는다. B: 정보보안 인력 양성을 목표로 하며 시스템 취약점 분석과 침투 테스트가 명시되어 있다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000534216",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000542500",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000542956",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-security",
+      "source_course_id": "AIG20250000542957",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ABB20253001145832",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 원문 제목은 FPGA 로직설계이지만 목표가 비어 있고 단원은 추정 NCS뿐이다. 요청 과정과의 실제 내용 관계를 입증할 근거가 부족하므로 추정 단원으로 판정하지 않는다. B: FPGA 기반 로직 설계가 명시된 학습 분야로 반도체 공정 데이터 분석 과정과 다르다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ABB20253001150048",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ABB20253001150106",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ABB20263001157188",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ABB20263001168816",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ABB20263001170548",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001201126",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001317885",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001325060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001356663",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001383216",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001384624",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001407830",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001417820",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "ACG20263001504136",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20240000459227",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000501486",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 다른 제목의 반도체 품질 평가 과정으로 공정 데이터 분석 내용은 겹치지만 명시된 도구는 Spotfire이다. 요청한 파이썬·머신러닝 과정과의 동일성이나 대체 적합성을 확정하지 않는다. B: 반도체 품질 데이터 분석은 다루나 파이썬과 머신러닝을 명시한 과정인지 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000513014",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000522280",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000525521",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000531434",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000535947",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000539888",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20250000539889",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목이 요청한 과정명과 정확히 일치하며 실제 교과에 반도체 공정 데이터의 회귀분석과 pandas가 명시돼 있다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539889",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000539889;field=course_name",
+        "excerpt": "파이썬과 머신러닝을 활용한 반도체 제조 공정 데이터 분석"
+      }
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AVA20253001150451",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "source_course_id": "AVA20263001248421",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001298516",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001393089",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001454530",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001464669",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 목표는 고객 절세 상담과 보험 상품 마케팅 역량이다. 법인 관련 세무 단원도 있으나 학습 업무는 보험 컨설팅으로, 요청한 법인세 신고·세무조정 실무와 다르다. B: 보험 판매 현장의 절세 상담 및 보험 상품 마케팅이 교육 목표로 법인세 실무 과정과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ABA20263001464669",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ABA20263001464669;field=objective",
+        "excerpt": "영업 현장에서 고객의 니즈에 필요한 절세 상담과 보험 상품 마케팅 능력 향상"
+      }
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001480712",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문은 중소기업의 리스크 식별·평가·대응 역량 교육이다. 요청한 법인세 신고와 세무조정 실무와 명시된 학습 대상이 다르다. B: 교육 대상은 기업 일반 리스크 식별과 대응으로 법인세 문제해결 교육과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ABA20263001480712",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ABA20263001480712;field=objective",
+        "excerpt": "중소기업 환경에 적합한 실무 중심 리스크 관리 역량 강화"
+      }
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001496869",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001502338",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 요청한 과정명과 원문 제목이 정확히 일치하며, 실제 목표와 교과가 법인세 신고·납부 및 세무조정을 다룬다. B: 요청한 과정명과 원본 과정명이 정확히 일치한다.",
+      "evidence": {
+        "actual_source_course_id": "ABA20263001502338",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ABA20263001502338;field=course_name",
+        "excerpt": "[인재키움] 기업 절세 전략 수립을 위한 법인세 문제해결 실무(찾아가는 훈련)"
+      }
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABA20263001511699",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABB20263001162744",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ABB20263001170548",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20253001137374",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20253001149370",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001164349",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001179833",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001201187",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001205904",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001300536",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001317880",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001317885",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001382176",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001383217",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001400300",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "ACG20263001409315",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "AIG20250000503785",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "AIG20250000505103",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "AIG20250000511160",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "AIG20250000517158",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "exact-title-tax",
+      "source_course_id": "AIG20250000533945",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20253001133529",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 교육은 외국인 근로자의 직장 적응이며 노동관계법을 포함해 일부 내용이 겹친다. 다만 근로계약 작성과 직원 인사관리 실무까지 다루는지는 충분히 확인되지 않는다. B: 노동관계법은 있으나 외국인 근로자 취업교육이며 근로계약서 작성과 인사관리 학습은 명시되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20263001170664",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20263001257334",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20263001298516",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20263001404460",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20263001464669",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ABA20263001500869",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 목표와 교과가 근로계약 체결·채용 시 권리와 의무 및 인사관리 실무를 명시해 질의의 과제와 일치한다. B: 근로계약 체결과 인사관리 실무를 학습 목표로 명시한다.",
+      "evidence": {
+        "actual_source_course_id": "ABA20263001500869",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=ABA20263001500869;unit_key=56fad89d1d856430c7b81cc4cb99b93dc18bff0524bbca3d0a5bcf7051bc1b43;field=unit_name",
+        "excerpt": "채용 절차와 근로계약 체결 시 유의사항, 사용자와 근로자의 권리·의무, 근로조건 설정 및 인사관리 실무"
+      }
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20253001149370",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20253001149583",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001153265",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001157754",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001205904",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001300536",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001321328",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001336637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001351063",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001400300",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001407533",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001409315",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "ACG20263001504112",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AIG20250000503233",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AIG20250000503785",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AIG20250000505103",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AIG20250000511160",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 명시된 목표는 민법·등기·강제집행·소송을 수행하는 법률사무직 양성이다. 근로계약 작성과 직원 인사관리 노동법이라는 질의와 실제 학습 업무가 다르다. B: 민법과 등기·소송 중심의 법률사무직 교육으로 근로계약 및 인사관리 노동법 교육과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000511160",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=AIG20250000511160;field=objective",
+        "excerpt": "민법의 이해를 시작으로 부동산등기실무, 상업등기실무, 강제집행과 가압류가처분실무, 소송실무 총5개 교과목 세부업무능력을 익혀서 취업 후 바로 현장에서 업무를 할 수 있는 인재를 훈련하여, 훈련생들이 법률계통(로펌, 법무법인, 변호사사무소, 법무사사무소, 일반기업체 법무팀등)에 취업하였을 때 빠르게 적응하고, 안정된 직장생활을 할 수 있게 도와 주는 것을 그 목표로 한다."
+      }
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AIG20250000517702",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AIG20250000526515",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "source_course_id": "AVA20263001406637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ABA20253001148235",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ABA20263001218982",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 목표는 운영체제별 네트워크 구축과 PC·스마트 기기 보안 설정이다. 네트워크 보안은 겹치지만 스위치·라우터 설정이라는 구체적 과제의 충족 여부는 확인되지 않는다. B: 네트워크 구축과 보안을 배우지만 스위치와 라우터의 보안 설정은 구체적으로 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ABA20263001273480",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ABA20263001273496",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ABA20263001422289",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001170703",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001246894",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001251617",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001251684",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 비추정 목표는 정보보안 전반과 기본 대응 수준이다. 스위치·라우터 보안 설정을 확인할 실제 교과가 없으며 추정 NCS만으로 이를 보완할 수 없다. B: 정보보안과 네트워크 보안 기초는 설명되지만 스위치와 라우터 설정 실습은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001273805",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001301737",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001321344",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001336637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001336657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001366293",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001372766",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001384657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001406007",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001417820",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001422327",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001432982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "AIG20250000539886",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 교과에 스위치·라우터의 보안 암호와 SSH 설정이 명시되고 네트워크 관리 교과도 확인되어 질의의 핵심 행동과 일치한다. B: 스위치와 라우터의 보안 암호 및 SSH 설정이 실제 교과에 명시되어 있다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539886",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20250000539886;unit_key=60860567cd99eaa60a965f5fc4de6a0a52ecc2cc0c3482eebe544932bfbd7c97;field=unit_name",
+        "excerpt": "스위치, 라우터 보안 암호와 SSH 설정"
+      }
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "AVA20253001150484",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "AVA20263001248388",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "source_course_id": "AVA20263001248400",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABA20263001317646",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20253001144740",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20253001145832",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 제목 외에 목표와 실제 비추정 교과가 없어 파이썬을 이용한 반도체 공정 회귀분석 학습 여부를 확인할 수 없다. 추정 NCS만으로 양성·음성을 정하지 않는다. B: FPGA 기반 로직 설계 교육으로 반도체 제조 데이터의 파이썬 회귀분석과 다르다.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20253001150048",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20253001150106",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20263001153248",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20263001157188",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ABB20263001168816",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ACG20253001127505",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ACG20263001317880",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ACG20263001366301",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ACG20263001407288",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ACG20263001407830",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "ACG20263001422215",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20240000459227",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000501486",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 반도체 공정 데이터 분석이라는 대상은 맞지만 명시된 분석 도구는 Spotfire이다. 실제 교과만으로 파이썬·회귀 모형 학습 여부를 확정할 수 없어 관련성 판단을 보류한다. B: 반도체 공정 데이터 분석은 다루지만 파이썬과 회귀 모형 학습은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000513014",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000515004",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000522280",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000525521",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000531434",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000534823",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000535947",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000536890",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000539888",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20250000539889",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 과정 제목은 파이썬 기반 반도체 제조 공정 분석이고 실제 교과에 공정 데이터의 선형 회귀분석이 명시돼 질의의 핵심 과제와 일치한다. B: 과정은 파이썬 기반 반도체 공정 데이터 분석이며 실제 교과에 회귀분석이 있다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539889",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20250000539889;unit_key=f3de820ef48df322029281f14c609e32458512a70f09ebc0b3d732104eef62f3;field=unit_name",
+        "excerpt": "선형 회귀 분석 기법의 이해와 반도체 공정 데이터 분석"
+      }
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "source_course_id": "AIG20260000545806",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABA20263001165508",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABA20263001317646",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABA20263001317922",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABA20263001407603",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABA20263001409316",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABB20253001150048",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABB20253001150106",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABB20263001153248",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABB20263001168816",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ABB20263001254007",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20253001146067",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001317885",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001384938",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001399623",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001407830",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 교과에 AI 반복 업무 자동화가 있어 내용이 일부 겹친다. 그러나 Google Apps Script 및 프로토타입 제작이라는 특정 구현 과제를 명시적으로 확인할 근거가 부족하다. B: AI 업무 자동화는 명시되지만 Google Apps Script를 이용한 프로토타입 제작은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001410572",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "ACG20263001495422",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20240000498178",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20250000501387",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20250000506847",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20250000525521",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20250000530889",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20250000535947",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20250000539888",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20260000545060",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 교과의 대상은 게임 리뷰 수집·텍스트 분석과 분석 앱 개발이다. 질의의 Google Apps Script 기반 업무 자동화 프로토타입과 학습 대상이 다르다. B: 명시된 학습 목표는 게임 리뷰 데이터 분석 앱 개발로 업무 자동화 프로토타입과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20260000545060",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20260000545060;unit_key=6d9cb94c7c2c7f8d047f96c3aeca3ced354bd216b8510c67fd003e41b3635de7;field=unit_name",
+        "excerpt": "내 게임 리뷰 수집하기"
+      }
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20260000545806",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 비추정 교과에 생성형 AI와 Google Apps Script 기반 자동화가 명시되고, AI 서비스 제작 프로젝트도 있어 질의의 핵심 과제와 일치한다. B: 생성형 AI와 Google Apps Script를 이용한 자동화가 실제 교과에 명시되어 있다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20260000545806",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20260000545806;unit_key=6eb1614dc9cc8f3bcc377902cd9103855fbf4652176d3e83e4bb2bb3de2a2202;field=unit_name",
+        "excerpt": "생성형AI를 활용한 Google Apps script기반 자동화_1"
+      }
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AIG20263001398086",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "source_course_id": "AVA20263001406473",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ABA20253001148235",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ABA20263001218982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ABA20263001273480",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ABA20263001422289",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ABB20263001153238",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: Azure 클라우드 운영·보안이라는 제목 외에 목표와 비추정 교과가 없어 패킷 트레이서·VLAN·SSH 실습과의 관계를 확정할 수 없다. 추정 NCS 네트워크 단원은 판정 근거로 사용하지 않는다. B: Azure 클라우드 운영과 보안이라는 제목만으로 Packet Tracer와 VLAN·SSH 실습 여부를 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20253001127505",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001170703",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001199855",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001201331",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001246894",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001251684",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001301737",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001321344",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 네트워크 구축·보안 및 관련 실제 교과는 있으나 패킷 트레이서에서 VLAN과 SSH를 설정하는 과제까지 명시적으로 확인되지 않아 판단을 보류한다. B: 네트워크 보안은 다루지만 Packet Tracer, VLAN 및 SSH 실습은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001366293",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001384657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001406007",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001422215",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001432982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AIG20250000501481",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AIG20250000529679",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AIG20250000539886",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 제목에 패킷 트레이서가 명시되고 실제 교과에 VLAN 네트워크와 스위치·라우터 SSH 설정이 있어 질의의 실습 내용과 일치한다. B: 과정명에 패킷 트레이서가 명시되고 교과에 스위치·라우터 보안 및 SSH 설정이 있다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539886",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20250000539886;unit_key=60860567cd99eaa60a965f5fc4de6a0a52ecc2cc0c3482eebe544932bfbd7c97;field=unit_name",
+        "excerpt": "스위치, 라우터 보안 암호와 SSH 설정"
+      }
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AIG20250000543113",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AVA20253001150484",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AVA20263001248400",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "source_course_id": "AVA20263001406473",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ABA20263001418967",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ABB20253001145832",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: FPGA 로직설계라는 제목 외에 목표와 비추정 교과가 없다. Python·pandas·회귀 기반 공정 분석과의 관계를 추정 NCS만으로 판단하지 않는다. B: FPGA 기반 로직 설계가 명시된 학습 분야로 공정 데이터 회귀분석과 다르다.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ABB20253001150106",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ABB20263001157188",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ABB20263001168816",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ABB20263001170548",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20253001127505",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20253001146101",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001201126",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001273470",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001317885",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001325060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001356663",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001384624",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001417820",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001422215",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001438173",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "ACG20263001504136",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20240000459068",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20240000459227",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20250000501486",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 반도체 데이터 분석 목표는 있으나 명시된 도구는 Spotfire이다. Python·pandas·머신러닝 회귀를 배우는지 실제 교과에서 확인할 근거가 충분하지 않다. B: 반도체 데이터 분석에 Spotfire를 사용하나 요청한 Python, pandas 및 회귀 학습은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20250000531434",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20250000539888",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20250000539889",
+      "label": "relevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 과정은 파이썬 기반 반도체 제조 공정 데이터 분석이며 실제 교과에 pandas와 회귀분석이 명시돼 질의의 핵심 도구·분석 과제와 일치한다. B: 파이썬과 머신러닝 기반 반도체 데이터 분석 과정이며 실제 교과에 회귀분석이 명시되어 있다.",
+      "evidence": {
+        "actual_source_course_id": "AIG20250000539889",
+        "source_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+        "pointer": "units.jsonl:course_id=AIG20250000539889;unit_key=1f5eadf1df43eaa1250ac9f565fd16edf87c671a67a57786ccff72ce8b07e474;field=unit_name",
+        "excerpt": "다항/로지스틱 회귀분석의 이해와 반도체 공정 데이터 분석"
+      }
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20250000543113",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20260000543299",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AIG20260000545060",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AVA20253001150451",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "source_course_id": "AVA20263001248421",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ABA20253001148235",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ABA20263001486216",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ABB20263001153248",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20253001127505",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001157754",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001199855",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001201331",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001246894",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 실제 비추정 교과에 웹 취약점 이해와 웹 해킹이 명시돼 웹사이트 보안 취약점을 배우려는 핵심 목적과 일치한다. B: 웹 취약점 이해 교과는 있지만 웹사이트 취약점 분석을 수행하는지는 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001251684",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001284165",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001320140",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001321328",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001366293",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 실제 비추정 교과가 웹 취약점을 명시적으로 다뤄, 질의가 원하는 웹사이트 보안 분야와 일치한다. B: 웹 취약점 이해는 명시되나 취약점 분석을 수행하는 교육인지 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001382369",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001384657",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 실제 비추정 교과에 웹 취약점과 웹 해킹이 있어 산업기계 안전이 아닌 웹사이트 보안 취약점을 배우려는 질의와 일치한다. B: 웹 취약점 이해 교과는 있지만 웹사이트 취약점을 분석하는 교육인지는 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001406193",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001422215",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001425081",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001432982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "AIG20250000534216",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "AVA20253001150484",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "AVA20263001248400",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "AVA20263001406473",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "source_course_id": "AVA20263001406637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ABA20263001464669",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 불일치로 미판정 유지. A: 명시된 목표는 보험 영업을 위한 고객 절세 상담과 상품 마케팅이다. 개인이 자신의 연말정산·종합소득세를 직접 신고하는 질의와 수행할 업무가 다르다. B: 보험 세무상담과 개인 관련 세금은 다루지만 개인 연말정산 및 종합소득세 직접 신고는 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ABA20263001502338",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20253001149370",
+      "label": "irrelevant",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 원문 목표와 실제 교과는 민사·형사·가사 소송 및 회생파산 법률사무이다. 개인 연말정산·종합소득세 신고 실무와 명시된 학습 분야가 다르다. B: 민법과 소송 등 법률사무 실무 과정으로 개인 세금 신고 교육과 다르다.",
+      "evidence": {
+        "actual_source_course_id": "ACG20253001149370",
+        "source_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+        "pointer": "courses.jsonl:course_id=ACG20253001149370;field=objective",
+        "excerpt": "1. 민법, 민사소송, 민사집행, 보전처분(가압류/가처분), 형법과 형사소송, 가사소송, 회생파산 이론과 실무에 대해서 알아본다.\n2. 법률용어 및 절차, 법령을 이해하여 실무에 적용할 수 있다.\n3. 다양한 사례 및 판례를 학습하고, 실무에서 활용할 수 있다.\n4. 전자소송 사이트를 학습하며, 전자소송에 필요한 서류 작성법 및 실무 활용 등에 대해 알아본다."
+      }
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20253001149433",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001162002",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001179833",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001180818",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001205565",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001334135",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001336637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001366344",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001419191",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001432982",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001496587",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "ACG20263001502405",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20240000485525",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000503785",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000505103",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000511160",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000515701",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 소득세·원천징수·연말정산과 전산세무 실무는 명시돼 내용이 일부 겹친다. 그러나 개인의 종합소득세 직접 신고까지 다룬다는 근거는 부족하므로 일치나 무관을 단정하지 않는다. B: 연말정산 개념과 소득세 회계는 있지만 개인 종합소득세 직접 신고 교육은 명시되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000517158",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000520050",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000529679",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AIG20250000533945",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AVA20253001150484",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AVA20263001248400",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "source_course_id": "AVA20263001406473",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ABA20263001218989",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ABA20263001230511",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ABA20263001409316",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ABA20263001422289",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ABA20263001486216",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ABB20263001153248",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 금융 앱 보안이라는 제목 외에 목표와 비추정 교과가 없어 로그 분석 실습 여부를 입증할 수 없다. 추정 탐지로그 단원이나 가격·일정 추측으로 판정하지 않는다. B: 금융 앱 보안 과정이라는 제목만으로 로그 분석 및 무료 주말 수강 여부를 판단할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20253001127483",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001157754",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001192107",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001201331",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001246894",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001251684",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001273801",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001284249",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001301737",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001321328",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001336637",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001351063",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001366293",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001372796",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001384657",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001399120",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 정보보안 기초 목표는 확인되지만 비추정 교과로 로그 분석을 확인할 수 없다. 또한 개인에게 무료인지와 퇴근 후·주말 수강 가능 여부를 확정할 근거가 없다. B: 정보보안 기초는 다루지만 로그 분석과 무료 주말 수강 조건을 확인할 수 없다.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001410572",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001439416",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "ACG20263001504112",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "AIG20240000498079",
+      "label": "unjudged",
+      "reviewer": "codex-sol-a+codex-terra-b",
+      "reason": "독립 검토 일치. A: 실제 교과에 보안로그 분석이 있어 과제 내용은 맞는다. 다만 개인 부담이 무료인지와 퇴근 후·주말 일정인지가 입증되지 않아 전체 수강 조건의 충족 여부는 판단을 보류한다. B: 보안 로그 분석 교과는 확인되지만 개인의 무료 수강 및 퇴근 후 주말 시간 조건은 확인되지 않는다.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "AIG20240000498209",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "AIG20250000534216",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "AVA20263001248400",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "source_course_id": "AVA20263001406473",
+      "label": "unjudged",
+      "reviewer": "not-reviewed",
+      "reason": "상위 3개 표본 밖이며 관련성은 검토하지 않음.",
+      "evidence": null
+    }
+  ]
+}

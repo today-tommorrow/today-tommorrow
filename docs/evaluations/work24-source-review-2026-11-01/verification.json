@@ -1,0 +1,72 @@
+{
+  "status": "passed",
+  "full_check_exit_code": 0,
+  "head": "47120d7cb67f17234fb62c24b677c1ce04eeedf3",
+  "test_file_sha256": "0a27e05f992c1b5c1ca7844a6f2f51bf5235314bef43db2285154f952dcd306a",
+  "targeted_catalog": {
+    "run": 20,
+    "skipped": 0
+  },
+  "frontend": {
+    "run": 276,
+    "skipped": 0
+  },
+  "backend": {
+    "run": 331,
+    "skipped": 2
+  },
+  "scripts": {
+    "run": 22,
+    "skipped": 0
+  },
+  "catalog_unit": {
+    "run": 32,
+    "skipped": 0
+  },
+  "catalog_integration": {
+    "run": 13,
+    "skipped": 3
+  },
+  "other_checks": [
+    "catalog verify",
+    "TypeScript",
+    "ESLint",
+    "Prettier",
+    "ruff",
+    "production build",
+    "git diff --check"
+  ],
+  "skips": [
+    {
+      "test": "DatabaseBoundaryTests.test_reimport_keeps_application_rows_and_education_keys",
+      "reason": "L0_REIMPORT_TESTS=0: committed reimport is an explicit CI-only check",
+      "separately_executed": false
+    },
+    {
+      "test": "RecommendationFlowTests.test_denied_result_insert_rolls_back_and_retry_preserves_snapshot",
+      "reason": "ISSUE31_EXCLUSIVE_ACL_TEST not enabled: requires explicitly designated exclusive local test database",
+      "separately_executed": false
+    },
+    {
+      "test": "RecordsDatabaseTests.test_supplement_and_mixed_quarantine_preserve_parent_bytes",
+      "reason": "WORK24_RECORDS_TEST_DATABASE_URL absent: requires fresh owned disposable database",
+      "separately_executed": false
+    },
+    {
+      "test": "LegacyRecordsDatabaseTests.test_synthetic_legacy_supplement",
+      "reason": "WORK24_LEGACY_TEST_DATABASE_URL absent: requires fresh owned disposable database",
+      "separately_executed": false
+    },
+    {
+      "test": "LegacyRecordsDatabaseTests.test_existing_pinned_artifact_supplement",
+      "reason": "WORK24_PINNED_TEST_DATABASE_URL and WORK24_PINNED_ARCHIVE absent: requires fresh owned disposable database and existing pinned archive",
+      "separately_executed": false
+    }
+  ],
+  "no_external_model_calls": true,
+  "execution_context": "PR82 base head plus the recorded test-file hash and documentation/artifact additions; not a claim that base HEAD alone includes the test change.",
+  "cleanup": {
+    "owned_container_removed": true,
+    "private_files_removed": true
+  }
+}
