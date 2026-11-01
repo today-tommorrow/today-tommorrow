@@ -19,3 +19,11 @@ Migration `0007_recommendation_runs` changes only `today_app`, adds owner-bound 
 ## Verification
 
 `L0_DATABASE_TESTS=1 python -m unittest discover -s tests -p 'test_recommendation_flow.py' -v` uses the guarded disposable local PostgreSQL configuration. Tests create synthetic authenticated service sessions and explicitly inject a runner marked `runtime_mode: sample`. They cover replay/deduplication, ownership and CSRF, current input/token validation, failure and cancellation retry, concurrent submissions, immutable saved input, atomic persistence, stale/expired worker fencing, and a blocked provider that outlives its lease while heartbeat renews it. These synthetic tests are not live model verification.
+
+## Restart regression under execution contention (#31)
+
+`--once` performs one claim attempt. Exit status zero can mean the execution guard was unavailable and no job was processed; it is not evidence of job completion. The long-running worker polls and retries.
+
+The restart regression now terminates a worker during model HTTP, expires only the synthetic job lease, and deliberately holds the shared execution guard. It verifies that `--once` leaves the job at `running`, attempt 1. A replacement daemon has a unique PostgreSQL application name; the test observes its guard attempt in `pg_stat_activity` before releasing the guard, then requires success on attempt 2 and exactly one saved question. This uses bounded observable-state polling rather than assuming an immediate successful claim after process termination. No production locking or worker behavior was weakened.
+
+The original intermittent run's transient trigger remains unconfirmed. The invalid one-shot completion assumption and the held-guard failure mechanism are now directly tested. On 2026-11-01, all 206 backend tests passed before the final test-only observation refinement; the refined restart test passed four targeted runs. This resolves this regression-test defect, not all browser, material-input, or failure-recovery criteria in issue #31.
