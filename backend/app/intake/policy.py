@@ -5,6 +5,10 @@ from typing import Any
 SECTIONS = ("direction", "experience", "goal", "conditions")
 
 
+def has_answer(value: Any) -> bool:
+    return value is not None and (not isinstance(value, str) or bool(value.strip()))
+
+
 def _section_slots(answers: dict[str, Any]) -> dict[str, list[str]]:
     groups = {
         "direction": ["entry_intent", "field_code"],
@@ -40,16 +44,14 @@ def evaluate(answers: dict[str, Any], conflicts: list[str]) -> dict[str, Any]:
     groups = _section_slots(answers)
     conflicts = active_conflicts(answers, conflicts)
 
-    def answered(key):
-        value = answers.get(key)
-        return value is not None and (not isinstance(value, str) or bool(value.strip()))
-
     missing_by_section = {
-        section: [key for key in keys if not answered(key) or key in conflicts]
+        section: [
+            key for key in keys if not has_answer(answers.get(key)) or key in conflicts
+        ]
         for section, keys in groups.items()
     }
     missing = [key for keys in missing_by_section.values() for key in keys]
-    if not answered("document_decision"):
+    if not has_answer(answers.get("document_decision")):
         missing.append("document_decision")
     completed = [section for section in SECTIONS if not missing_by_section[section]]
     section = next((s for s in SECTIONS if missing_by_section[s]), "review")

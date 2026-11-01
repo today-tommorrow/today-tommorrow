@@ -176,8 +176,9 @@ jobs:
           Pinned real education data: 406 courses, 6099 units; vector round-trip, stored-query exact/HNSW, reimport preservation and app/catalog permission boundaries.
           App.test.tsx uses real HTTP responses. Intake and configuration regressions use isolated synthetic fixtures and do not verify model/API integration.
           Auth checks cover real unauthenticated /auth/me 401 and its login link, plus synthetic Google responses/tokens and local database tests.
-          Actual Google browser login remains unverified. Profile, question, document and recommendation endpoints are not implemented; their complete integration remains unverified. GPU: N/A for this CI job.
-          Python static checks and backend/launcher unit suites also run; their doubles do not verify real database/model integration.
+          초안·질문·작업 검사는 실제 로컬 PostgreSQL과 합성 서비스 세션·모델 HTTP 응답을 사용하며, 실제 Worker 프로세스 재시작도 확인합니다.
+          실제 Google 브라우저 로그인·Gemma·GPU는 미검증입니다. 자료·해석·추천 API와 그 전체 연동은 후속 범위입니다. 이 CI의 GPU 검증은 N/A입니다.
+          Python 정적 검사와 backend/launcher 회귀도 실행하며, 실제 DB 결과와 합성 모델 결과를 구분합니다.
           SUMMARY
       - uses: actions/upload-artifact@v4
         if: ${{ failure() }}

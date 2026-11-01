@@ -62,6 +62,8 @@ class ProfileDraftTests(unittest.TestCase):
                 "SESSION_SECRET": KEY,
                 "PUBLIC_ORIGIN": ORIGIN,
                 "GOOGLE_REDIRECT_URI": ORIGIN + "/api/auth/google/callback",
+                "QUESTION_MODEL_BASE_URL": "",
+                "QUESTION_MODEL_ID": "",
             },
         )
         self.env.start()
