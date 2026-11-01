@@ -204,6 +204,24 @@ class RecommendationPipelineTests(unittest.TestCase):
         self.assertEqual((result["result_state"], result["model_outcome"]), ("empty", "succeeded"))
         self.assertTrue(all(axis["value"] is None for axis in result["_snapshot"]["assessments"][0]["axes"][:3]))
 
+    def test_topic_only_zero_gets_symmetric_repair_guidance(self):
+        pipeline, _, model = self.make_pipeline()
+        def repair_basis(stage, result):
+            if stage == "assessing":
+                row = result["assessments"][0]
+                repair = model.calls[-1][1].get("validation_error", "")
+                row["goal_basis"] = "unrelated" if "Goal 0/null requires unrelated" in repair else "topic_only"
+                row["axes"][0]["value"] = 0
+            return result
+        model.mutate = repair_basis
+        result = pipeline.run(snapshot(pipeline), lambda _: None)
+        self.assertEqual([stage for stage, _ in model.calls].count("assessing"), 2)
+        self.assertEqual((result["result_state"], result["model_outcome"]), ("empty", "succeeded"))
+        assessment = result["_snapshot"]["assessments"][0]
+        self.assertEqual(assessment["goal_basis"], "unrelated")
+        self.assertEqual(assessment["axes"][0]["value"], 0)
+        self.assertTrue(assessment["axes"][0]["evidence_ids"])
+
     def test_phase_fence_interrupts_after_model_before_next_stage(self):
         pipeline, _, model = self.make_pipeline()
         def report(stage):

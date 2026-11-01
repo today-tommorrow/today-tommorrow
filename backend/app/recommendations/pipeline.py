@@ -92,23 +92,38 @@ STRING: JsonObject = {"type": "string", "minLength": 1}
 PROFILE_SCHEMA = object_schema({"needs": list_schema(object_schema({
     "source_id": STRING, "label": STRING,
 }), 8, 1)})
-AXIS_SCHEMA: JsonObject = {"anyOf": [
-    object_schema({
-        "axis": {"type": "string", "enum": ["goal", "prerequisite", "outcome"]},
-        "value": {"type": "null"},
-        "evidence_ids": list_schema(STRING, 0), "quotes": list_schema(STRING, 0),
-    }),
-    object_schema({
-        "axis": {"type": "string", "enum": ["goal", "prerequisite", "outcome"]},
-        "value": {"type": "number", "enum": [0, 0.5, 1]},
-        "evidence_ids": list_schema(STRING, 3, 1), "quotes": list_schema(STRING, 3, 1),
-    }),
-]}
-ASSESSMENT_SCHEMA = object_schema({"assessments": list_schema(object_schema({
-    "course_id": STRING, "offering_id": STRING,
-    "goal_basis": {"type": "string", "enum": ["content_supported", "topic_only", "unrelated"]},
-    "axes": list_schema(AXIS_SCHEMA, 3, 3),
-}), 2, 1)})
+
+
+def axis_variants(names: list[str], values: list[JsonValue]) -> list[JsonObject]:
+    branches = []
+    if None in values:
+        branches.append(object_schema({
+            "axis": {"type": "string", "enum": names}, "value": {"type": "null"},
+            "evidence_ids": list_schema(STRING, 0), "quotes": list_schema(STRING, 0),
+        }))
+    numbers = [value for value in values if value is not None]
+    if numbers:
+        branches.append(object_schema({
+            "axis": {"type": "string", "enum": names}, "value": {"type": "number", "enum": numbers},
+            "evidence_ids": list_schema(STRING, 3, 1), "quotes": list_schema(STRING, 3, 1),
+        }))
+    return branches
+
+
+def assessment_variant(basis: str) -> JsonObject:
+    goal_values = [0, None] if basis == "unrelated" else [0.5, 1]
+    variants = axis_variants(["goal"], goal_values)
+    variants.extend(axis_variants(["prerequisite", "outcome"], [0, 0.5, 1, None]))
+    return object_schema({
+        "course_id": STRING, "offering_id": STRING,
+        "goal_basis": {"type": "string", "enum": [basis]},
+        "axes": list_schema({"anyOf": variants}, 3, 3),
+    })
+
+
+ASSESSMENT_SCHEMA = object_schema({"assessments": list_schema({"anyOf": [
+    assessment_variant(basis) for basis in ("content_supported", "topic_only", "unrelated")
+]}, 2, 1)})
 EXPLANATION_SCHEMA = object_schema({"explanations": list_schema(object_schema({
     "course_id": STRING, "offering_id": STRING,
     "claims": list_schema(object_schema({
@@ -451,7 +466,8 @@ class RecommendationPipeline:
                 hint = (
                     "For every numeric axis value, including 0, return 1-3 actual evidence IDs and exact quotes. "
                     "Without evidence use null with empty arrays, never unsupported zero. "
-                    "Unrelated cannot have a positive goal value. Preserve candidate IDs and every axis."
+                    "Goal 0/null requires unrelated; topic_only/content_supported require goal 0.5/1. "
+                    "Preserve candidate IDs and every axis."
                     if stage == "assessing" else
                     "Invalid structure or unsupported evidence. Return only allowed IDs and exact source substrings."
                 )
