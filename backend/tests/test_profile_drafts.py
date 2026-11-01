@@ -360,7 +360,8 @@ class ProfileDraftTests(unittest.TestCase):
         self.assertEqual(body["allowed_catalog_sources"], ["work24"])
         self.assertFalse(body["question_generation_enabled"])
         self.assertFalse(body["interpretation_enabled"])
-        self.assertEqual(body["allowed_file_extensions"], [])
+        self.assertEqual(body["allowed_file_extensions"], [".txt", ".docx", ".pdf"])
+        self.assertEqual(body["max_upload_bytes"], 5 * 1024 * 1024)
         self.assertEqual(body["max_profile_documents"], 5)
 
     def test_expired_session_and_database_failure_are_sanitized(self):

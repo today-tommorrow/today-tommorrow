@@ -23,15 +23,15 @@ def public(row: Document) -> dict:
         "id": str(row.id),
         "profile_id": str(row.profile_id),
         "kind": row.kind,
-        "source_type": "text",
-        "display_name": "직접 입력한 텍스트",
+        "source_type": row.source_type,
+        "display_name": row.display_name,
         "source_url": None,
-        "mime_type": "text/plain",
+        "mime_type": row.mime_type,
         "size_bytes": row.size_bytes,
-        "status": "queued",
+        "status": row.status,
         "extracted_preview": None,
         "job_id": None,
-        "error_code": None,
+        "error_code": row.error_code,
         "content_sha256": row.content_sha256,
         "created_at": row.created_at.isoformat(),
     }
@@ -78,6 +78,23 @@ def register(
     )
     if not created:
         return request.status_code, request.response_json
+    return persist(
+        db, profile, profile_id, user_id, payload, request, data, content_hash
+    )
+
+
+def persist(
+    db,
+    profile,
+    profile_id,
+    user_id,
+    payload,
+    request,
+    data,
+    content_hash,
+    *,
+    file_info=None,
+):
     if profile.revision != payload.expected_revision:
         raise DocumentError(409, "revision_conflict")
     count = db.scalar(
@@ -92,24 +109,42 @@ def register(
         profile_id=profile_id,
         user_id=user_id,
         kind=payload.kind,
-        content=payload.text,
+        content=payload.text if file_info is None else file_info["text"],
+        **(
+            {}
+            if file_info is None
+            else {
+                "source_type": "file",
+                "display_name": file_info["name"],
+                "mime_type": file_info["mime"],
+                "status": file_info["status"],
+                "error_code": file_info["error"],
+                "raw_content": data,
+            }
+        ),
         content_sha256=content_hash,
         size_bytes=len(data),
         created_at=now,
     )
     db.add(row)
     db.flush()
-    db.add(
-        DocumentChunk(
-            document_id=row.id,
-            profile_id=profile_id,
-            user_id=user_id,
-            ordinal=0,
-            text_content=payload.text,
-            content_sha256=content_hash,
-            locator=f"text:chars:0:{len(payload.text)}",
-        )
+    chunks = (
+        [(payload.text, f"text:chars:0:{len(payload.text)}")]
+        if file_info is None
+        else file_info["chunks"]
     )
+    for ordinal, (chunk_text, locator) in enumerate(chunks):
+        db.add(
+            DocumentChunk(
+                document_id=row.id,
+                profile_id=profile_id,
+                user_id=user_id,
+                ordinal=ordinal,
+                text_content=chunk_text,
+                content_sha256=hashlib.sha256(chunk_text.encode("utf-8")).hexdigest(),
+                locator=locator,
+            )
+        )
     profile.answers_json = {**profile.answers_json, "document_decision": "provided"}
     profile.slot_origins_json = {
         **profile.slot_origins_json,
@@ -125,4 +160,52 @@ def register(
     invalidate(db, profile_id)
     return recorded(
         request, 202, {"document": public(row), "profile_revision": profile.revision}
+    )
+
+
+def register_file(db, profile_id, user_id, payload, key, data, info):
+    profile = store.get_profile(db, profile_id, user_id, lock=True)
+    content_hash = hashlib.sha256(data).hexdigest()
+    request_data = {
+        "profile_id": str(profile_id),
+        "expected_revision": payload.expected_revision,
+        "kind": payload.kind,
+        "content_sha256": content_hash,
+        "display_name": info["name"],
+        "mime_type": info["mime"],
+    }
+    key = (
+        key
+        or "file:"
+        + hashlib.sha256(
+            (
+                str(profile_id)
+                + ":"
+                + str(payload.expected_revision)
+                + ":"
+                + payload.kind
+                + ":"
+                + content_hash
+                + ":"
+                + info["name"]
+                + ":"
+                + info["mime"]
+            ).encode()
+        ).hexdigest()
+    )
+    request, created = reserve(
+        db, profile=profile, operation="register_file", key=key, request=request_data
+    )
+    if not created:
+        return request.status_code, request.response_json
+    return persist(
+        db,
+        profile,
+        profile_id,
+        user_id,
+        payload,
+        request,
+        data,
+        content_hash,
+        file_info=info,
     )
