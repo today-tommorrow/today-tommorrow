@@ -20,3 +20,11 @@ Verification uses synthetic documents and a dedicated local PostgreSQL 16.14 / p
 - Browser file-upload E2E, OCR, semantic extraction, and GPU execution were not run in this slice. Successful parsing remains queued until the subsequent analysis integration; it is not evidence of complete issue #18 acceptance.
 
 The HTTP fixtures were a Korean UTF-8 TXT with CRLF, a DOCX paragraph with tab/newline, and a single-page synthetic text PDF. Local evidence is retained under `.outline/file18-verification/` (`http-result.json`, `http_smoke.py`, synthetic fixtures, and `full-check.log`); these machine-specific artifacts are not required by the portable unit tests above.
+
+## PR #72 review follow-up
+
+DOCX `w:noBreakHyphen` is preserved as U+2011, including its character position in the paragraph locator. PDFs containing catalog AcroForm entries or page Widget annotations fail explicitly because field-value extraction is not supported. Regressions cover ordinary text PDF success, populated forms alongside body text, AcroForm without page widgets, orphan widgets, and exact DOCX text/locator preservation.
+
+The focused extraction suite passed five tests. The first full-check attempt lacked the verification Vite proxy; after preparing it, one pre-existing synthetic `App.flow` button-readiness test timed out. Its isolated six-test rerun passed without code or assertion changes. Both failed-run logs are retained locally with the final full-check log under `.outline/file18-verification/review-*.log`.
+
+Final full check exited 0: web 276 passed, backend 296 run (one optional skip), launcher 22 passed, catalog unit 18 and integration 10 passed, TypeScript/Vite production build passed. No checks were weakened or skipped to address the earlier failures.
