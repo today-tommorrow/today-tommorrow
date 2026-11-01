@@ -254,7 +254,7 @@ class ModelHTTPTests(unittest.TestCase):
         self.client.generate(context)
         body = self.calls[0][1]
         system = body["messages"][0]["content"]
-        self.assertEqual(PROMPT_VERSION, "question-0.8.0-2")
+        self.assertEqual(PROMPT_VERSION, "question-0.8.0-3")
         self.assertIn("출력 언어는 한국어", system)
         self.assertIn("한국어 학습을 교육 분야로 가정하지 마세요", system)
         contracts = json.loads(system.split("\n슬롯 계약:\n", 1)[1])
@@ -263,9 +263,98 @@ class ModelHTTPTests(unittest.TestCase):
         self.assertIn("no_limit=지출 상한 없음", contracts["budget_status"]["description"])
         self.assertIn("무료만 원하면 0", contracts["budget_krw"]["description"])
         schema = body["response_format"]["json_schema"]["schema"]
-        patches = schema["properties"]["options"]["items"]["properties"]["answer_patch"]["properties"]
-        self.assertEqual(contracts["budget_status"], patches["budget_status"])
+        patches = schema["properties"]["options"]["items"]["properties"]["answer_patch"]
+        self.assertEqual(len(patches["anyOf"]), 2)
         self.assertEqual(json.loads(body["messages"][1]["content"]), context)
+
+    def test_budget_response_schema_restricts_amount_to_explicit_nonnegative_cap(self):
+        context = {**CONTEXT, "eligible_slots": ["budget_status"],
+                   "allowed_companion_slots": {"budget_status": ["budget_krw"]}}
+        draft = draft_with_patches("budget_status", [
+            ("무료만", {"budget_status": "amount", "budget_krw": 0}),
+            ("상한 없음", {"budget_status": "no_limit"}),
+        ])
+        type(self).body = json.dumps({"choices": [{"finish_reason": "stop", "message": {
+            "content": json.dumps(draft),
+        }}]}).encode()
+        self.client.generate(context)
+        schema = self.calls[-1][1]["response_format"]["json_schema"]["schema"]
+        patch_schema = schema["properties"]["options"]["items"]["properties"]["answer_patch"]
+        self.assertEqual(patch_schema, {"anyOf": [
+            {"type": "object", "properties": {
+                "budget_status": {"type": "string", "enum": ["amount"]},
+                "budget_krw": {"type": "integer", "minimum": 0},
+            }, "required": ["budget_status", "budget_krw"], "additionalProperties": False},
+            {"type": "object", "properties": {
+                "budget_status": {"type": "string", "enum": ["no_limit", "unknown"]},
+                "budget_krw": {"type": "null"},
+            }, "required": ["budget_status"], "additionalProperties": False},
+        ]})
+        # Exercise the exact branch constraints sent over HTTP, including JSON's
+        # distinction between booleans and integers.
+        def accepts(value):
+            for branch in patch_schema["anyOf"]:
+                props = branch["properties"]
+                if not set(branch["required"]) <= value.keys() or set(value) - props.keys():
+                    continue
+                if value.get("budget_status") not in props["budget_status"]["enum"]:
+                    continue
+                if "budget_krw" in value:
+                    cap = value["budget_krw"]
+                    rule = props["budget_krw"]
+                    if rule["type"] == "null" and cap is not None:
+                        continue
+                    if rule["type"] == "integer" and (type(cap) is not int or cap < rule["minimum"]):
+                        continue
+                return True
+            return False
+        cases = [
+            ({"budget_status": "amount"}, False),
+            ({"budget_status": "amount", "budget_krw": None}, False),
+            ({"budget_status": "amount", "budget_krw": True}, False),
+            ({"budget_status": "amount", "budget_krw": -1}, False),
+            ({"budget_status": "amount", "budget_krw": 0}, True),
+            ({"budget_status": "amount", "budget_krw": 100000}, True),
+            ({"budget_status": "no_limit"}, True),
+            ({"budget_status": "no_limit", "budget_krw": None}, True),
+            ({"budget_status": "unknown"}, True),
+            ({"budget_status": "unknown", "budget_krw": None}, True),
+            ({"budget_status": "unknown", "budget_krw": 100}, False),
+        ]
+        for value, expected in cases:
+            with self.subTest(value=value):
+                self.assertEqual(accepts(value), expected)
+
+    def test_budget_response_schema_does_not_specialize_blocked_companion(self):
+        draft = draft_with_patches("budget_status", [
+            ("상한 금액 있음", {"budget_status": "amount"}),
+            ("상한 없음", {"budget_status": "no_limit"}),
+        ])
+        type(self).body = json.dumps({"choices": [{"finish_reason": "stop", "message": {
+            "content": json.dumps(draft),
+        }}]}).encode()
+        cases = [
+            {"allowed_companion_slots": {}},
+            {"allowed_companion_slots": {"budget_status": ["budget_krw"]}, "confirmed_answers": {"budget_krw": 0}},
+            {"allowed_companion_slots": {"budget_status": ["budget_krw"]}, "resolved_unknown_slots": ["budget_krw"]},
+        ]
+        for override in cases:
+            context = {**CONTEXT, "eligible_slots": ["budget_status"], **override}
+            with self.subTest(override=override):
+                self.client.generate(context)
+                schema = self.calls[-1][1]["response_format"]["json_schema"]["schema"]
+                patch_schema = schema["properties"]["options"]["items"]["properties"]["answer_patch"]
+                self.assertIn("properties", patch_schema)
+                self.assertNotIn("anyOf", patch_schema)
+        # A subsequent ordinary request receives the original schema, proving
+        # per-call specialization did not mutate the stored schema or other calls.
+        type(self).body = json.dumps({"choices": [{"finish_reason": "stop", "message": {
+            "content": json.dumps(EXAMPLE),
+        }}]}).encode()
+        self.client.generate(CONTEXT)
+        patch_schema = self.calls[-1][1]["response_format"]["json_schema"]["schema"]["properties"]["options"]["items"]["properties"]["answer_patch"]
+        self.assertIn("learning_goal", patch_schema["properties"])
+        self.assertNotIn("anyOf", patch_schema)
 
     def test_cancelled_before_call(self):
         cancelled = threading.Event()

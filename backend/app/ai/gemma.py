@@ -10,7 +10,7 @@ from urllib.parse import urlsplit
 
 from .questions import QuestionDraft, QuestionError, validate_question
 
-PROMPT_VERSION = "question-0.8.0-2"
+PROMPT_VERSION = "question-0.8.0-3"
 SYSTEM_PROMPT = """직업·기술 교육 상담의 다음 선택형 질문 하나를 JSON으로 생성하세요.
 출력 언어는 한국어입니다. 한국어로 대화한다는 이유로 한국어 학습을 교육 분야로 가정하지 마세요.
 교육 분야는 confirmed_answers.field_code의 코드 뜻을 따르며, 미확정이면 분야를 추측하지 마세요.
@@ -26,6 +26,7 @@ budget_status의 no_limit은 예산 상한 없음이며 무료가 아닙니다. 
 budget_krw는 원 단위의 지출 상한입니다. 금액 범위보다 명확한 상한을 선택 문구에 쓰세요.
 budget_krw companion이 허용되고 미확정이면 amount 선택지에 해당 정수 상한을 함께 넣으세요.
 companion이 허용되지 않으면 amount만 선택하고 금액을 임의로 확정하지 마세요.
+amount와 금액을 함께 선택할 때 무료는 {"budget_status":"amount","budget_krw":0}, 10만 원 상한은 {"budget_status":"amount","budget_krw":100000}입니다. 상한 없음은 {"budget_status":"no_limit"}입니다.
 교육 후보, URL, HTML, 완료 판정, 사용자 ID, 질문 ID를 출력하지 마세요.
 미정 선택지와 공개 UUID는 서버가 추가합니다. JSON 이외의 텍스트를 출력하지 마세요."""
 
@@ -94,6 +95,21 @@ class GemmaQuestions:
             if slot in properties
         }
         system_prompt = SYSTEM_PROMPT + "\n슬롯 계약:\n" + json.dumps(slot_contracts, ensure_ascii=False)
+        if (eligible == {"budget_status"}
+                and "budget_krw" in companions.get("budget_status", set())
+                and "budget_krw" not in confirmed | unknown):
+            schema["properties"]["options"]["items"]["properties"]["answer_patch"] = {
+                "anyOf": [
+                    {"type": "object", "properties": {
+                        "budget_status": {"type": "string", "enum": ["amount"]},
+                        "budget_krw": {"type": "integer", "minimum": 0},
+                    }, "required": ["budget_status", "budget_krw"], "additionalProperties": False},
+                    {"type": "object", "properties": {
+                        "budget_status": {"type": "string", "enum": ["no_limit", "unknown"]},
+                        "budget_krw": {"type": "null"},
+                    }, "required": ["budget_status"], "additionalProperties": False},
+                ]
+            }
         payload = json.dumps({
             "model": self.model,
             "messages": [
