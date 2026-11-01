@@ -44,4 +44,21 @@
 
 실제 로그인은 위 주소를 열어 Google 로그인 → 화면 복귀 → 새로고침 후 로그인 유지 → 로그아웃 순서로 확인한다. 취소 후 취소 안내와 다시 로그인 링크도 확인한다. 결과를 PR에 기록하되 계정 정보·토큰·쿠키 원문은 남기지 않는다.
 
-실제 Google 브라우저 로그인과 다른 물리적 Mac에서의 재현은 별도 검증이 필요하다. GPU는 이 로그인 구현 범위에 해당하지 않는다.
+실제 Google 브라우저 로그인 결과는 아래 기록을 참조한다. 다른 물리적 Mac에서의 재현은 별도 검증이 필요하다. GPU는 이 로그인 구현 범위에 해당하지 않는다.
+
+## Recorded verification — 2026-11-01
+
+An actual Google authorization flow was tested in Chrome using the same origin, `http://127.0.0.1:5173`, with the API on port `62731` and an isolated PostgreSQL 16.14 database with pgvector 0.6.0. Cancelling Google authorization returned the browser to `/login?error=oauth_cancelled` and displayed the cancellation message.
+
+After approving the Google basic-profile consent, the local app displayed the authenticated name and onboarding/start screen. Reloading retained the session, and visiting `/api/auth/me` returned session JSON containing a CSRF token. Logging out through the UI returned to the anonymous login screen; a subsequent visit to `/api/auth/me` returned the `unauthenticated` code. The browser checks did not capture HTTP status codes. Private session values were withheld from this record.
+
+Reproduction on another physical Mac remains pending.
+
+Focused regression checks passed on Python 3.14.6 with the isolated database: 29 authentication tests and 12 Google-provider tests. Load the server environment from `.env` using the launcher parser, then run from `backend`:
+
+```sh
+L0_DATABASE_TESTS=1 .venv/bin/python -m unittest discover -s tests -p 'test_auth*.py'
+.venv/bin/python -m unittest discover -s tests -p 'test_google.py'
+```
+
+These automated checks use synthetic Google responses/tokens and real local database state; they establish protocol status and security regressions separately from the genuine browser flow above. The unchanged application code passed the full `./check` and CI in PR #61. This documentation-only follow-up reran the focused checks above, not the full suite.
