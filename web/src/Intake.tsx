@@ -609,6 +609,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   }
 
   async function interpret(signal: AbortSignal) {
+    if (pendingDeletion) throw new Error('자료 삭제 결과를 먼저 확인해 주세요.')
     interpretationLoad.current?.abort()
     setInterpretationInterrupted(
       !!latest.current.latest_interpretation_id && !interpretation,
@@ -869,6 +870,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     if (signal.aborted) return
     const pending = { id, minimumRevision: expectedRevision + 1 }
     setPendingDeletion(pending)
+    interpretationLoad.current?.abort()
+    setInterpretationLoading(false)
     if (
       interpretation?.proposals.some((proposal) => proposal.document_id === id)
     )
@@ -1206,6 +1209,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                 <button
                   disabled={
                     busy ||
+                    !!pendingDeletion ||
                     (!text.trim() &&
                       !profile.documents.some(
                         (item) => item.status === 'ready',
@@ -1229,7 +1233,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               </p>
             )}
             <button
-              disabled={busy || interpretationLoading}
+              disabled={busy || interpretationLoading || !!pendingDeletion}
               onClick={() => setInterpretationAttempt((value) => value + 1)}
             >
               저장된 해석 다시 불러오기

@@ -530,10 +530,51 @@ describe('실패 자료 재시도', () => {
 })
 
 describe('자료 삭제와 목록 복구', () => {
-  it.each([true, false])(
-    '삭제 자료에 연결된 해석 여부 %s에 따라 숨김·적용 차단을 유지한다',
-    async (affected) => {
+  it('삭제 목록 확인 중에는 해석 재조회와 새 해석을 요청하지 않는다', async () => {
+    const interpretationId = '00000000-0000-4000-8000-000000000009'
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+    const fetch = serve((endpoint) =>
+      endpoint === deletePath
+        ? new Response(null, { status: 204 })
+        : new Response(null, { status: 503 }),
+    )
+    render(
+      <Harness
+        initial={{
+          ...readyProfile(),
+          latest_interpretation_id: interpretationId,
+        }}
+      />,
+    )
+    await screen.findByRole('button', { name: '저장된 해석 다시 불러오기' })
+    await ready()
+    fireEvent.click(targetButton('자료 삭제'))
+    await screen.findByText(
+      '자료 삭제 요청은 처리됐어요. 최신 목록을 확인해 주세요.',
+    )
+    await ready()
+    expect(button('저장된 해석 다시 불러오기').disabled).toBe(true)
+    fireEvent.click(screen.getByText('직접 알려줄게요'))
+    expect(button('입력과 준비된 자료 해석하기').disabled).toBe(true)
+    fireEvent.click(button('저장된 해석 다시 불러오기'))
+    fireEvent.click(button('입력과 준비된 자료 해석하기'))
+    expect(writes(fetch)).toHaveLength(1)
+    expect(
+      fetch.mock.calls.filter(([url]) =>
+        new URL(url).pathname.startsWith('/api/interpretations/'),
+      ),
+    ).toHaveLength(1)
+  })
+
+  it.each([
+    { affected: true, delayed: false },
+    { affected: false, delayed: false },
+    { affected: true, delayed: true },
+  ])(
+    '삭제 자료 해석의 연결·응답 시점에 따라 숨김·적용 차단을 유지한다 (%j)',
+    async ({ affected, delayed }) => {
       vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const pendingInterpretation = deferred()
       const interpretationId = '00000000-0000-4000-8000-000000000009'
       const interpretation: Interpretation = {
         id: interpretationId,
@@ -563,7 +604,9 @@ describe('자료 삭제와 목록 복구', () => {
       }
       const fetch = serve((endpoint) => {
         if (endpoint === `/api/interpretations/${interpretationId}`)
-          return Response.json(interpretation)
+          return delayed
+            ? pendingInterpretation.promise
+            : Response.json(interpretation)
         if (endpoint === deletePath) return new Response(null, { status: 204 })
         if (endpoint === path) return new Response(null, { status: 503 })
         throw new Error(`Unexpected ${endpoint}`)
@@ -576,14 +619,23 @@ describe('자료 삭제와 목록 복구', () => {
           }}
         />,
       )
-      await screen.findByRole('region', { name: '입력 해석 확인' })
+      if (!delayed)
+        await screen.findByRole('region', { name: '입력 해석 확인' })
       await ready()
-      fireEvent.click(screen.getByRole('radio', { name: '맞아요' }))
-      expect(button('확인한 제안만 반영').disabled).toBe(false)
+      if (!delayed) {
+        fireEvent.click(screen.getByRole('radio', { name: '맞아요' }))
+        expect(button('확인한 제안만 반영').disabled).toBe(false)
+      }
       fireEvent.click(targetButton('자료 삭제'))
       await screen.findByText(
         '현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
       )
+      if (delayed) {
+        await act(async () =>
+          pendingInterpretation.resolve(Response.json(interpretation)),
+        )
+        expect(screen.queryByText('저장된 해석을 불러오고 있어요…')).toBeNull()
+      }
       if (affected)
         expect(
           screen.queryByRole('region', { name: '입력 해석 확인' }),
