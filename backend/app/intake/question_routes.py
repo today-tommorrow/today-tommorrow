@@ -17,6 +17,7 @@ from app.intake.question_service import (
     generate,
     get_question,
 )
+from app.intake.requests import IdempotencyConflict
 from app.jobs.store import JobConflict
 
 router = APIRouter(prefix="/api")
@@ -127,7 +128,7 @@ def generate_question(
         return JSONResponse(response, status_code=status, headers=PRIVATE)
     except store.ProfileNotFound:
         raise QuestionServiceError(404, "question_not_found") from None
-    except JobConflict:
+    except (JobConflict, IdempotencyConflict):
         raise QuestionServiceError(409, "idempotency_conflict") from None
     except SQLAlchemyError:
         db.rollback()
@@ -171,6 +172,8 @@ def apply_answer(
         return JSONResponse(response, status_code=status, headers=PRIVATE)
     except store.ProfileNotFound:
         raise QuestionServiceError(404, "question_not_found") from None
+    except IdempotencyConflict:
+        raise QuestionServiceError(409, "idempotency_conflict") from None
     except store.RevisionConflict:
         raise QuestionServiceError(409, "revision_conflict") from None
     except ValidationError:

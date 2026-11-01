@@ -151,6 +151,8 @@ def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str,
         )
         state["active_question_id"] = str(ready) if ready else None
         summaries = selection_summaries(db, row)
+    from app.recommendations.review import review_token
+
     return {
         "id": str(row.id),
         "revision": row.revision,
@@ -159,7 +161,7 @@ def profile_response(row: IntakeProfile, db: Session | None = None) -> dict[str,
         "reviewed_items": row.reviewed_items_json,
         "documents": [],
         "completed_sections": state["completed_sections"],
-        "review_token": None,
+        "review_token": review_token(row, summaries) if db is not None else None,
         "updated_at": row.updated_at.isoformat(),
         "slot_origins": row.slot_origins_json,
         "unresolved_conflicts": active_conflicts(

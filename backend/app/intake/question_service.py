@@ -1,13 +1,9 @@
 """Persist model proposals separately from user-confirmed answers."""
 
-import hashlib
-import json
 from datetime import UTC, datetime
-from typing import Any
 from uuid import UUID, uuid4
 
 from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.ai.gemma import PROMPT_VERSION
@@ -15,7 +11,8 @@ from app.ai.questions import QuestionDraft, validate_question
 from app.intake import store
 from app.intake.policy import evaluate, has_answer
 from app.intake.question_config import QuestionSettings
-from app.intake.question_models import IntakeAnswer, IntakeQuestion, IntakeRequest
+from app.intake.question_models import IntakeAnswer, IntakeQuestion
+from app.intake.requests import digest, recorded, reserve
 from app.intake.schemas import Answers
 from app.jobs import store as jobs
 from app.jobs.models import Job
@@ -37,56 +34,6 @@ UNKNOWN = {
 class QuestionServiceError(Exception):
     def __init__(self, status: int, code: str):
         self.status, self.code = status, code
-
-
-def digest(value: Any) -> str:
-    return hashlib.sha256(
-        json.dumps(
-            value,
-            ensure_ascii=False,
-            sort_keys=True,
-            separators=(",", ":"),
-            allow_nan=False,
-        ).encode()
-    ).hexdigest()
-
-
-def reserve(
-    db: Session, *, profile, operation: str, key: str, request: dict
-) -> tuple[IntakeRequest, bool]:
-    request_hash = digest(request)
-    created = db.scalar(
-        insert(IntakeRequest)
-        .values(
-            user_id=profile.user_id,
-            profile_id=profile.id,
-            operation=operation,
-            idempotency_key=key,
-            request_hash=request_hash,
-            status_code=0,
-            response_json={},
-            created_at=datetime.now(UTC),
-        )
-        .on_conflict_do_nothing(
-            index_elements=["user_id", "operation", "idempotency_key"]
-        )
-        .returning(IntakeRequest.user_id)
-    )
-    row = db.scalars(
-        select(IntakeRequest).where(
-            IntakeRequest.user_id == profile.user_id,
-            IntakeRequest.operation == operation,
-            IntakeRequest.idempotency_key == key,
-        )
-    ).one()
-    if row.request_hash != request_hash:
-        raise QuestionServiceError(409, "idempotency_conflict")
-    return row, created is not None
-
-
-def recorded(request: IntakeRequest, status: int, payload: dict) -> tuple[int, dict]:
-    request.status_code, request.response_json = status, payload
-    return status, payload
 
 
 def generation_context(db: Session, profile) -> dict:
@@ -172,6 +119,7 @@ def generate(
             select(Job)
             .where(
                 Job.profile_id == profile_id,
+                Job.kind == "intake_question",
                 Job.profile_revision == expected_revision,
                 Job.status.in_(["queued", "running"]),
                 Job.request_hash == fingerprint,
