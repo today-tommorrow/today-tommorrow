@@ -1,6 +1,7 @@
 """Synthetic provider tests; no live model, source database or fallback results."""
 
 import copy
+import json
 import unittest
 from dataclasses import replace
 from datetime import date
@@ -15,11 +16,13 @@ from app.recommendations.contracts import (
 )
 from app.recommendations.pipeline import (
     RecommendationPipeline,
+    assessment_schema,
     assessments,
     candidate_view,
     conditions,
     confirmed_sources,
     explanation_items,
+    learner_sources,
     ranked_selection,
 )
 
@@ -60,10 +63,12 @@ class FakeModel:
 
     def __init__(self) -> None:
         self.calls = []
+        self.schemas = []
         self.mutate = lambda stage, result: result
 
     def generate(self, stage, context, schema):
         self.calls.append((stage, copy.deepcopy(context)))
+        self.schemas.append((stage, copy.deepcopy(schema)))
         if stage == "profiling":
             source = context["sources"][0]
             result = {"needs": [{"source_id": source["id"], "label": source["text"]}]}
@@ -246,6 +251,163 @@ class RecommendationPipelineTests(unittest.TestCase):
         source["answers"]["document_decision"] = "provided"
         with self.assertRaisesRegex(RecommendationError, "materials_unsupported"):
             pipeline.run(source, lambda _: None)
+
+    def test_learner_self_report_is_revision_bound_and_never_a_goal(self):
+        pipeline, _, _ = self.make_pipeline()
+        source = snapshot(pipeline)
+        for blank in ("", "  ", "\u2003\u3000"):
+            source["answers"]["self_description"] = blank
+            self.assertEqual(learner_sources(source), [])
+        source["answers"]["self_description"] = False
+        with self.assertRaisesRegex(RecommendationError, "invalid_recommendation_input"):
+            learner_sources(source)
+        original = "  리눅스 서버를 운영한 경험이 있습니다  "
+        source["answers"]["self_description"] = original
+        learner = learner_sources(source)[0]
+        self.assertEqual(learner["text"], original)
+        self.assertEqual(learner["origin"], "self_report")
+        goals, query = confirmed_sources(source)
+        self.assertNotIn(original, query)
+        self.assertNotIn(learner["id"], {item["id"] for item in goals})
+        source["profile_revision"] += 1
+        self.assertNotEqual(learner_sources(source)[0]["id"], learner["id"])
+
+    def test_prerequisite_requires_learner_and_course_proof(self):
+        pipeline, _, _ = self.make_pipeline()
+        source = snapshot(pipeline)
+        source["answers"]["self_description"] = "리눅스 서버 운영 경험이 있습니다"
+        learners = learner_sources(source)
+        candidate = catalog_result().candidates[0]
+        candidate = replace(candidate, metadata=freeze_json({**candidate.metadata,
+            "metadata": {"훈련대상요건": "리눅스 서버 운영 경험 필요"}}))
+        view = candidate_view(candidate, CATALOG)
+        view["checks"] = conditions(candidate, view, source["answers"])
+        content = next(e for e in view["evidence"] if e["kind"] == "content")
+        prerequisite = next(e for e in view["evidence"] if e["kind"] == "prerequisite")
+        row = {"course_id": view["course"]["id"], "offering_id": view["offering"]["id"],
+               "goal_basis": "content_supported", "axes": [
+                   {"axis": "goal", "value": 1, "evidence_ids": [content["id"]], "quotes": [content["quote"]]},
+                   {"axis": "prerequisite", "value": 1, "evidence_ids": [prerequisite["id"]],
+                    "quotes": [prerequisite["quote"]], "learner_source_id": learners[0]["id"],
+                    "learner_quote": "리눅스 서버 운영 경험"},
+                   {"axis": "outcome", "value": None, "evidence_ids": [], "quotes": []},
+               ]}
+        def check(value, learner=learners):
+            return assessments({"assessments": [value]}, [view], learner_sources=learner)
+        accepted = check(row)[0]
+        self.assertEqual(accepted["axes"][1]["value"], 1)
+        self.assertEqual(accepted["raw_assessment"]["axes"][1]["learner_quote"], "리눅스 서버 운영 경험")
+        for edit in (
+            lambda a: a.pop("learner_source_id"),
+            lambda a: a.update(learner_source_id="foreign-id"),
+            lambda a: a.update(learner_source_id=confirmed_sources(source)[0][0]["id"]),
+            lambda a: a.update(learner_quote="없는 경험입니다"),
+            lambda a: a.update(learner_quote=True),
+            lambda a: a.update(evidence_ids=[content["id"]], quotes=[content["quote"]]),
+            lambda a: a.update(evidence_ids=[learners[0]["id"]]),
+            lambda a: a.update(value=None, evidence_ids=[], quotes=[]),
+        ):
+            bad = copy.deepcopy(row)
+            edit(bad["axes"][1])
+            with self.subTest(axis=bad["axes"][1]), self.assertRaisesRegex(RecommendationError, "invalid_model_grounding"):
+                check(bad)
+        for score in (0, 0.5, 1):
+            valid = copy.deepcopy(row)
+            valid["axes"][1]["value"] = score
+            self.assertEqual(check(valid)[0]["axes"][1]["value"], score)
+            with self.assertRaisesRegex(RecommendationError, "invalid_model_grounding"):
+                check(valid, learner=[])
+
+    def test_valid_self_report_dual_grounding_stays_in_private_provenance(self):
+        pipeline, search, model = self.make_pipeline()
+        source = snapshot(pipeline)
+        description = "리눅스 서버 운영 경험이 있습니다"
+        source["answers"]["self_description"] = description
+        candidate = search.result.candidates[0]
+        candidate = replace(candidate, metadata=freeze_json({**candidate.metadata,
+            "metadata": {"훈련대상요건": "리눅스 서버 운영 경험 필요"}}))
+        search.result = replace(search.result, candidates=(candidate,))
+        def grounded(stage, output):
+            if stage == "assessing":
+                context = model.calls[-1][1]
+                evidence = next(e for e in context["candidates"][0]["evidence"] if e["kind"] == "prerequisite")
+                learner = context["learner_sources"][0]
+                output["assessments"][0]["axes"][1].update(
+                    value=1, evidence_ids=[evidence["id"]], quotes=[evidence["quote"]],
+                    learner_source_id=learner["id"], learner_quote="리눅스 서버 운영 경험")
+            return output
+        model.mutate = grounded
+        result = pipeline.run(source, lambda _: None)
+        self.assertEqual(result["_snapshot"]["learner_sources"][0]["text"], description)
+        self.assertEqual(result["_snapshot"]["assessments"][0]["raw_assessment"]["axes"][1]["learner_quote"], "리눅스 서버 운영 경험")
+        self.assertNotIn(description, result["_snapshot"]["query"])
+        self.assertTrue(all(need["basis"] == "user_requested" for need in result["needs"]))
+        self.assertNotIn(description, json.dumps({k: v for k, v in result.items() if k != "_snapshot"}, ensure_ascii=False))
+        validate_result(result)
+
+    def test_self_report_schema_requires_two_learner_fields_only_for_scored_prerequisite(self):
+        schema = assessment_schema(has_learner_source=True)
+        for variant in schema["properties"]["assessments"]["items"]["anyOf"]:
+            axes = variant["properties"]["axes"]["items"]["anyOf"]
+            prerequisite = [axis for axis in axes if axis["properties"]["axis"]["enum"] == ["prerequisite"]]
+            null_axis = next(axis for axis in prerequisite if axis["properties"]["value"]["type"] == "null")
+            scored_axis = next(axis for axis in prerequisite if axis["properties"]["value"]["type"] == "number")
+            self.assertNotIn("learner_source_id", null_axis["properties"])
+            self.assertNotIn("learner_quote", null_axis["properties"])
+            self.assertEqual(set(scored_axis["required"]), {"axis", "value", "evidence_ids", "quotes", "learner_source_id", "learner_quote"})
+            self.assertFalse(scored_axis["additionalProperties"])
+            self.assertEqual(scored_axis["properties"]["learner_quote"]["minLength"], 4)
+            self.assertEqual(scored_axis["properties"]["value"]["enum"], [0, 0.5, 1])
+            self.assertEqual(scored_axis["properties"]["evidence_ids"]["minItems"], 1)
+            self.assertEqual(scored_axis["properties"]["quotes"]["minItems"], 1)
+
+    def test_without_self_report_schema_forces_unknown_prerequisite(self):
+        pipeline, _, model = self.make_pipeline()
+        source = snapshot(pipeline)
+        source["answers"]["self_description"] = "\u2003 "
+        result = pipeline.run(source, lambda _: None)
+        self.assertEqual(result["_snapshot"]["learner_sources"], [])
+        schema = next(schema for stage, schema in model.schemas if stage == "assessing")
+        variants = schema["properties"]["assessments"]["items"]["anyOf"][0]["properties"]["axes"]["items"]["anyOf"]
+        prerequisite = [v for v in variants if v["properties"]["axis"]["enum"] == ["prerequisite"]]
+        self.assertEqual(len(prerequisite), 1)
+        self.assertEqual(prerequisite[0]["properties"]["value"]["type"], "null")
+
+    def test_short_self_report_preserved_but_cannot_enable_prerequisite_score(self):
+        for description in ("SQL", "한글", "  가나  "):
+            with self.subTest(description=description):
+                pipeline, _, model = self.make_pipeline()
+                source = snapshot(pipeline)
+                source["answers"]["self_description"] = description
+                result = pipeline.run(source, lambda _: None)
+                self.assertEqual(result["_snapshot"]["learner_sources"][0]["text"], description)
+                context = next(context for stage, context in model.calls if stage == "assessing")
+                self.assertEqual(context["learner_sources"], [])
+                schema = next(schema for stage, schema in model.schemas if stage == "assessing")
+                variants = schema["properties"]["assessments"]["items"]["anyOf"][0]["properties"]["axes"]["items"]["anyOf"]
+                prerequisite = [v for v in variants if v["properties"]["axis"]["enum"] == ["prerequisite"]]
+                self.assertEqual(len(prerequisite), 1)
+                self.assertEqual(prerequisite[0]["properties"]["value"]["type"], "null")
+
+    def test_missing_learner_proof_repairs_once_then_fails(self):
+        pipeline, search, model = self.make_pipeline()
+        source = snapshot(pipeline)
+        source["answers"]["self_description"] = "리눅스 서버 운영 경험이 있습니다"
+        candidate = search.result.candidates[0]
+        candidate = replace(candidate, metadata=freeze_json({**candidate.metadata,
+            "metadata": {"훈련대상요건": "리눅스 서버 운영 경험 필요"}}))
+        search.result = replace(search.result, candidates=(candidate,))
+        def missing_proof(stage, output):
+            if stage == "assessing":
+                view = model.calls[-1][1]["candidates"][0]
+                evidence = next(e for e in view["evidence"] if e["kind"] == "prerequisite")
+                output["assessments"][0]["axes"][1].update(value=1, evidence_ids=[evidence["id"]], quotes=[evidence["quote"]])
+            return output
+        model.mutate = missing_proof
+        with self.assertRaisesRegex(RecommendationError, "invalid_model_grounding"):
+            pipeline.run(source, lambda _: None)
+        self.assertEqual([stage for stage, _ in model.calls].count("assessing"), 2)
+        self.assertNotIn("explaining", [stage for stage, _ in model.calls])
 
     def test_score_unknowns_are_not_zero(self):
         self.assertEqual(score_bounds({"goal": 1, "prerequisite": None, "outcome": .5, "preference": 1}), (.65, .9, .75))

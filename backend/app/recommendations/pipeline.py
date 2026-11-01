@@ -28,7 +28,7 @@ from .contracts import (
     validate_result,
 )
 
-PIPELINE_VERSION = "work24-recommendation-1"
+PIPELINE_VERSION = "work24-recommendation-2"
 RANKING_VERSION = "grounded-interval-dense-1"
 RETRIEVAL_VERSION = "work24-exact-max-v1"
 FIELD_LABELS = {
@@ -110,10 +110,17 @@ def axis_variants(names: list[str], values: list[JsonValue]) -> list[JsonObject]
     return branches
 
 
-def assessment_variant(basis: str) -> JsonObject:
+def assessment_variant(basis: str, *, has_learner_source: bool) -> JsonObject:
     goal_values = [0, None] if basis == "unrelated" else [0.5, 1]
     variants = axis_variants(["goal"], goal_values)
-    variants.extend(axis_variants(["prerequisite", "outcome"], [0, 0.5, 1, None]))
+    variants.extend(axis_variants(["outcome"], [0, 0.5, 1, None]))
+    variants.extend(axis_variants(["prerequisite"], [None]))
+    if has_learner_source:
+        for branch in axis_variants(["prerequisite"], [0, 0.5, 1]):
+            branch["properties"]["learner_source_id"] = STRING
+            branch["properties"]["learner_quote"] = {"type": "string", "minLength": 4}
+            branch["required"].extend(["learner_source_id", "learner_quote"])
+            variants.append(branch)
     return object_schema({
         "course_id": STRING, "offering_id": STRING,
         "goal_basis": {"type": "string", "enum": [basis]},
@@ -121,9 +128,13 @@ def assessment_variant(basis: str) -> JsonObject:
     })
 
 
-ASSESSMENT_SCHEMA = object_schema({"assessments": list_schema({"anyOf": [
-    assessment_variant(basis) for basis in ("content_supported", "topic_only", "unrelated")
-]}, 2, 1)})
+def assessment_schema(*, has_learner_source: bool) -> JsonObject:
+    return object_schema({"assessments": list_schema({"anyOf": [
+        assessment_variant(basis, has_learner_source=has_learner_source)
+        for basis in ("content_supported", "topic_only", "unrelated")
+    ]}, 2, 1)})
+
+
 EXPLANATION_SCHEMA = object_schema({"explanations": list_schema(object_schema({
     "course_id": STRING, "offering_id": STRING,
     "claims": list_schema(object_schema({
@@ -167,6 +178,21 @@ def confirmed_sources(snapshot: JsonObject) -> tuple[list[JsonObject], str]:
     if len(query.encode()) > 10000:
         raise RecommendationError("recommendation_input_too_large")
     return sources, query
+
+
+def learner_sources(snapshot: JsonObject) -> list[JsonObject]:
+    description = object_value(snapshot.get("answers")).get("self_description")
+    if description is None:
+        return []
+    if not isinstance(description, str):
+        raise RecommendationError("invalid_recommendation_input")
+    if not description.strip():
+        return []
+    if len(description) > 6000:
+        raise RecommendationError("invalid_recommendation_input")
+    return [{"id": identity("learner-self-report", str(snapshot.get("profile_id")),
+                            str(snapshot.get("profile_revision")), description),
+             "origin": "self_report", "text": description}]
 
 
 def profile_needs(output: JsonObject, sources: list[JsonObject]) -> list[JsonObject]:
@@ -303,9 +329,10 @@ def explanation_prompt(view: JsonObject) -> JsonObject:
                                      if str(object_value(item)["id"]) in allowed]}
 
 
-def assessments(output: JsonObject, views: list[JsonObject], *, experience_known: bool = False) -> list[JsonObject]:
+def assessments(output: JsonObject, views: list[JsonObject], *, learner_sources: list[JsonObject] | None = None) -> list[JsonObject]:
     exact_keys(output, {"assessments"})
     expected = {str(object_value(view["course"])["id"]): view for view in views}
+    learner_map = {str(source["id"]): source for source in (learner_sources or [])}
     rows = array_value(output["assessments"])
     if len(rows) != len(expected):
         raise RecommendationError("invalid_model_grounding")
@@ -325,9 +352,13 @@ def assessments(output: JsonObject, views: list[JsonObject], *, experience_known
         axes: dict[str, JsonObject] = {}
         for raw_axis in array_value(item["axes"]):
             axis = object_value(raw_axis)
-            exact_keys(axis, {"axis", "value", "evidence_ids", "quotes"})
-            name = str(axis["axis"])
-            value = axis["value"]
+            name = str(axis.get("axis"))
+            value = axis.get("value")
+            expected_keys = {"axis", "value", "evidence_ids", "quotes"}
+            if name == "prerequisite" and value is not None:
+                expected_keys |= {"learner_source_id", "learner_quote"}
+            if set(axis) != expected_keys:
+                raise RecommendationError("invalid_model_grounding")
             if name not in {"goal", "prerequisite", "outcome"} or name in axes or type(value) is bool or value not in (None, 0, .5, 1):
                 raise RecommendationError("invalid_model_response")
             ids, quotes = array_value(axis["evidence_ids"]), array_value(axis["quotes"])
@@ -341,7 +372,12 @@ def assessments(output: JsonObject, views: list[JsonObject], *, experience_known
                     raise RecommendationError("invalid_model_grounding")
                 if name == "prerequisite" and source["kind"] != "prerequisite":
                     raise RecommendationError("invalid_model_grounding")
-                if name == "prerequisite" and not experience_known:
+            if name == "prerequisite" and value is not None:
+                learner = learner_map.get(str(axis["learner_source_id"]))
+                quote = axis["learner_quote"]
+                if (learner is None or learner.get("origin") != "self_report"
+                        or not isinstance(quote, str) or len(quote.strip()) < 4
+                        or quote not in str(learner["text"])):
                     raise RecommendationError("invalid_model_grounding")
             axes[name] = {"axis": name, "value": value, "evidence_ids": ids,
                           "reason_code": "EVIDENCE_MISSING" if value is None else "MODEL_GROUNDED_ASSESSMENT"}
@@ -481,6 +517,8 @@ class RecommendationPipeline:
                     "For every numeric axis value, including 0, return 1-3 actual evidence IDs and exact quotes. "
                     "Without evidence use null with empty arrays, never unsupported zero. "
                     "Goal 0/null requires unrelated; topic_only/content_supported require goal 0.5/1. "
+                    "For non-null prerequisite include learner_source_id and an exact learner_quote; "
+                    "without a learner source use null prerequisite. "
                     "Preserve candidate IDs and every axis."
                     if stage == "assessing" else
                     "Invalid structure or unsupported evidence. Return only allowed IDs and exact source substrings."
@@ -507,6 +545,8 @@ class RecommendationPipeline:
         except (KeyError, ValueError):
             raise RecommendationError("invalid_recommendation_input") from None
         sources, query = confirmed_sources(snapshot)
+        learners = learner_sources(snapshot)
+        eligible_learners = [source for source in learners if len(str(source["text"]).strip()) >= 4]
         answers = object_value(snapshot["answers"])
         stages: list[JsonObject] = []
 
@@ -547,11 +587,11 @@ class RecommendationPipeline:
                 assessed.extend(self._generate("assessing", {
                     "sources": sources, "needs": needs,
                     "confirmed_experience": answers.get("experience"),
-                    "self_description": answers.get("self_description"),
+                    "learner_sources": eligible_learners,
                     "constraints_text": answers.get("constraints_text"),
                     "candidates": [candidate_prompt(view) for view in batch],
-                }, ASSESSMENT_SCHEMA, lambda output: assessments(
-                    output, batch, experience_known=bool(answers.get("self_description"))
+                }, assessment_schema(has_learner_source=bool(eligible_learners)), lambda output: assessments(
+                    output, batch, learner_sources=eligible_learners
                 ), report_phase))
             stage("assessing", len(views), len(assessed))
             report_phase("ranking")
@@ -585,7 +625,7 @@ class RecommendationPipeline:
             "model_outcome": "succeeded" if views else "not_needed", "pipeline_version": PIPELINE_VERSION,
             "ranking_config_version": RANKING_VERSION, "retrieval_config_version": RETRIEVAL_VERSION,
             "as_of": f"{as_of.isoformat()}T00:00:00Z", "needs": needs, "stages": stages,
-            "_snapshot": {"context": context, "query": query, "sources": sources,
+            "_snapshot": {"context": context, "query": query, "sources": sources, "learner_sources": learners,
                           "search": json_value(found), "assessments": assessed,
                           "explanations": explanations, "model_calls_performed": bool(views),
                           "duration_ms": int((monotonic() - started) * 1000)},
