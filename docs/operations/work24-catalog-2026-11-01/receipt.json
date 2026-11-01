@@ -1,0 +1,307 @@
+{
+  "status": "applied_and_verified",
+  "code_commit": "0b36d5c58b037d162d2dab69c6fd2962d8e8deea",
+  "database": "work24",
+  "namespace": "work24_bge",
+  "plan_sha256": "a6c7c933959889c1d992e23e23d6a82bee9484954f407a72d9c0168bc1913f0d",
+  "plan_operations": [
+    {
+      "action": "create_tables_with_constraints",
+      "tables": [
+        "snapshot_course",
+        "snapshot_unit",
+        "catalog_batch",
+        "active_catalog",
+        "catalog_activation"
+      ],
+      "ddl_sha256": "9c4ac91187a765c12cfb27ac6b366e6e2afd22c95e2a1202ee8f5879e2e63d90"
+    },
+    {
+      "action": "create_indexes",
+      "indexes": [
+        "snapshot_course_pkey",
+        "snapshot_unit_pkey",
+        "catalog_batch_pkey",
+        "active_catalog_pkey",
+        "catalog_activation_pkey",
+        "snapshot_unit_embedding_hnsw"
+      ]
+    },
+    {
+      "action": "create_identity_sequences",
+      "sequences": [
+        "snapshot_unit_id_seq",
+        "catalog_activation_id_seq"
+      ]
+    },
+    {
+      "action": "copy_baseline_courses",
+      "source": "course",
+      "destination": "snapshot_course",
+      "rows": 406
+    },
+    {
+      "action": "copy_baseline_units",
+      "source": "course_unit",
+      "destination": "snapshot_unit",
+      "rows": 6099
+    },
+    {
+      "action": "insert_initial_pointer",
+      "table": "active_catalog",
+      "rows": 1,
+      "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80"
+    },
+    {
+      "action": "insert_initial_history",
+      "table": "catalog_activation",
+      "rows": 1,
+      "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80"
+    },
+    {
+      "action": "grant_select",
+      "tables": [
+        "snapshot_course",
+        "snapshot_unit",
+        "catalog_batch",
+        "active_catalog",
+        "catalog_activation"
+      ],
+      "role": "today_app"
+    }
+  ],
+  "target_details": "Connection endpoint and owner retained privately; no credentials in this report.",
+  "first_apply": {
+    "status": "applied",
+    "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+    "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+    "courses": 406,
+    "units": 6099,
+    "base_content_verified": true,
+    "applied": true
+  },
+  "second_apply": {
+    "status": "already_upgraded",
+    "active_dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+    "base_content_verified": true,
+    "applied": false
+  },
+  "postcheck": {
+    "status": "passed",
+    "counts": {
+      "course": 406,
+      "course_unit": 6099,
+      "snapshot_course": 406,
+      "snapshot_unit": 6099,
+      "catalog_activation": 1
+    },
+    "active_dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+    "manifest_sha256": "f4a79774ae2a470d7a9b80626cece532ad821900923069ba6875c9c9816cd88c",
+    "new_table_reader_permissions": {
+      "snapshot_course": {
+        "select": true,
+        "write": false
+      },
+      "snapshot_unit": {
+        "select": true,
+        "write": false
+      },
+      "catalog_batch": {
+        "select": true,
+        "write": false
+      },
+      "active_catalog": {
+        "select": true,
+        "write": false
+      },
+      "catalog_activation": {
+        "select": true,
+        "write": false
+      }
+    },
+    "catalog_query_candidates": 3,
+    "saved_course_catalog_count": 406,
+    "public_course_details_count": 3,
+    "query_kind": "stored-vector read-only contract probe; not BGE quality evaluation",
+    "model_called": false,
+    "connection_role": "catalog owner connection; application role ACL inspected separately"
+  },
+  "cleanup": {
+    "temporary_checkout_removed": true,
+    "original_server_checkout_head": "6183b6013f5ed47c68ccf037c066063c26edf63d",
+    "original_server_checkout_clean": true,
+    "original_services_not_deployed": true
+  },
+  "backup": {
+    "backup_created": true,
+    "format": "PostgreSQL custom",
+    "scope": "work24_bge schema only",
+    "sha256": "b3180739ef8fbadc233bb955e26b56eba78659acffbec31d1304e188e304a469",
+    "bytes": 31623344,
+    "committed": false,
+    "archive_toc_validated": true,
+    "four_base_tables_present": true
+  },
+  "verification": {
+    "status": "passed",
+    "full_check_exit_code": 0,
+    "head": "0b36d5c58b037d162d2dab69c6fd2962d8e8deea",
+    "frontend": {
+      "run": 276,
+      "skipped": 0
+    },
+    "backend": {
+      "run": 331,
+      "skipped": 2
+    },
+    "scripts": {
+      "run": 22,
+      "skipped": 0
+    },
+    "catalog_unit": {
+      "run": 44,
+      "skipped": 0
+    },
+    "catalog_integration": {
+      "run": 24,
+      "skipped": 14
+    },
+    "independently_executed_optin": [
+      {
+        "name": "records supplement and quarantine",
+        "run": 1,
+        "skipped": 0,
+        "result": "passed",
+        "log": "optin-records.log"
+      },
+      {
+        "name": "synthetic legacy supplement",
+        "run": 1,
+        "skipped": 0,
+        "result": "passed",
+        "log": "optin-legacy.log"
+      },
+      {
+        "name": "pinned artifact legacy supplement",
+        "run": 1,
+        "skipped": 0,
+        "result": "passed",
+        "log": "optin-pinned.log"
+      }
+    ],
+    "skips": [
+      {
+        "group": "backend",
+        "test": "DatabaseBoundaryTests.test_reimport_keeps_application_rows_and_education_keys",
+        "reason": "L0_REIMPORT_TESTS=0: committed reimport is an explicit CI-only check",
+        "separately_executed_by_this_agent": false
+      },
+      {
+        "group": "backend",
+        "test": "RecommendationFlowTests.test_denied_result_insert_rolls_back_and_retry_preserves_snapshot",
+        "reason": "ISSUE31_EXCLUSIVE_ACL_TEST not enabled: requires designated exclusive database",
+        "separately_executed_by_this_agent": false
+      },
+      {
+        "group": "catalog integration",
+        "tests": [
+          "records supplement",
+          "synthetic legacy supplement",
+          "pinned artifact supplement"
+        ],
+        "reason": "WORK24_RECORDS_TEST_DATABASE_URL / WORK24_LEGACY_TEST_DATABASE_URL / WORK24_PINNED_TEST_DATABASE_URL not injected into main full-check process",
+        "separately_executed_by_this_agent": true
+      },
+      {
+        "group": "catalog integration",
+        "tests": [
+          "test_plan_then_atomic_apply_repeat_and_existing_view_preserved",
+          "test_apply_failure_rolls_back_ddl_baseline_pointer_and_grants",
+          "test_apply_requires_the_reviewed_target_and_mutation_plan",
+          "test_partial_existing_upgrade_is_rejected_without_repair",
+          "test_changed_base_metadata_is_rejected_before_ddl",
+          "test_legacy_serial_default_cannot_advance_a_base_sequence",
+          "test_corrupt_existing_pointer_is_rejected_without_repair",
+          "test_matching_relation_names_do_not_hide_schema_or_acl_drift",
+          "test_plan_is_enforced_read_only_by_postgresql",
+          "test_writer_commit_before_base_lock_is_seen_and_rejected",
+          "test_repeat_preserves_a_valid_later_batch_activation"
+        ],
+        "reason": "WORK24_UPGRADE_TEST_DATABASE_URL absent from main full-check process",
+        "separately_executed_by_this_agent": false,
+        "root_reported_separate_pass": true
+      }
+    ],
+    "other_passes": [
+      "catalog integrity/exact oracle",
+      "TypeScript",
+      "ESLint",
+      "Prettier",
+      "Ruff",
+      "production build"
+    ],
+    "prior_failures_retained": [
+      "check-attempt1.log: Ruff errors corrected by implementation owner",
+      "check-attempt2.log: duplicate test module name corrected by root"
+    ],
+    "verification_agent_source_changes": false,
+    "external_gpu_ssh_or_remote_changes_by_verification_agent": false
+  },
+  "source_evidence": {
+    "status": "user_reports_obtained_location_pending",
+    "tracking_issue": 10
+  },
+  "upgrade_specific_verification": {
+    "issue": 22,
+    "scope": "Local production-catalog upgrade regression evidence",
+    "recorded_at": "2026-11-01T04:07:57Z",
+    "evidence_kind": "Sanitized summary of completed tool runs; tests were not rerun for this summary",
+    "commit_reported_by_parent": "0b36d5c",
+    "results": [
+      {
+        "check": "Catalog unit suite",
+        "result": "PASS",
+        "tests": 44,
+        "command": "python -m unittest discover -s tools/catalog/tests -q"
+      },
+      {
+        "check": "Production catalog upgrade integration suite",
+        "result": "PASS",
+        "tests": 11,
+        "command": "python -m unittest discover -s tools/catalog/integration -p test_upgrade.py -q",
+        "database": "Isolated disposable PostgreSQL 16.14 with pgvector 0.6.0",
+        "coverage": [
+          "Read-only plan enforced by PostgreSQL",
+          "Reviewed plan binding",
+          "Atomic initial upgrade and no-op repeat",
+          "Preservation of later valid activation",
+          "Base metadata and vector verification",
+          "Partial schema rejection",
+          "Column, foreign-key, index-operator and ACL drift rejection",
+          "Transaction rollback including DDL and reader grants",
+          "Concurrent writer commit before base locking",
+          "Inherited serial-default rejection without advancing original sequence"
+        ],
+        "current_reproduction_command": "python -m unittest discover -s tools/catalog/integration -p test_catalog_upgrade.py -q",
+        "historical_test_filename_note": "The module was renamed after this dedicated run to avoid unittest discovery collision; the complete check used the current filename."
+      },
+      {
+        "check": "Repository Python Ruff scope",
+        "result": "PASS",
+        "command": "ruff check --config backend/pyproject.toml backend scripts tools/catalog"
+      },
+      {
+        "check": "Whitespace validation",
+        "result": "PASS",
+        "command": "git diff --check"
+      }
+    ],
+    "cleanup": {
+      "dedicated_container": "issue22-upgrade-test-20261101",
+      "container_and_anonymous_volumes_removed": true,
+      "test_credentials": "Synthetic credentials existed only in the deleted disposable container and transient test process environments; no credential files were created.",
+      "temporary_test_artifacts": "Python TemporaryDirectory fixtures and temporary report files were cleaned by their test contexts."
+    },
+    "production_operations": "No production connection or mutation was performed by this test agent. Production verification is recorded separately by the parent agent."
+  }
+}
