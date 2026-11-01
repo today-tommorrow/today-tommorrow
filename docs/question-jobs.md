@@ -66,8 +66,18 @@ uv run --env-file ../.env --locked python -m app.intake.worker
 
 각 질문에는 서버가 추가한 미정 선택지가 있다. 이를 고르면 서버 매핑을 적용한다. `entry_intent`는 `explore`, `field_code`는 `undecided`, 예산 슬롯은 `budget_status: "unknown"`과 `budget_krw: null`, `document_decision`은 `none`으로 저장한다. 그 밖의 슬롯은 해당 슬롯에 문자열 `"unknown"`을 저장한다. 미정 선택도 답변으로 확정되며 이후 질문 후보에서 제외된다. 질문 provider 실패를 대신하는 fallback 질문은 없다.
 
-질문 Worker는 `intake_question` 종류만 처리하며, 추천 Worker는 `recommendation`만 처리한다. 두 Worker는 같은 물리 실행 잠금을 사용한다. claim·heartbeat·완료 저장은 짧은 DB transaction으로 처리하고, 블로킹 모델 호출 동안 DB transaction은 열어 두지 않는다. DB lease와 fencing token은 오래된 Worker가 결과를 덮어쓰지 못하게 한다. 실제 물리 GPU 중단·동시성·다른 job 종류와의 스케줄 공정성은 아직 검증하지 않았다. 자료 업로드·해석은 별도 범위다. `review_token`과 추천 제출은 [추천 작업](recommendation-jobs.md)에서 처리한다. 실제 GPU 실행도 미검증이다.
+질문 Worker는 `intake_question` 종류만 처리하며, 추천 Worker는 `recommendation`만 처리한다. 두 Worker는 같은 물리 실행 잠금을 사용한다. claim·heartbeat·완료 저장은 짧은 DB transaction으로 처리하고, 블로킹 모델 호출 동안 DB transaction은 열어 두지 않는다. DB lease와 fencing token은 오래된 Worker가 결과를 덮어쓰지 못하게 한다. 실제 물리 GPU 중단·동시성·다른 job 종류와의 스케줄 공정성은 아직 검증하지 않았다. 자료 업로드·해석은 별도 범위다. `review_token`과 추천 제출은 [추천 작업](recommendation-jobs.md)에서 처리한다. 실제 질문 GPU 실행의 확인 범위는 아래 검증 기록을 따른다.
 
 공백·탭·유니코드 공백만 있는 텍스트는 초안에 보존하지만 미응답으로 다룬다. 진행 정책과 생성 문맥은 같은 답변 판정 기준을 사용하며, 이런 값은 확정 답변에 넣지 않아 해당 필수 슬롯의 질문을 생성하고 선택할 수 있다.
 
 모델 선택지와 서버 미정 선택지 모두 실제 `Answers` 스키마로 저장 전에 검사한다. 생성 단계의 검증만 통과하고 사용자가 고를 수 없는 선택지를 공개하지 않는다.
+
+## 실제 브라우저·질문 GPU 검증, 2026-11-01
+
+합성 `AuthStore` 서비스 세션과 빈 프로필로 시작해 실제 브라우저·API·PostgreSQL·NVIDIA L4의 `gemma4-checklist`를 연결했다. HTTP로 답변을 미리 채우지 않고 생성된 질문 여덟 개의 선택지를 화면에서 선택했다. 자료 없이 진행을 명시적으로 선택했고, 최종 확인 화면에서 여덟 선택 문구와 예산 상한 100000원을 확인한 뒤 추천을 제출했다. S0의 고정 revision 9에 여덟 질문·선택지 ID, 문구, 슬롯, 답변 revision이 저장된 binding과 일치하며 `budget_status=amount`, `budget_krw=100000`, `document_decision=none`도 유지됐음을 확인했다. 질문의 `origin`은 모두 `llm`이며 수정 전후 프롬프트 버전 이력은 그대로 보존했다.
+
+일곱 번째 예산 질문의 최초 실패는 `question_generation_failed`였으며 원인은 미확정이다. 이후 별도의 진단 재시도에서는 `provider_generation` 단계의 `missing_budget_amount`를 확인했다. 기존 구조화 출력 스키마가 `amount`와 금액을 독립적인 선택 필드로 허용했지만 서버 검증은 허용된 미확정 금액 companion을 요구했다. `question-0.8.0-3`은 이 문맥에서 `amount`와 0 이상 정수 금액을 함께 요구하는 응답 스키마를 사용한다. `no_limit`·`unknown`의 금액 생략/명시적 null과 확정·차단 companion의 기존 처리는 유지한다. 수정 후 실제 질문에서 0원·100000원 상한을 생성했고 100000원을 선택해 입력을 이어갔다. 실패 전 답변은 보존됐으며 실패를 성공 질문이나 임의 금액으로 대체하지 않았다.
+
+추천은 `runtime_mode=real_model`, `model_calls_performed=true`로 완료됐고 `unknown_conditions` 결과 네 개를 원자 저장했다. 파이프라인은 191223 ms, 작업은 191.273초의 단일 관측이었다. 브라우저가 저장된 결과로 자동 이동했고 실제 새로고침 뒤에도 같은 결과 URL과 네 제목을 표시했다. 두 API 조회와 DB의 공개 결과가 일치했고, 저장된 실행 입력도 S0와 일치했다. 미확인 조건은 검증된 조건으로 바꾸지 않았다.
+
+질문 Worker는 고정 이벤트에 작업 ID, 내부 처리 단계와 허용 목록의 오류 분류만 기록한다. 예외 원문·모델 출력·프롬프트·traceback은 기록하지 않으며 공개 오류는 계속 `question_generation_failed`다. 후속 main 통합 전 전체 검사는 웹 275개, 백엔드 245개(설정에 따른 1개 skip), 실행 스크립트 22개, 카탈로그 단위 18개·통합 10개와 타입·린트·포맷·빌드를 통과했다. 실제 Google OAuth, 자료 포함 경로, 질문·추천의 의미적 품질, 실행 공정성과 일반적인 안정성은 이 검증으로 확정하지 않으며 #26·#31 전체 완료도 뜻하지 않는다.
