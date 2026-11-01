@@ -13,12 +13,136 @@ import numpy as np
 CATALOG = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(CATALOG))
 
-from artifacts import load_artifacts  # noqa: E402
-from records_fixture import normalized, precomputed, record  # noqa: E402
+from artifacts import load_artifacts, value_hash  # noqa: E402
+from records_fixture import (  # noqa: E402
+    legacy_precomputed,
+    mapping_for,
+    normalized,
+    precomputed,
+    record,
+)
 from work24_records import normalize, write_package  # noqa: E402
 
 
 class Work24RecordsTests(unittest.TestCase):
+    def test_reviewed_legacy_mapping_preserves_metadata_and_all_unit_types(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            supplied = legacy_precomputed(root / "legacy")
+            manifest, courses, units, vectors, _query = load_artifacts(supplied, pinned=False)
+            parent = manifest["dataset_id"]
+            previous = {"dataset_id": parent, "courses": courses}
+            incoming = {"course_id": " legacy ", "tme": "01", "course_name": courses[0]["course_name"],
+                        "region": "Seoul", "eligibility": "Observed eligibility"}
+            result = normalized([incoming], parent=parent, previous=previous, legacy_mapping=mapping_for(supplied))
+            self.assertEqual(result["report"]["quarantined"], [])
+            course = result["courses"][0]
+            self.assertEqual((course["training_fee"], course["displayed_self_pay"], course["training_hours"]), (0, "N/A", 0))
+            self.assertEqual(course["original_csv"], courses[0]["original_csv"])
+            self.assertEqual(course["provenance"], courses[0]["provenance"])
+            self.assertEqual(course["start_date"], "2026-11-01T00:00:00")
+            self.assertEqual(course["work24"]["values"]["start_date"], "2026-11-01")
+            self.assertEqual(course["metadata"]["unmapped_fact"], "preserve")
+            self.assertEqual(course["work24"]["legacy_parent"]["metadata"], courses[0])
+            self.assertIsNone(course["work24"]["field_provenance"]["tuition_krw"]["collected_at"])
+            self.assertEqual(result["report"]["supplemented"][0]["filled_fields"], ["eligibility", "region"])
+            write_package(result, supplied, root / "output", created_on="2026-11-01")
+            output = load_artifacts(root / "output", pinned=False)
+            originals = {unit["unit_key"]: (unit, vector) for unit, vector in zip(units, vectors, strict=True)}
+            self.assertEqual(len(output[2]), 3)
+            for unit, vector in zip(output[2], output[3], strict=True):
+                old, old_vector = originals[unit["unit_key"]]
+                self.assertEqual({k: v for k, v in unit.items() if k not in ("dataset_id", "vector_row")},
+                                 {k: v for k, v in old.items() if k not in ("dataset_id", "vector_row")})
+                self.assertEqual(vector.tobytes(), old_vector.tobytes())
+            repeated = normalized([{**incoming, "region": None, "url": None}], parent="1" * 64,
+                                  previous={"dataset_id": "1" * 64, "courses": [course]})
+            write_package(repeated, supplied, root / "repeated", created_on="2026-11-01")
+            self.assertEqual(repeated["courses"][0]["work24"]["legacy_parent"], course["work24"]["legacy_parent"])
+            self.assertEqual(previous["courses"], courses)
+            for name, payload in (("records", {"records": [incoming]}), ("previous", previous),
+                                  ("mapping", mapping_for(supplied))):
+                (root / f"{name}.json").write_text(json.dumps(payload))
+            completed = subprocess.run([sys.executable, str(CATALOG / "work24_records.py"), str(root / "records.json"),
+                                        "--parent-dataset-id", parent, "--previous", str(root / "previous.json"),
+                                        "--legacy-mapping", str(root / "mapping.json"),
+                                        "--normalized-output", str(root / "normalized.json"),
+                                        "--source-hash", value_hash("first")], check=False, capture_output=True, text=True)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertEqual(json.loads((root / "normalized.json").read_text())["courses"], result["courses"])
+
+    def test_legacy_mapping_keeps_unmapped_hash_identity_and_known_conflicts_isolated(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            supplied = legacy_precomputed(Path(temporary) / "legacy")
+            manifest, courses, _units, _vectors, _query = load_artifacts(supplied, pinned=False)
+            parent = manifest["dataset_id"]
+            previous = {"dataset_id": parent, "courses": courses}
+            incoming = {"course_id": " legacy ", "tme": "01", "course_name": courses[0]["course_name"]}
+            mapping = mapping_for(supplied, [(" legacy ", "01")])
+            variants = [("no_mapping", None), ("hash_mismatch", copy.deepcopy(mapping)),
+                        ("different_identity", copy.deepcopy(mapping))]
+            variants[1][1]["offerings"][0]["metadata_sha256"] = "0" * 64
+            variants[2][1]["offerings"][0]["offering_key"][0] = "legacy"
+            for label, current in variants:
+                with self.subTest(label=label):
+                    result = normalized([incoming, record("new")], parent=parent, previous=previous, legacy_mapping=current)
+                    self.assertEqual([course["course_id"] for course in result["courses"]], ["new"])
+                    self.assertEqual(result["report"]["quarantined"][0]["reason"], "legacy_parent_requires_mapping")
+            for changes in ({"tuition_krw": 1}, {"listed_self_pay_krw": 0}, {"curriculum": "Changed"},
+                            {"start_date": "2026-11-02"}, {"cohort": "02"}):
+                with self.subTest(changes=changes):
+                    result = normalized([{**incoming, **changes}, record("new")], parent=parent,
+                                        previous=previous, legacy_mapping=mapping)
+                    self.assertEqual([course["course_id"] for course in result["courses"]], ["new"])
+                    self.assertTrue(result["report"]["quarantined"])
+            for field, value in (("version", 2), ("reviewed_by", ""), ("parent_dataset_id", "0" * 64)):
+                with self.assertRaisesRegex(ValueError, "invalid_legacy_mapping"):
+                    normalized([incoming], parent=parent, previous=previous, legacy_mapping={**mapping, field: value})
+            result = normalized([incoming], parent=parent, previous=previous, legacy_mapping=mapping)
+            result["courses"][0]["work24"]["unit_keys"].pop()
+            with self.assertRaisesRegex(ValueError, "legacy_precomputed_units_mismatch"):
+                write_package(result, supplied, Path(temporary) / "rejected", created_on="2026-11-01")
+            for changes in ({"provider_name": "Contradictory alias"}, {"metadata": []},
+                            {"start_date": "2026-11-01T01:00:00"}, {"collected_at": "invalid"}):
+                with self.subTest(legacy_changes=changes):
+                    changed = {**courses[0], **changes}
+                    reviewed = copy.deepcopy(mapping)
+                    reviewed["offerings"][0]["metadata_sha256"] = value_hash(changed)
+                    rejected = normalized([incoming], parent=parent,
+                                          previous={"dataset_id": parent, "courses": [changed]}, legacy_mapping=reviewed)
+                    self.assertEqual(rejected["courses"], [])
+                    self.assertEqual(rejected["report"]["quarantined"][0]["reason"], "legacy_parent_requires_mapping")
+            for marker in ({"legacy_parent": {}}, {"unit_keys": []}):
+                malformed = normalized([incoming], parent=parent, previous=previous, legacy_mapping=mapping)["courses"][0]
+                malformed["work24"].update(marker)
+                rejected = normalized([incoming], parent="1" * 64, previous={"dataset_id": "1" * 64, "courses": [malformed]})
+                self.assertEqual(rejected["courses"], [])
+            for field, value in (("과정 ID", "different"), ("대표 회차", "02"), ("과정명", "Different"),
+                                 ("훈련기관", "Different"), ("URL", "https://example.org/different")):
+                changed = copy.deepcopy(courses[0])
+                changed["metadata"][field] = value
+                reviewed = copy.deepcopy(mapping)
+                reviewed["offerings"][0]["metadata_sha256"] = value_hash(changed)
+                rejected = normalized([incoming], parent=parent, previous={"dataset_id": parent, "courses": [changed]},
+                                      legacy_mapping=reviewed)
+                self.assertEqual(rejected["courses"], [], field)
+            for bad_parent in (None, "invalid", "A" * 64):
+                changed = normalized([incoming], parent=parent, previous=previous, legacy_mapping=mapping)["courses"][0]
+                changed["work24"]["legacy_parent"]["mapping"]["parent_dataset_id"] = bad_parent
+                rejected = normalized([incoming], parent="1" * 64, previous={"dataset_id": "1" * 64, "courses": [changed]})
+                self.assertEqual(rejected["courses"], [])
+            for field, value in (("eligibility", "Forged eligibility"), ("tuition_krw", 99), ("region", "Forged region")):
+                changed = normalized([{**incoming, "eligibility": "Known requirement"}], parent=parent,
+                                     previous=previous, legacy_mapping=mapping)["courses"][0]
+                changed["work24"]["values"][field] = value
+                changed["work24"]["field_provenance"][field] = changed["work24"]["sources"][0]
+                rejected = normalized([incoming], parent="1" * 64, previous={"dataset_id": "1" * 64, "courses": [changed]})
+                self.assertEqual(rejected["courses"], [], field)
+            changed = normalized([incoming], parent=parent, previous=previous, legacy_mapping=mapping)["courses"][0]
+            changed["work24"]["field_provenance"]["tuition_krw"] = changed["work24"]["sources"][-1]
+            rejected = normalized([incoming], parent="1" * 64, previous={"dataset_id": "1" * 64, "courses": [changed]})
+            self.assertEqual(rejected["courses"], [])
+
     def test_order_independent_exact_ids_and_provenance(self) -> None:
         rows = [record(" 00A ", cohort="001", extra_optional={"a": 1}), record("a", cohort="01")]
         first = normalized(rows)

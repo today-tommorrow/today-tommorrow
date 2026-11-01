@@ -23,6 +23,77 @@ FIELDS = ("course_name", "provider_name", "region", "start_date", "end_date", "t
           "tuition_krw", "listed_self_pay_krw", "curriculum", "eligibility", "url")
 IDENTITIES = ("course_id", "tme", "cohort", "offering_id")
 NA = ("N/A", "not_applicable")
+LEGACY_PATHS = {field: (field,) for field in FIELDS + IDENTITIES}
+LEGACY_PATHS.update(provider_name=("institution",), tuition_krw=("training_fee",),
+                    listed_self_pay_krw=("displayed_self_pay",),
+                    eligibility=("metadata", "훈련대상요건"))
+
+
+def legacy_mappings(mapping: dict | None, parent: str) -> dict:
+    """Explicit review records bind one documented mapping to exact parent metadata/units."""
+    if mapping is None:
+        return {}
+    require(isinstance(parent, str) and re.fullmatch(r"[a-f0-9]{64}", parent) is not None
+            and isinstance(mapping, dict) and mapping.get("version") == 1
+            and mapping.get("profile") == "work24_catalog_v1"
+            and mapping.get("parent_dataset_id") == parent
+            and isinstance(mapping.get("reviewed_by"), str) and bool(mapping["reviewed_by"].strip())
+            and isinstance(mapping.get("offerings"), list), "invalid_legacy_mapping")
+    result = {}
+    for item in mapping["offerings"]:
+        require(isinstance(item, dict), "invalid_legacy_mapping")
+        key, units = item.get("offering_key"), item.get("unit_keys")
+        require(isinstance(key, list) and len(key) == 2 and all(isinstance(v, str) and v for v in key)
+                and isinstance(item.get("metadata_sha256"), str)
+                and re.fullmatch(r"[a-f0-9]{64}", item["metadata_sha256"]) is not None
+                and isinstance(units, list) and bool(units)
+                and all(isinstance(v, str) and re.fullmatch(r"[a-f0-9]{64}", v) is not None for v in units)
+                and len(set(units)) == len(units) and tuple(key) not in result, "invalid_legacy_mapping")
+        result[tuple(key)] = {**copy.deepcopy(item), "unit_keys": sorted(units),
+                              "profile": mapping["profile"], "reviewed_by": mapping["reviewed_by"],
+                              "parent_dataset_id": parent}
+    return result
+
+
+def legacy_values(old: dict, key: tuple[str, str]) -> dict:
+    values = {}
+    require(old.get("metadata") is None or isinstance(old["metadata"], dict), "invalid_legacy_metadata")
+    for field, path in LEGACY_PATHS.items():
+        value = old
+        for part in path:
+            value = value.get(part) if isinstance(value, dict) else None
+        # The reviewed legacy profile represents these exact midnight timestamps as dates.
+        if field in ("start_date", "end_date") and isinstance(value, str) and len(value) != 10 and value not in NA:
+            parsed = datetime.fromisoformat(value)
+            require(parsed.time().isoformat() == "00:00:00" and parsed.tzinfo is None, "invalid_legacy_date")
+            value = parsed.date().isoformat()
+        require(old.get(field) is None or path == (field,) or canonical(old[field]) == canonical(value),
+                "conflicting_legacy_alias")
+        values[field] = value
+    aliases = {"course_id": "과정 ID", "tme": "대표 회차", "course_name": "과정명",
+               "provider_name": "훈련기관", "url": "URL"}
+    for container in (old.get("metadata"), old.get("original_csv")):
+        if isinstance(container, dict):
+            for field, alias in aliases.items():
+                require(container.get(alias) is None or canonical(values[field]) == canonical(container[alias]),
+                        "conflicting_legacy_alias")
+    validate_record(values)
+    require(source_key(values) == key, "invalid_source_identity")
+    return values
+
+
+def legacy_history(old: dict, key: tuple[str, str], mapping: dict | None) -> dict | None:
+    if mapping is None or mapping["metadata_sha256"] != value_hash(old):
+        return None
+    try:
+        values = legacy_values(old, key)
+        source = provenance(old.get("source_hash"), old.get("collected_at"))
+    except (ValueError, TypeError, OverflowError):
+        return None
+    return {"values": values, "raw_json": [{"legacy_metadata": copy.deepcopy(old), **source}],
+            "field_provenance": {field: source for field, value in values.items() if value is not None},
+            "sources": [source], "legacy_parent": {"metadata": copy.deepcopy(old), "mapping": mapping},
+            "unit_keys": mapping["unit_keys"]}
 
 
 def provenance(source_hash: str | None, collected_at: str | None) -> dict:
@@ -80,7 +151,7 @@ def merge_values(previous: dict, incoming: dict) -> tuple[dict, list[str]]:
     return merged, conflicts
 
 
-def has_adapter_history(history: object, key: tuple[str, str]) -> bool:
+def has_adapter_history(history: object, key: tuple[str, str], course: dict | None = None) -> bool:
     """Recognize stored adapter values before they can authorize supplementation."""
     if not (isinstance(history, dict)
             and isinstance(history.get("values"), dict)
@@ -98,6 +169,23 @@ def has_adapter_history(history: object, key: tuple[str, str]) -> bool:
         validate_record(values)
         if source_key(values) != key:
             return False
+        if "legacy_parent" in history or "unit_keys" in history:
+            legacy = history.get("legacy_parent")
+            if not isinstance(legacy, dict) or not isinstance(legacy.get("metadata"), dict) or not isinstance(legacy.get("mapping"), dict):
+                return False
+            mapping = legacy["mapping"]
+            checked = legacy_mappings({**mapping, "version": 1, "offerings": [mapping]}, mapping.get("parent_dataset_id"))
+            if (key not in checked or checked[key]["metadata_sha256"] != value_hash(legacy["metadata"])
+                    or history.get("unit_keys") != checked[key]["unit_keys"]
+                    or source_key(legacy["metadata"]) != key):
+                return False
+            if (course is None or legacy_values(course, key) != values
+                    or merge_values(legacy_values(legacy["metadata"], key), values)[1]
+                    or sources[0] != provenance(legacy["metadata"].get("source_hash"), legacy["metadata"].get("collected_at"))
+                    or provenance(course.get("source_hash"), course.get("collected_at")) != sources[0]
+                    or any(history["field_provenance"].get(field) != sources[0]
+                           for field, value in legacy_values(legacy["metadata"], key).items() if value is not None)):
+                return False
         for source in sources:
             if source != provenance(source.get("source_hash"), source.get("collected_at")):
                 return False
@@ -108,25 +196,35 @@ def has_adapter_history(history: object, key: tuple[str, str]) -> bool:
         return False
 
 
-def course_metadata(values: dict, raw: list[dict], field_sources: dict, sources: list[dict]) -> dict:
+def course_metadata(values: dict, raw: list[dict], field_sources: dict, sources: list[dict],
+                    old: dict | None = None, history: dict | None = None) -> dict:
     key = source_key(values)
     require(key is not None, "missing_source_identity")
-    return {**values, "course_id": key[0], "tme": key[1], "institution": values["provider_name"],
+    result = {**values, "course_id": key[0], "tme": key[1], "institution": values["provider_name"],
             "training_fee": values["tuition_krw"], "displayed_self_pay": values["listed_self_pay_krw"],
             "metadata": {"훈련대상요건": values["eligibility"]},
             # A supplemented row is not a recollection of the carried fields.
             **sources[0], "work24": {"values": values, "raw_json": raw,
                                      "field_provenance": field_sources, "sources": sources}}
+    if history and "legacy_parent" in history:
+        # Retain every observed legacy field, nested metadata and original date spelling.
+        result = {**copy.deepcopy(old), **{field: value for field, value in result.items()
+                                         if old.get(field) is None or field in ("metadata", "work24")}}
+        result["metadata"] = {**copy.deepcopy(old.get("metadata") or {}),
+                              "훈련대상요건": values["eligibility"]}
+        result["work24"].update({field: copy.deepcopy(history[field]) for field in ("legacy_parent", "unit_keys")})
+    return result
 
 
 def normalize(payload: dict, *, source_hash: str | None, collected_at: str | None,
-              parent_dataset_id: str, previous: dict | None = None) -> dict:
+              parent_dataset_id: str, previous: dict | None = None, legacy_mapping: dict | None = None) -> dict:
     """Return accepted complete replacements and isolated reports, without I/O or inference."""
     source = provenance(source_hash, collected_at)
     require(isinstance(parent_dataset_id, str) and re.fullmatch(r"[a-f0-9]{64}", parent_dataset_id) is not None,
             "invalid_parent_dataset")
     require(isinstance(payload, dict) and isinstance(payload.get("records"), list)
             and bool(payload["records"]) and all(isinstance(row, dict) for row in payload["records"]), "invalid_records_array")
+    mappings = legacy_mappings(legacy_mapping, parent_dataset_id)
     prior = {}
     if previous is not None:
         require(previous.get("dataset_id") == parent_dataset_id, "previous_parent_mismatch")
@@ -174,14 +272,18 @@ def normalize(payload: dict, *, source_hash: str | None, collected_at: str | Non
                {field: rows[0].get(field) for field in FIELDS + IDENTITIES} for row in rows[1:]):
             conflicts.add("duplicate_observation")
         old = prior.get(key)
-        raw_history, sources, field_sources = [], [], {}
+        raw_history, sources, field_sources, history = [], [], {}, None
         if old:
             history = old.get("work24")
-            if not has_adapter_history(history, key):
+            if not has_adapter_history(history, key, old):
+                history = legacy_history(old, key, mappings.get(key))
+            if history is None or not has_adapter_history(history, key, old):
                 isolated.append({"offering_key": list(key), "reason": "legacy_parent_requires_mapping", "raw_json": rows})
                 continue
             values, differences = merge_values(history["values"], values)
             conflicts.update(differences)
+            if "legacy_parent" in history and history["values"]["curriculum"] is None and values["curriculum"] is not None:
+                conflicts.add("curriculum")
             raw_history = copy.deepcopy(history["raw_json"])
             sources = copy.deepcopy(history["sources"])
             field_sources = copy.deepcopy(history["field_provenance"])
@@ -194,11 +296,11 @@ def normalize(payload: dict, *, source_hash: str | None, collected_at: str | Non
                 field_sources[field] = source
         raw_history += [{"record": row, **source} for row in rows]
         sources = list({canonical(item): item for item in sources + [source]}.values())
-        courses.append(course_metadata(values, raw_history, field_sources, sources))
+        courses.append(course_metadata(values, raw_history, field_sources, sources, old, history))
         parent_records.append({"offering_key": list(key), "metadata_sha256": value_hash(old) if old else None})
         if old:
             supplemented.append({"offering_key": list(key), "parent_dataset_id": parent_dataset_id,
-                                 "filled_fields": sorted(field for field in FIELDS if old["work24"]["values"].get(field) is None and values[field] is not None)})
+                                 "filled_fields": sorted(field for field in FIELDS if history["values"].get(field) is None and values[field] is not None)})
     # Invalid/conflicting entries must never remain in partial replacement coverage.
     blocked = {tuple(item["offering_key"]) for item in isolated if item["offering_key"] is not None}
     courses = [course for course in courses if (course["course_id"], course["tme"]) not in blocked]
@@ -231,10 +333,24 @@ def write_package(normalized: dict, precomputed: Path, output: Path, *, created_
     import numpy as np
 
     date.fromisoformat(created_on)
-    manifest, _courses, supplied, vectors, query = load_artifacts(precomputed, pinned=False)
+    manifest, supplied_courses, supplied, vectors, query = load_artifacts(precomputed, pinned=False)
     courses = normalized["courses"]
     require(bool(courses), "no_publishable_offerings")
-    expected = {unit["unit_key"]: unit for course in courses for unit in unit_templates(course)}
+    expected = {}
+    supplied_metadata = {(course["course_id"], course["tme"]): course for course in supplied_courses}
+    for course in courses:
+        history = course["work24"]
+        if "legacy_parent" in history:
+            key = (course["course_id"], course["tme"])
+            legacy = history["legacy_parent"]
+            require(legacy["mapping"]["metadata_sha256"] == value_hash(legacy["metadata"])
+                    and supplied_metadata.get(key) == legacy["metadata"], "legacy_precomputed_metadata_mismatch")
+            carried = {unit["unit_key"]: unit for unit in supplied if (unit["course_id"], unit["tme"]) == key}
+            require(set(carried) == set(history["unit_keys"]) == set(legacy["mapping"]["unit_keys"]),
+                    "legacy_precomputed_units_mismatch")
+            expected.update(carried)
+        else:
+            expected.update({unit["unit_key"]: unit for unit in unit_templates(course)})
     by_key = {unit["unit_key"]: unit for unit in supplied}
     require(expected.keys() <= by_key.keys(), "missing_precomputed_vectors")
     for key, unit in expected.items():
@@ -277,6 +393,7 @@ def main() -> None:
     parser.add_argument("--source-hash")
     parser.add_argument("--collected-at")
     parser.add_argument("--previous", type=Path)
+    parser.add_argument("--legacy-mapping", type=Path)
     parser.add_argument("--normalized-output", type=Path, required=True)
     parser.add_argument("--precomputed", type=Path)
     parser.add_argument("--package-output", type=Path)
@@ -285,7 +402,8 @@ def main() -> None:
     require(bool(args.precomputed) == bool(args.package_output) == bool(args.created_on), "incomplete_package_arguments")
     normalized = normalize(json.loads(args.records.read_text()), source_hash=args.source_hash,
                            collected_at=args.collected_at, parent_dataset_id=args.parent_dataset_id,
-                           previous=json.loads(args.previous.read_text()) if args.previous else None)
+                           previous=json.loads(args.previous.read_text()) if args.previous else None,
+                           legacy_mapping=json.loads(args.legacy_mapping.read_text()) if args.legacy_mapping else None)
     normalized["report"]["previous_file_sha256"] = file_hash(args.previous) if args.previous else None
     args.normalized_output.write_text(canonical(normalized) + "\n", encoding="utf-8")
     if args.precomputed:
