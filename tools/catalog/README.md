@@ -2,6 +2,8 @@
 
 See the [batch activation guide](../../docs/catalog-batches.md) for additional Work24 batches, atomic activation, history, and pinned recommendations. The fixed bootstrap package remains supported and never resets an existing active pointer.
 
+For supplied `records` JSON, see the [records adapter guide](../../docs/work24-records.md): exact source identities, null-only supplementation, offering quarantine, and verified precomputed-vector admission.
+
 고정된 실제 과정 406개·교육 단위 6,099개·기존 float32 1024차원 벡터를 로컬 PostgreSQL 16/pgvector 0.6.0에 넣고 검증한다. 모델 호출·GPU·재임베딩은 사용하지 않는다. 이 프로젝트의 의존성은 앱과 별도 `.venv` 및 `uv.lock`으로 관리한다.
 
 일반 사용은 저장소의 `./setup`과 `./check`가 맡는다. 아래 명령은 저장소 루트에서 실행하는 개별 진단이다. `<python>`은 저장소 `.python-version`에 해당하는 인터프리터 경로로 바꾼다.
