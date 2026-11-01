@@ -46,6 +46,8 @@ manifest의 artifact hash·설정/profile hash·dataset hash, 과정/단위 개�
 
 ## 원본과 수정 근거
 
+[Work24 패키지 출처 기록](../../docs/work24-provenance.md)은 원 URL·입력 추적·결측과 아직 확인하지 못한 수집·이용허락 근거를 구분한다.
+
 - 원본: `https://github.com/seven2762/tdtemp/tree/043f8b8e96620994aff06b0edc2d235f793f0b5a`
 - ZIP SHA256: `c6cd4618bc4b9fcca925161ee09ed683faf77f8ebf45cfa5831bb6bffdbaeb8e`.
 - 원본 `schema.sql`, `index.sql`은 같은 교육 스키마 계약으로 재사용했다.

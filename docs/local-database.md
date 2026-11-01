@@ -40,6 +40,8 @@ bootstrap이 역할과 `today_app` namespace를 먼저 준비한다. Alembic은 
 
 ## 고정 교육 패키지
 
+[Work24 출처·수집 근거·이용허락 미확인 범위](work24-provenance.md)를 함께 확인한다. 패키지 무결성 검증은 원천 사용·재배포 허락의 검증을 대신하지 않는다.
+
 | 항목 | 값 |
 | --- | --- |
 | 원본 | `seven2762/tdtemp`, commit `043f8b8e96620994aff06b0edc2d235f793f0b5a` |
