@@ -398,9 +398,13 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       },
       pollAfterMs,
     ).catch(async (cause: unknown) => {
-      if (terminalFailure && !signal.aborted) {
+      const missingJob = cause instanceof ApiError && cause.status === 404
+      if ((terminalFailure || missingJob) && !signal.aborted) {
         await refresh(signal)
-        if (!signal.aborted) rememberJob(null)
+        if (!signal.aborted) {
+          if (missingJob) keys.current.clear()
+          rememberJob(null)
+        }
       }
       throw cause
     })
@@ -944,6 +948,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     !!profile.review_token &&
     profile.unresolved_conflicts.length === 0 &&
     profile.documents.every((item) => item.status === 'ready') &&
+    pendingJob === null &&
     reviewRevision === null &&
     pendingDocument === null &&
     pendingDeletion === null
@@ -1096,13 +1101,32 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           </button>
         )}
         {pendingJob && !busy && !pendingDocument && (
-          <button
-            onClick={() =>
-              void perform((signal) => finishJob(pendingJob, signal))
-            }
-          >
-            진행 중이던 작업 확인
-          </button>
+          <div className="actions">
+            <button
+              onClick={() =>
+                void perform((signal) => finishJob(pendingJob, signal))
+              }
+            >
+              진행 중이던 작업 확인
+            </button>
+            {job?.kind === 'recommendation' &&
+              job.id === pendingJob &&
+              ['queued', 'running'].includes(job.status) && (
+                <button
+                  onClick={() =>
+                    void perform(async (signal) => {
+                      await request<Job>(
+                        `/jobs/${encodeURIComponent(pendingJob)}/cancel`,
+                        { method: 'POST', signal },
+                      )
+                      await finishJob(pendingJob, signal)
+                    })
+                  }
+                >
+                  서버 추천 작업 취소
+                </button>
+              )}
+          </div>
         )}
         {profile.intake_state.active_question_id && !question && (
           <div className="stack">
@@ -1674,7 +1698,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             확인하고 교육 추천 받기
           </button>
           {!canSubmit && (
-            <p>확인이 필요한 입력이나 자료를 먼저 처리해 주세요.</p>
+            <p>
+              {pendingJob
+                ? '진행 중이던 작업 상태를 먼저 확인해 주세요.'
+                : '확인이 필요한 입력이나 자료를 먼저 처리해 주세요.'}
+            </p>
           )}
         </section>
       )}

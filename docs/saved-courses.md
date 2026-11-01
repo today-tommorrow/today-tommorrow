@@ -4,7 +4,9 @@
 
 로그인한 계정의 관심 교육 저장·목록·해제를 구현한다. 원본 `work24_bge`는 읽기만 하고, 관심 정보는 `today_app.saved_courses`에 저장한다. 모델과 GPU는 사용하지 않는다. 자료 없는 실제 교육 패키지와 PostgreSQL로 검증할 수 있다.
 
-`./setup`으로 원본 패키지와 개발 DB를 준비하고 Alembic `0007_saved_courses`까지 적용한다. 기존 DB는 migration 계정으로 `uv run --locked alembic upgrade head`를 backend에서 실행한다. 새 migration은 main의 `0006_answer_history_index` 다음이다. 별도 개발 브랜치의 recommendation migration과 합칠 때는 Alembic의 복수 head를 명시적으로 병합해야 하며, 이 PR에 추천 기능을 포함하지 않는다.
+`./setup`으로 원본 패키지와 개발 DB를 준비하고 Alembic `0008_merge_saved_recommendations`까지 적용한다. 기존 DB는 migration 계정의 `MIGRATION_DATABASE_URL`을 설정한 뒤 backend에서 `uv run --locked alembic upgrade head`를 실행한다. `0007_saved_courses`와 main의 `0007_recommendation_runs`는 모두 `0006_answer_history_index`에서 분기하며, `0008_merge_saved_recommendations`가 두 경로를 스키마 변경 없이 병합한다.
+
+이미 `0007_saved_courses`를 적용한 DB에서는 같은 명령이 추천 migration만 추가 적용하고 기존 관심 교육을 보존한다. `0007_recommendation_runs`를 적용한 DB에서는 관심 교육 migration을 추가 적용한다. 새 DB에서는 두 migration을 모두 적용한다. 기존 revision을 수정하거나 DB를 다시 만들거나 `stamp`로 건너뛰지 않는다. 적용 후 `uv run --locked alembic current`와 `uv run --locked alembic heads`가 모두 단일 head `0008_merge_saved_recommendations`를 가리키는지 확인한다.
 
 ## 계약
 
@@ -62,6 +64,8 @@ uv run --locked ruff check . ../scripts ../tools/catalog
 12개 집중 검사가 실제 PostgreSQL 16.14/pgvector 0.6.0과 고정 원본 406개 과정/6,099개 단위에서 통과했다. 합성 인증 세션으로 실제 인증·CSRF를 거쳐 저장/재조회/해제를 검사했다. 동시 PUT, 원본 ID 보존, 다른 계정 분리, 누락/변조 cursor, 동점 keyset, 페이지 중 저장/해제, 카탈로그 교체와 사라진 과정 snapshot, 원본 서비스 실패도 포함한다. 교체 검사는 테스트 관리자만 원본을 잠시 변경하고 복구한다; 서비스 계정에는 원본 쓰기 권한이 없다.
 
 2026-11-01 통합 `./check`가 통과했다. 웹 250개, backend 145개 실행(명시적 CI 전용 재적재 검사 1개 제외), 실행 도구 22개, catalog 단위 11개, catalog 통합 4개를 검사했다. TypeScript·ESLint·Prettier·Ruff·웹 build도 통과했다. 제외된 `DatabaseBoundaryTests.test_reimport_keeps_application_rows_and_education_keys`는 표준 `./check`가 `L0_REIMPORT_TESTS=0`으로 지정하는 검사다.
+
+이후 main `b43249d`를 합치면서 `App.flow`의 관심 목록 fixture를 `SavedCoursePage` 계약에 맞췄다. `App.flow`, 관심 교육 기본·페이지 이동, 교육 기본·카탈로그, 추천 제출 UI 검사가 통과했고 TypeScript, fixture ESLint·Prettier, backend 설정을 사용한 Ruff도 통과했다. Alembic의 단일 head와 병합 revision의 스키마 변경 부재, 두 기능의 모델 metadata·API 경로 등록을 확인했다.
 
 별도 실제 uvicorn HTTP 요청 47개로 반복·동시 PUT, DELETE, 계정 격리, 인증·CSRF, 오류 상태, keyset 페이지, 카탈로그 교체와 snapshot 복구를 확인했다. 검사 후 원본 카탈로그 버전과 fingerprint를 복구했다. 실행 환경은 Python 3.14.6, Node 26.5.0, npm 11.17.0, uv 0.12.5, PostgreSQL 16.14, pgvector 0.6.0이다.
 

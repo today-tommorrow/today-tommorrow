@@ -16,6 +16,9 @@ from app.intake.routes import ProfileError, profile_error_handler
 from app.intake.routes import router as intake_router
 from app.jobs.routes import JobHTTPError, job_error_handler
 from app.jobs.routes import router as jobs_router
+from app.recommendations.routes import recommendation_error_handler
+from app.recommendations.routes import router as recommendation_router
+from app.recommendations.service import RecommendationServiceError
 from app.saved_courses.routes import SavedCourseError, error_handler
 from app.saved_courses.routes import router as saved_router
 
@@ -28,6 +31,8 @@ app.add_exception_handler(QuestionServiceError, question_error_handler)
 app.include_router(question_router)
 app.add_exception_handler(JobHTTPError, job_error_handler)
 app.include_router(jobs_router)
+app.add_exception_handler(RecommendationServiceError, recommendation_error_handler)
+app.include_router(recommendation_router)
 app.add_exception_handler(SavedCourseError, error_handler)
 app.include_router(saved_router)
 

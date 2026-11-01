@@ -114,6 +114,24 @@ afterEach(() => {
 })
 
 describe('추천 결과와 참여 조건 표시', () => {
+  it('근거 확인 시점이 없으면 추천 기준일로 대신 표시하지 않는다', async () => {
+    respond({
+      ...run,
+      items: [
+        { ...item, evidence: [{ ...item.evidence[0], checked_at: null }] },
+      ],
+    })
+    render(<Results runId={runId} />)
+    await screen.findByRole('heading', { name: item.course.name })
+    fireEvent.click(screen.getByText('추천 근거 확인'))
+    const evidence = screen.getByText('합성 교육 원문 근거').closest('li')!
+    expect(
+      within(evidence).getByText(/work24 · observed · 미확인/),
+    ).toBeTruthy()
+    expect(within(evidence).queryByText(run.as_of)).toBeNull()
+    expect(screen.getByText(`추천 기준일: ${run.as_of}`)).toBeTruthy()
+  })
+
   it('서버의 충족·미확인·해당 없음을 구분하고 근거·기준 시점을 보존한다', async () => {
     respond(run)
     render(<Results runId={runId} />)
@@ -131,9 +149,7 @@ describe('추천 결과와 참여 조건 표시', () => {
       screen.getByText('미확인 조건은 교육 원문에서 확인해 주세요.'),
     ).toBeTruthy()
     expect(screen.getByText('서버가 제공한 합성 추천 이유')).toBeTruthy()
-    expect(
-      screen.getByText('교육 정보 기준: 2026-10-31T00:00:00Z'),
-    ).toBeTruthy()
+    expect(screen.getByText('추천 기준일: 2026-10-31T00:00:00Z')).toBeTruthy()
     expect(screen.getByText('미확인 항목: listed_self_pay_krw')).toBeTruthy()
     fireEvent.click(screen.getByText('추천 근거 확인'))
     expect(screen.getByText('합성 교육 원문 근거')).toBeTruthy()

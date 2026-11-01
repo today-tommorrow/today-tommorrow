@@ -578,7 +578,7 @@ class JobStoreTests(unittest.TestCase):
             ("user_id", other_id),
             ("attempt", -1),
             ("profile_revision", -1),
-            ("kind", "recommendation"),
+            ("kind", "document_processing"),
             ("document_id", uuid4()),
             ("status", "unknown"),
         ):

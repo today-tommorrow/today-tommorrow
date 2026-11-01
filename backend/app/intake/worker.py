@@ -13,6 +13,7 @@ from app.intake import store
 from app.intake.question_config import QuestionSettings
 from app.intake.question_service import save_question
 from app.jobs import store as jobs
+from app.jobs.execution import execution_slot
 
 
 class LostLease(Exception):
@@ -26,6 +27,17 @@ def utcnow():
 def run_once(
     factory, provider, *, lease_seconds: int = 120, max_attempts: int = 3
 ) -> bool:
+    with execution_slot(factory) as acquired:
+        if not acquired:
+            return False
+        return _run_once(
+            factory, provider, lease_seconds=lease_seconds, max_attempts=max_attempts
+        )
+
+
+def _run_once(
+    factory, provider, *, lease_seconds: int = 120, max_attempts: int = 3
+) -> bool:
     with factory() as db, db.begin():
         claim = jobs.claim(
             db,
@@ -33,6 +45,7 @@ def run_once(
             lease_seconds=lease_seconds,
             max_attempts=max_attempts,
             clock=utcnow,
+            kind="intake_question",
         )
     if claim is None:
         return False
