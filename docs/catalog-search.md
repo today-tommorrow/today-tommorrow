@@ -63,6 +63,8 @@ The probe has no automatic demonstration query or saved-vector fallback. It prin
 
 ## Verification and remaining integration
 
+For fixed relevance expectations and separate missing/false-positive/duplicate/empty diagnostics, use the [Work24 search evaluation tool](catalog-search-evaluation.md). Its synthetic checks validate evaluator behavior; live BGE quality requires an explicit, separately recorded evaluation run.
+
 Run `python -m unittest discover -s tests -p 'test_catalog_search.py' -v` from `backend`. Pure tests cover aggregation before limit, multiple offerings, ties/negative scores, UUID boundaries, nullable cost, inferred provenance, unknown conditions, explicit dates, incompatible profile/tokenizer settings, identity mismatch and verbatim model inputs. With the existing guarded disposable local database variables and `L0_DATABASE_TESTS=1`, additional tests compare all-course exact ordering with an independent SQL aggregate, bound evidence and inspect real connection/read-only transaction boundaries. These checks use real stored corpus vectors as a retrieval oracle, not as a live query-generation substitute.
 
 On 2026-11-01, the combined change at `e25504c2316f3691573e1ad39f0828bfa259cf4e` passed Ruff and all **164 backend tests with no skips**, using an isolated PostgreSQL 16.14/pgvector 0.6.0 database. This includes 18 catalog tests and 13 HTTP embedding tests. The four existing catalog integration tests also passed, including source write-permission protection and reimport verification. The application dependencies remain locked; no NumPy dependency was added to the backend.

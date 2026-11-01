@@ -1,0 +1,335 @@
+{
+  "schema_version": 1,
+  "id": "work24-search-evaluation",
+  "version": "1.0.0",
+  "description": "Precommitted partial relevance expectations for the Work24/BGE exact search corpus. Seven title probes, Korean paraphrases, mixed English/Korean terms, and explicitly unjudged diagnostic goals. No exhaustive relevance, false-positive, or zero-result claim.",
+  "catalog": {
+    "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+    "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+  },
+  "provenance": {
+    "judgments_frozen_on": "2026-11-01",
+    "method": "Source course titles and minimal curriculum facts reviewed before running these queries. Expectations are fixed independently of retrieval output. No model-generated relevance labels are used.",
+    "source_package_sha256": "c6cd4618bc4b9fcca925161ee09ed683faf77f8ebf45cfa5831bb6bffdbaeb8e",
+    "source_courses_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+    "source_units_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+    "source_retention": "Only minimal course IDs, public title facts and curriculum keywords are retained. Source-package redistribution permission has not been established; no raw source records, full curriculum, embeddings or vectors are included.",
+    "expected_courses": [
+      {
+        "id": "AIG20250000539886",
+        "title": "[완전정복] 패킷 트레이서를 활용한 네트워크 관리와 보안 끝장내기",
+        "basis": "스위치·라우터 보안, SSH, VLAN curriculum"
+      },
+      {
+        "id": "AIG20250000539889",
+        "title": "파이썬과 머신러닝을 활용한 반도체 제조 공정 데이터 분석",
+        "basis": "pandas, 회귀, 반도체 공정 데이터 curriculum"
+      },
+      {
+        "id": "AIG20260000545806",
+        "title": "구글 AI로 시작하는 실전 프로토타이핑",
+        "basis": "생성형 AI, Google Apps Script 자동화 curriculum"
+      },
+      {
+        "id": "ABA20263001502338",
+        "title": "[인재키움] 기업 절세 전략 수립을 위한 법인세 문제해결 실무(찾아가는 훈련)",
+        "basis": "법인세 신고, 세무 curriculum"
+      },
+      {
+        "id": "ABA20263001500869",
+        "title": "노동법 A to Z 근로계약부터 인사관리까지 핵심 총정리",
+        "basis": "근로계약, 인사관리 curriculum"
+      },
+      {
+        "id": "ACG20263001254427",
+        "title": "산업안전기사 필수핵심 필기1 (산업재해, 인간공학, 기계·기구)",
+        "basis": "산업재해 예방, 기계안전 curriculum"
+      },
+      {
+        "id": "AIG20240000498079",
+        "title": "[정보보안] 취약점분석 등 정보보안 전문가 취업캠프",
+        "basis": "정보보안, 보안로그 분석 curriculum; timetable is not established"
+      }
+    ],
+    "limitations": [
+      "Partial known-positive judgments do not define the full relevant corpus.",
+      "No negative course judgments are preconfirmed in this version; a zero false-positive count means no explicitly labeled negatives were returned, not perfect precision.",
+      "Unjudged broad, similar-topic and potentially absent-topic cases are independent review probes.",
+      "No expected_empty assertion is made without source-wide ground truth.",
+      "Recruitment status, personal eligibility, cost and timetable are not established by semantic relevance."
+    ],
+    "review_protocol": "Review minimal source curriculum evidence against the stated intent before looking at ranks where practical. Add positive/negative labels only with a recorded reason, preserve ambiguous results as unjudged, increment the dataset version, record the new byte hash, and retain earlier artifacts. Never label candidates merely because they were retrieved."
+  },
+  "cases": [
+    {
+      "id": "exact-title-network",
+      "query": "[완전정복] 패킷 트레이서를 활용한 네트워크 관리와 보안 끝장내기",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20250000539886"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20250000539886. Basis: 스위치·라우터 보안, SSH, VLAN curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "exact-title-semiconductor",
+      "query": "파이썬과 머신러닝을 활용한 반도체 제조 공정 데이터 분석",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20250000539889"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20250000539889. Basis: pandas, 회귀, 반도체 공정 데이터 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "exact-title-automation",
+      "query": "구글 AI로 시작하는 실전 프로토타이핑",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20260000545806"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20260000545806. Basis: 생성형 AI, Google Apps Script 자동화 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "exact-title-tax",
+      "query": "[인재키움] 기업 절세 전략 수립을 위한 법인세 문제해결 실무(찾아가는 훈련)",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "ABA20263001502338"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: ABA20263001502338. Basis: 법인세 신고, 세무 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "exact-title-labor",
+      "query": "노동법 A to Z 근로계약부터 인사관리까지 핵심 총정리",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "ABA20263001500869"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: ABA20263001500869. Basis: 근로계약, 인사관리 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "exact-title-safety",
+      "query": "산업안전기사 필수핵심 필기1 (산업재해, 인간공학, 기계·기구)",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "ACG20263001254427"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: ACG20263001254427. Basis: 산업재해 예방, 기계안전 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "exact-title-security",
+      "query": "[정보보안] 취약점분석 등 정보보안 전문가 취업캠프",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20240000498079"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20240000498079. Basis: 정보보안, 보안로그 분석 curriculum; timetable is not established. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted."
+      }
+    },
+    {
+      "id": "korean-network-paraphrase",
+      "query": "스위치와 라우터의 보안을 설정하고 네트워크를 관리하는 방법을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20250000539886"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20250000539886. Basis: 스위치·라우터 보안, SSH, VLAN curriculum. This is one expected course, not the exhaustive relevant set. "
+      }
+    },
+    {
+      "id": "korean-semiconductor-paraphrase",
+      "query": "반도체 제조 공정에서 나온 데이터를 파이썬으로 분석하고 회귀 모형을 만들고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20250000539889"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20250000539889. Basis: pandas, 회귀, 반도체 공정 데이터 curriculum. This is one expected course, not the exhaustive relevant set. "
+      }
+    },
+    {
+      "id": "korean-labor-paraphrase",
+      "query": "근로계약서를 작성하고 직원 인사관리에 필요한 노동법을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "ABA20263001500869"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: ABA20263001500869. Basis: 근로계약, 인사관리 curriculum. This is one expected course, not the exhaustive relevant set. "
+      }
+    },
+    {
+      "id": "mixed-network-terms",
+      "query": "Packet Tracer로 VLAN과 SSH를 설정하는 네트워크 보안 실습",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20250000539886"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20250000539886. Basis: 스위치·라우터 보안, SSH, VLAN curriculum. This is one expected course, not the exhaustive relevant set. English/Korean terminology probe; no query rewriting is performed."
+      }
+    },
+    {
+      "id": "mixed-semiconductor-terms",
+      "query": "Python pandas와 machine learning regression으로 반도체 공정 데이터 분석",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20250000539889"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20250000539889. Basis: pandas, 회귀, 반도체 공정 데이터 curriculum. This is one expected course, not the exhaustive relevant set. English/Korean terminology probe; no query rewriting is performed."
+      }
+    },
+    {
+      "id": "mixed-automation-terms",
+      "query": "Google Apps Script와 생성형 AI로 업무 자동화 prototype 만들기",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "judged",
+        "relevant_course_ids": [
+          "AIG20260000545806"
+        ],
+        "irrelevant_course_ids": [],
+        "reason": "Preconfirmed source course: AIG20260000545806. Basis: 생성형 AI, Google Apps Script 자동화 curriculum. This is one expected course, not the exhaustive relevant set. English/Korean terminology probe; no query rewriting is performed."
+      }
+    },
+    {
+      "id": "broad-career-goal",
+      "query": "새로운 직무로 이직하기 위해 어떤 교육을 들어야 할지 찾고 있어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Broad goal lacks a target competency. Independently review returned course curricula before assigning positive or negative labels; do not infer relevance from a generic title."
+      }
+    },
+    {
+      "id": "broad-digital-goal",
+      "query": "AI를 활용해서 일을 더 잘하고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Broad AI objective does not preconfirm any individual course. Review scope and level independently; do not promote observed top results into expectations."
+      }
+    },
+    {
+      "id": "similar-but-unreviewed-tax",
+      "query": "개인 연말정산과 종합소득세 신고를 직접 하는 방법을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Personal tax intent differs from the preconfirmed corporate-tax case. The known corporate-tax course is not automatically a false positive: inspect its actual curriculum before labeling it, and inspect the full corpus before asserting absence."
+      }
+    },
+    {
+      "id": "similar-but-unreviewed-security",
+      "query": "산업 현장의 기계 안전을 관리하는 것보다 웹사이트 보안 취약점을 분석하고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Safety/security terminology overlaps while task intent differs. Negation and curriculum relevance require independent review. Neither the industrial-safety nor cybersecurity course is assigned a label from this wording alone."
+      }
+    },
+    {
+      "id": "empty-result-candidate-astronomy",
+      "query": "전파망원경을 보정하고 외계행성의 분광 관측 데이터를 분석하는 실습 교육",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Potential out-of-domain probe only. Corpus-wide absence has not been reviewed. Dense retrieval can return candidates for any nonblank query; neither expected_empty nor irrelevant IDs are asserted."
+      }
+    },
+    {
+      "id": "empty-result-candidate-preservation",
+      "query": "중세 양피지 필사본의 안료를 분석하고 고문서를 복원하는 실습 교육",
+      "as_of": "2026-11-01",
+      "filters": {},
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Potential out-of-domain probe only. Corpus-wide absence has not been reviewed. Review retrieved evidence independently; do not treat low similarity, an unfamiliar title, or nonempty output as proof of a false positive."
+      }
+    },
+    {
+      "id": "unknown-personal-cost-and-timetable",
+      "query": "퇴근 후 주말에 무료로 정보보안 로그 분석을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "budget_krw": 0,
+        "availability": "evening_weekend"
+      },
+      "judgment": {
+        "status": "unjudged",
+        "relevant_course_ids": [],
+        "irrelevant_course_ids": [],
+        "reason": "No relevance or empty-result ground truth has been established for this case. Personal cost and timetable are unknown in the source contract. Review relevance separately from feasibility; unknown conditions must not become confirmed free/weekend eligibility."
+      }
+    }
+  ]
+}
