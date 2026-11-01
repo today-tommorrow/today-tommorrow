@@ -872,10 +872,11 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     setPendingDeletion(pending)
     interpretationLoad.current?.abort()
     setInterpretationLoading(false)
-    if (
-      interpretation?.proposals.some((proposal) => proposal.document_id === id)
+    setInterpretation((current) =>
+      current?.proposals.some((proposal) => proposal.document_id === id)
+        ? null
+        : current,
     )
-      setInterpretation(null)
     if (pendingDocument?.document.id === id) {
       setPendingDocument(null)
       if (pendingJob === pendingDocument.document.job_id) rememberJob(null)

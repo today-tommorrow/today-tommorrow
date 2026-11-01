@@ -567,14 +567,16 @@ describe('자료 삭제와 목록 복구', () => {
   })
 
   it.each([
-    { affected: true, delayed: false },
-    { affected: false, delayed: false },
-    { affected: true, delayed: true },
+    { affected: true, delayed: false, beforeAck: false },
+    { affected: false, delayed: false, beforeAck: false },
+    { affected: true, delayed: true, beforeAck: false },
+    { affected: true, delayed: true, beforeAck: true },
   ])(
     '삭제 자료 해석의 연결·응답 시점에 따라 숨김·적용 차단을 유지한다 (%j)',
-    async ({ affected, delayed }) => {
+    async ({ affected, delayed, beforeAck }) => {
       vi.spyOn(window, 'confirm').mockReturnValue(true)
       const pendingInterpretation = deferred()
+      const pendingDelete = deferred()
       const interpretationId = '00000000-0000-4000-8000-000000000009'
       const interpretation: Interpretation = {
         id: interpretationId,
@@ -607,7 +609,10 @@ describe('자료 삭제와 목록 복구', () => {
           return delayed
             ? pendingInterpretation.promise
             : Response.json(interpretation)
-        if (endpoint === deletePath) return new Response(null, { status: 204 })
+        if (endpoint === deletePath)
+          return beforeAck
+            ? pendingDelete.promise
+            : new Response(null, { status: 204 })
         if (endpoint === path) return new Response(null, { status: 503 })
         throw new Error(`Unexpected ${endpoint}`)
       })
@@ -627,6 +632,15 @@ describe('자료 삭제와 목록 복구', () => {
         expect(button('확인한 제안만 반영').disabled).toBe(false)
       }
       fireEvent.click(targetButton('자료 삭제'))
+      if (beforeAck) {
+        await act(async () =>
+          pendingInterpretation.resolve(Response.json(interpretation)),
+        )
+        await screen.findByRole('region', { name: '입력 해석 확인' })
+        await act(async () =>
+          pendingDelete.resolve(new Response(null, { status: 204 })),
+        )
+      }
       await screen.findByText(
         '현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
       )
