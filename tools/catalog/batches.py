@@ -62,6 +62,40 @@ def validate_provenance(courses: list[dict]) -> None:
             require(parsed.tzinfo is not None and parsed.utcoffset() is not None, "invalid_source_collection_time")
 
 
+def validate_records_parent(conn: psycopg.Connection, manifest: dict, courses: list[dict],
+                            units: list[dict], vectors: np.ndarray, parent: str) -> None:
+    """Adapter replacements must attest actual parent metadata and preserve its units."""
+    guard = manifest.get("records_adapter")
+    if guard is None:
+        require(manifest["batch"].get("adapter") != "work24_records_v1", "records_parent_guard_required")
+        return
+    require(isinstance(guard, dict) and guard.get("version") == 1, "invalid_records_parent_guard")
+    require(manifest["batch"].get("adapter") == "work24_records_v1", "invalid_records_parent_guard")
+    require(manifest["batch"]["coverage_mode"] == "partial", "records_partial_coverage_required")
+    expectations = guard.get("parent_records")
+    require(isinstance(expectations, list), "invalid_records_parent_guard")
+    expected = {tuple(item["offering_key"]): item["metadata_sha256"] for item in expectations}
+    incoming = {(course["course_id"], course["tme"]) for course in courses}
+    require(len(expected) == len(expectations) and set(expected) == incoming, "invalid_records_parent_guard")
+    for key, digest in expected.items():
+        stored = conn.execute("SELECT metadata FROM work24_bge.snapshot_course WHERE dataset_id=%s AND course_id=%s AND tme=%s",
+                              (parent, *key)).fetchone()
+        require((value_hash(stored[0]) if stored else None) == digest, "records_parent_metadata_mismatch")
+        if stored is None:
+            continue
+        # Metadata-only supplementation carries the complete parent unit collection.
+        fields = [field for field in UNIT_FIELDS if field not in ("dataset_id", "vector_row", "embedding")]
+        previous = conn.execute(f"SELECT {','.join(fields)},embedding FROM work24_bge.snapshot_unit WHERE dataset_id=%s AND course_id=%s AND tme=%s",
+                                (parent, *key)).fetchall()
+        rows = {unit["unit_key"]: unit for unit in units if (unit["course_id"], unit["tme"]) == key}
+        require({row[0] for row in previous} == set(rows), "records_parent_units_mismatch")
+        for row in previous:
+            unit = rows[row[0]]
+            values = {**unit, "profile_id": unit["embedding_profile_id"], "active": True}
+            require(tuple(values[field] for field in fields) == tuple(row[:-1])
+                    and np.array_equal(vector_array(row[-1]), vectors[unit["vector_row"]]), "records_parent_units_mismatch")
+
+
 def stage(conn: psycopg.Connection, root: Path, expected_hash: str) -> dict:
     """Persist the attempt, then isolate the draft in a savepoint on any failure."""
     manifest = read_manifest(root, expected_hash)
@@ -99,6 +133,7 @@ def build_snapshot(conn: psycopg.Connection, root: Path, manifest: dict, batch_i
     require(row is not None and row[0] == manifest["embedding_profile_id"], "batch_profile_mismatch")
     require(row[1]["embedding_config"] == manifest["embedding_config"], "batch_profile_mismatch")
     require(conn.execute("SELECT 1 FROM work24_bge.snapshot_course WHERE dataset_id=%s LIMIT 1", (parent,)).fetchone() is not None, "batch_parent_unavailable")
+    validate_records_parent(conn, manifest, courses, units, vectors, parent)
     inputs = {"parent_snapshot": {"sha256": value_hash(row[1])}, "batch_manifest": {"sha256": batch_id}}
     dataset = value_hash(inputs)
     effective = {"format_version": 2, "created_on": manifest["created_on"], "dataset_id": dataset,
