@@ -229,6 +229,8 @@ def evaluate_dataset(
             versions.add(result.retrieval_config_version)
             row.update(diagnose(case, result, cutoffs))
         except (CatalogError, EmbeddingError, SQLAlchemyError) as error:
+            if isinstance(error, CatalogError) and str(error) == "catalog_snapshot_changed":
+                raise EvaluationError("evaluation_snapshot_changed") from None
             # Never include arbitrary driver/provider exception text in artifacts.
             kind = "catalog" if isinstance(error, CatalogError) else (
                 "embedding" if isinstance(error, EmbeddingError) else "database")

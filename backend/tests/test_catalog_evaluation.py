@@ -173,6 +173,17 @@ class EvaluationTests(unittest.TestCase):
             with self.subTest(changed=changed), self.assertRaises(EvaluationError):
                 self.run_evaluation(self.load(), [changed])
 
+    def test_catalog_snapshot_change_aborts_after_success_without_running_remaining_cases(self) -> None:
+        dataset = self.load(dataset_value([case("first"), case("changed"), case("remaining")]))
+        service = Mock(spec=SearchService)
+        service.search.side_effect = [result("A"), CatalogError("catalog_snapshot_changed"), result("B")]
+
+        with self.assertRaisesRegex(EvaluationError, "^evaluation_snapshot_changed$"):
+            evaluate_dataset(dataset, service, SNAPSHOT, cutoffs=(1,), limit=3,
+                             evidence_limit=2, execution_mode="synthetic", environment={})
+
+        self.assertEqual(service.search.call_count, 2)
+
     def test_contradictory_duplicate_and_unjudged_labels_are_rejected(self) -> None:
         for relevant, status in [(["X"], "judged"), (["A", "A"], "judged"), (["A"], "unjudged")]:
             with self.subTest(relevant=relevant, status=status), self.assertRaises(EvaluationError):
@@ -217,6 +228,51 @@ class EvaluationTests(unittest.TestCase):
         )
         self.assertFalse(report["actual_bge_results"])
         self.assertEqual(report["cases"][0]["error_kind"], "catalog")
+
+    def test_cli_status_matches_exit_code_and_preserves_failure_summary(self) -> None:
+        self.load(dataset_value([case("first"), case("second"), case("third")]))
+        scenarios = [
+            ("success", [result("A"), result("A"), result("A")], "ok", 0, 3, 0),
+            ("partial", [result("A"), CatalogError("private driver text"), result("A")], "failed", 1, 2, 1),
+            ("all_failed", [CatalogError("private driver text")] * 3, "failed", 1, 0, 3),
+            ("snapshot_changed", [result("A"), CatalogError("catalog_snapshot_changed"), result("A")],
+             "failed", 1, None, None),
+        ]
+        for name, outcomes, status, exit_code, successful, failed in scenarios:
+            output_json = self.path.parent / f"{name}.json"
+            output_report = self.path.parent / f"{name}.md"
+            arguments = ["evaluate", "--dataset", str(self.path), "--profile-id", SNAPSHOT.profile_id,
+                         "--dataset-id", SNAPSHOT.dataset_id, "--base-url", "http://unused.invalid",
+                         "--timeout", "5", "--k", "1", "--output-json", str(output_json),
+                         "--output-report", str(output_report)]
+            repository, provider, engine = Mock(), Mock(), Mock()
+            repository.prepare.return_value = SNAPSHOT
+            repository.search.side_effect = outcomes
+            provider.embed.return_value = VECTOR
+            stdout = io.StringIO()
+            with self.subTest(scenario=name), redirect_stdout(stdout), patch("sys.argv", arguments), \
+                    patch.dict("os.environ", {"DATABASE_URL": "postgresql://unused.invalid/test"}), \
+                    patch("app.catalog.evaluate.BgeM3Embeddings", return_value=provider), \
+                    patch("app.catalog.evaluate.create_engine", return_value=engine), \
+                    patch("app.catalog.evaluate.CatalogRepository", return_value=repository), \
+                    patch("app.catalog.evaluate.environment_metadata", return_value={}):
+                self.assertEqual(main(), exit_code)
+                payload = json.loads(stdout.getvalue())
+                self.assertEqual(payload["status"], status)
+                engine.dispose.assert_called_once_with()
+                if successful is None:
+                    self.assertEqual(payload, {"status": "failed", "error": "evaluation_snapshot_changed"})
+                    self.assertFalse(output_json.exists())
+                    self.assertFalse(output_report.exists())
+                    self.assertEqual(repository.search.call_count, 2)
+                    continue
+                report = json.loads(output_json.read_text(encoding="utf-8"))
+                self.assertEqual(payload["summary"], report["summary"])
+                self.assertEqual(payload["summary"]["successful_cases"], successful)
+                self.assertEqual(payload["summary"]["failed_cases"], failed)
+                self.assertEqual(report["actual_bge_results"], successful > 0)
+                self.assertTrue(output_report.is_file())
+                self.assertNotIn("private driver text", stdout.getvalue())
 
 
 if __name__ == "__main__":

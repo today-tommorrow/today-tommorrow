@@ -107,8 +107,9 @@ def main() -> int:
             output.write(json.dumps(report, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
         with args.output_report.open("x", encoding="utf-8") as output:
             output.write(render_report(report))
-        print(json.dumps({"status": "ok", "summary": report["summary"]}, ensure_ascii=False, allow_nan=False))
-        return 1 if report["summary"]["failed_cases"] else 0
+        failed = bool(report["summary"]["failed_cases"])
+        print(json.dumps({"status": "failed" if failed else "ok", "summary": report["summary"]}, ensure_ascii=False, allow_nan=False))
+        return 1 if failed else 0
     except (EvaluationError, CatalogError, EmbeddingError) as error:
         print(json.dumps({"status": "failed", "error": str(error)}))
         return 1
