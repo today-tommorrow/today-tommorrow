@@ -134,7 +134,7 @@ describe('추천 결과와 참여 조건 표시', () => {
     expect(
       screen.getByText('교육 정보 기준: 2026-10-31T00:00:00Z'),
     ).toBeTruthy()
-    expect(screen.getByText('미확인 항목: listed_self_pay_krw')).toBeTruthy()
+    expect(screen.getByText('미확인 항목: 공시 자부담금')).toBeTruthy()
     fireEvent.click(screen.getByText('추천 근거 확인'))
     expect(screen.getByText('합성 교육 원문 근거')).toBeTruthy()
     // Ranking bounds/coverage are not a probability or learner ability score.

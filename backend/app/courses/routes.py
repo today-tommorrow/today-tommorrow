@@ -40,7 +40,11 @@ def identifier(value: str) -> UUID:
 
 
 def repository(db: DB) -> CourseRepository:
-    return CourseRepository(db.get_bind(), CatalogPin.load())
+    engine = db.get_bind()
+    # Authentication has finished reading; return its connection before the
+    # repository starts its separate read-only, repeatable-read transaction.
+    db.rollback()
+    return CourseRepository(engine, CatalogPin.load())
 
 
 @router.get("/compare", response_model=Comparison, openapi_extra={

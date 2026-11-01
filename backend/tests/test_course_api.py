@@ -7,7 +7,7 @@ from uuid import uuid4
 
 import test_profile_drafts as profiles
 from fastapi.testclient import TestClient
-from sqlalchemy import event, text
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.exc import DBAPIError
 from test_database_boundary import local_engine
 
@@ -102,6 +102,19 @@ class CourseAPITests(unittest.TestCase):
             self.assertEqual(len(found), 1)
             self.assertEqual(found[0]["quote"], unit.embed_text)
         self.assertTrue(all(item["checked_at"] is None for item in body["evidence"]))
+
+    def test_authenticated_catalog_read_needs_only_one_pool_connection(self):
+        engine = create_engine(
+            self.engine.url, pool_size=1, max_overflow=0, pool_timeout=0.1,
+            connect_args={"hostaddr": "127.0.0.1", "options": "", "connect_timeout": 3},
+        )
+        self.addCleanup(engine.dispose)
+        with patch.object(self.fixture, "engine", engine):
+            for path in [f"/api/courses/{self.ids[0]}",
+                         f"/api/courses/compare?ids={','.join(self.ids[:2])}"]:
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200, response.text)
+                self.assertEqual(engine.pool.checkedout(), 0)
 
     def test_inferred_source_is_preserved_without_claiming_verification(self):
         body = self.client.get(f"/api/courses/{course_id(self.inferred_source)}").json()

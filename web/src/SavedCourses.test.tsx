@@ -5,6 +5,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from '@testing-library/react'
 import { App } from './App'
@@ -397,7 +398,7 @@ describe('화면·계정 변경 뒤 늦은 응답 격리', () => {
     fireEvent.click(deleteButton())
     fireEvent.click(screen.getByRole('button', { name: '로그아웃' }))
     await screen.findByRole('link', { name: 'Google로 시작하기' })
-    expect(signal?.aborted).toBe(true)
+    await waitFor(() => expect(signal?.aborted).toBe(true))
     fireEvent.click(
       screen.getByRole('button', { name: '로그인 상태 다시 확인' }),
     )

@@ -378,6 +378,9 @@ function EvidenceList({ items }: { items: Evidence[] }) {
     <ul className="stack">
       {items.map((item) => (
         <li key={item.id}>
+          {item.field_path.startsWith('inferred_units.') && (
+            <p className="muted">추정 보완 정보 · 실제 교육내용 확인 필요</p>
+          )}
           {item.quote && <blockquote>{item.quote}</blockquote>}
           <p>
             {item.source_system} · {item.verification_state} ·{' '}

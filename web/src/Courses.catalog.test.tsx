@@ -62,7 +62,7 @@ describe('고용24 교육 정보의 단위와 결측 표시', () => {
     expect(
       screen.getByRole('link', { name: '교육 원문 보기' }).getAttribute('href'),
     ).toBe(course.detail_url)
-    expect(screen.getByText('미확인 항목: tuition_krw, schedule')).toBeTruthy()
+    expect(screen.getByText('미확인 항목: 교육비, 수업 일정')).toBeTruthy()
   })
 
   it('상세 확인 범위는 계약의 evidence_level이 명시한 경우에만 표시한다', async () => {
