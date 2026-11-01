@@ -14,7 +14,7 @@ from sqlalchemy.orm import Session
 from test_database_boundary import local_engine
 
 from app.main import app
-from app.saved_courses.catalog import course_uuid, read_catalog, safe_url
+from app.saved_courses.catalog import canonical, course_uuid, read_catalog, safe_url
 from app.saved_courses.models import SavedCourse
 
 
@@ -154,20 +154,24 @@ class SavedDatabaseTests(unittest.TestCase):
         original_name = changed.summary.name
         with self.admin.connect() as connection:
             dataset, profile, manifest = connection.execute(text("SELECT dataset_id,profile_id,manifest FROM work24_bge.dataset_snapshot")).one()
-            metadata = connection.execute(text("SELECT tme,metadata FROM work24_bge.course WHERE course_id=:id"), {"id": changed.source_id}).all()
-        replacement = "e" * 64
+        import hashlib
+        inputs = {"synthetic_switch": {"sha256": "e" * 64}}
+        replacement = hashlib.sha256(canonical(inputs).encode()).hexdigest()
         def restore():
             with self.admin.begin() as connection:
-                connection.execute(text("UPDATE work24_bge.course_unit SET dataset_id=:old,active=true WHERE dataset_id=:new"), {"old": dataset, "new": replacement})
-                for tme, value in metadata:
-                    connection.execute(text("UPDATE work24_bge.course SET metadata=CAST(:metadata AS jsonb) WHERE course_id=:id AND tme=:tme"), {"metadata": json.dumps(value), "id": changed.source_id, "tme": tme})
-                connection.execute(text("DELETE FROM work24_bge.dataset_snapshot WHERE dataset_id=:id"), {"id": replacement})
+                connection.execute(text("UPDATE work24_bge.active_catalog SET dataset_id=:old"), {"old": dataset})
+                for table in ("snapshot_unit", "snapshot_course", "dataset_snapshot"):
+                    connection.execute(text(f"DELETE FROM work24_bge.{table} WHERE dataset_id=:id"), {"id": replacement})
         self.addCleanup(restore)
         with self.admin.begin() as connection:
-            connection.execute(text("INSERT INTO work24_bge.dataset_snapshot(dataset_id,profile_id,manifest) VALUES (:new,:profile,CAST(:manifest AS jsonb))"), {"new": replacement, "profile": profile, "manifest": json.dumps({**manifest, "synthetic_switch": True})})
-            connection.execute(text("UPDATE work24_bge.course_unit SET dataset_id=:new"), {"new": replacement})
-            connection.execute(text("UPDATE work24_bge.course_unit SET active=false WHERE course_id=:id"), {"id": removed.source_id})
-            connection.execute(text("UPDATE work24_bge.course SET metadata=jsonb_set(metadata,'{course_name}',to_jsonb(CAST(:name AS text))) WHERE course_id=:id"), {"name": original_name + " (합성 갱신)", "id": changed.source_id})
+            connection.execute(text("INSERT INTO work24_bge.dataset_snapshot(dataset_id,profile_id,manifest) VALUES (:new,:profile,CAST(:manifest AS jsonb))"), {"new": replacement, "profile": profile, "manifest": json.dumps({**manifest, "dataset_id": replacement, "input_files": inputs})})
+            connection.execute(text("""INSERT INTO work24_bge.snapshot_course
+                SELECT :new,course_id,tme,metadata,source_dataset_id FROM work24_bge.snapshot_course
+                WHERE dataset_id=:old AND course_id<>:removed"""), {"new": replacement, "old": dataset, "removed": removed.source_id})
+            columns = "unit_key,course_id,tme,vector_row,unit_type,ncs_unit_code,unit_name,embed_text,text_sha256,hours,source,is_noise,is_inferred,provenance,embedding,profile_id,active,source_dataset_id"
+            connection.execute(text(f"INSERT INTO work24_bge.snapshot_unit(dataset_id,{columns}) SELECT :new,{columns} FROM work24_bge.snapshot_unit WHERE dataset_id=:old AND course_id<>:removed"), {"new": replacement, "old": dataset, "removed": removed.source_id})
+            connection.execute(text("UPDATE work24_bge.snapshot_course SET metadata=jsonb_set(metadata,'{course_name}',to_jsonb(CAST(:name AS text))) WHERE dataset_id=:new AND course_id=:id"), {"new": replacement, "name": original_name + " (합성 갱신)", "id": changed.source_id})
+            connection.execute(text("UPDATE work24_bge.active_catalog SET dataset_id=:new"), {"new": replacement})
         page = self.listing().json()
         self.assertNotEqual(page["catalog_version_id"], old["catalog_version_id"])
         items = {item["id"]: item for item in page["items"]}

@@ -461,8 +461,8 @@ class RecommendationPipeline:
     def __init__(self, search: SearchService, model: ModelProvider) -> None:
         self.search, self.model = search, model
 
-    def capture_context(self) -> JsonObject:
-        snapshot = self.search.repository.prepare()
+    def capture_context(self, snapshot: CatalogSnapshot | None = None) -> JsonObject:
+        snapshot = self.search.repository.prepare(snapshot) if snapshot is not None else self.search.repository.prepare()
         return {"catalog": snapshot_json(snapshot), "config": dict(CONFIG),
                 "model": dict(self.model.identity), "runtime_mode": self.model.runtime_mode}
 
@@ -491,7 +491,16 @@ class RecommendationPipeline:
     def run(self, snapshot: JsonObject, report_phase: PhaseReporter) -> JsonObject:
         started = monotonic()
         context = object_value(snapshot.get("context"))
-        if fingerprint(context) != fingerprint(self.capture_context()):
+        try:
+            catalog = object_value(context["catalog"])
+            pin = CatalogSnapshot(
+                profile_id=text_value(catalog["profile_id"]), dataset_id=text_value(catalog["dataset_id"]),
+                revision=text_value(catalog["revision"]), manifest_sha256=text_value(catalog["manifest_sha256"]),
+                snapshot_created_on=date.fromisoformat(text_value(catalog["snapshot_created_on"])),
+            )
+        except (KeyError, TypeError, ValueError):
+            raise RecommendationError("invalid_recommendation_input") from None
+        if fingerprint(context) != fingerprint(self.capture_context(pin)):
             raise RecommendationError("recommendation_context_changed")
         try:
             as_of = date.fromisoformat(str(snapshot["as_of"]))
@@ -510,7 +519,7 @@ class RecommendationPipeline:
                                 budget_krw=answers.get("budget_krw") if answers.get("budget_status") == "amount" else None,
                                 availability=answers.get("availability"))
         found: SearchResult = self.search.search(query, as_of=as_of, filters=filters,
-                                                limit=int(CONFIG["candidate_limit"]), evidence_limit=int(CONFIG["evidence_limit"]))
+                                                limit=int(CONFIG["candidate_limit"]), evidence_limit=int(CONFIG["evidence_limit"]), snapshot=pin)
         if snapshot_json(found.snapshot) != context["catalog"]:
             raise RecommendationError("recommendation_context_changed")
         report_phase("checking_constraints")

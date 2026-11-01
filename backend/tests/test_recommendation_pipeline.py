@@ -45,7 +45,7 @@ def catalog_result(count: int = 1) -> SearchResult:
 class FakeSearch:
     def __init__(self, result: SearchResult) -> None:
         self.result = result
-        self.repository = SimpleNamespace(prepare=lambda: result.snapshot)
+        self.repository = SimpleNamespace(prepare=lambda pin=None: result.snapshot)
         self.calls = []
 
     def search(self, query: str, **kwargs):

@@ -62,20 +62,24 @@ def read_catalog(engine: Engine) -> Catalog:
     # read-only repeatable-read snapshot instead of changing its isolation level.
     with engine.connect().execution_options(isolation_level="REPEATABLE READ") as connection, connection.begin():
         connection.execute(text("SET TRANSACTION READ ONLY"))
-        pairs = connection.execute(text("SELECT DISTINCT dataset_id,profile_id FROM work24_bge.course_unit WHERE active")).all()
-        if not pairs:
-            pairs = connection.execute(text("SELECT dataset_id,profile_id FROM work24_bge.dataset_snapshot")).all()
+        pairs = connection.execute(text("""SELECT d.dataset_id,d.profile_id FROM work24_bge.active_catalog a
+            JOIN work24_bge.dataset_snapshot d ON d.dataset_id=a.dataset_id WHERE a.singleton""")).all()
         if len(pairs) != 1:
             raise CatalogUnavailable()
         dataset, profile = pairs[0]
         manifest = connection.execute(text("SELECT manifest FROM work24_bge.dataset_snapshot WHERE dataset_id=:dataset AND profile_id=:profile"), {"dataset": dataset, "profile": profile}).scalar_one()
+        if (not isinstance(manifest, dict) or manifest.get("dataset_id") != dataset
+                or manifest.get("embedding_profile_id") != profile
+                or hashlib.sha256(canonical(manifest.get("embedding_config")).encode()).hexdigest() != profile
+                or hashlib.sha256(canonical(manifest.get("input_files")).encode()).hexdigest() != dataset):
+            raise CatalogUnavailable()
         digest = hashlib.sha256(canonical(manifest).encode()).hexdigest()
         version = uuid5(NAMESPACE, canonical(["catalog", dataset, profile, digest]))
         rows = connection.execute(text("""
             SELECT DISTINCT ON (c.course_id) c.course_id,c.metadata
-            FROM work24_bge.course c
-            WHERE EXISTS (
-                SELECT 1 FROM work24_bge.course_unit u
+            FROM work24_bge.snapshot_course c
+            WHERE c.dataset_id=:dataset AND EXISTS (
+                SELECT 1 FROM work24_bge.snapshot_unit u
                 WHERE u.course_id=c.course_id AND u.tme=c.tme AND u.active
                 AND u.dataset_id=:dataset AND u.profile_id=:profile
             ) ORDER BY c.course_id,c.tme

@@ -2,6 +2,7 @@
 
 import hashlib
 import json
+import math
 import shutil
 import urllib.request
 import zipfile
@@ -82,7 +83,24 @@ def extract_verified(archive, destination):
                 shutil.copyfileobj(source, output)
 
 
-def load_artifacts(root):
+def validate_metadata(courses: list[dict], units: list[dict]) -> None:
+    """Match the search/detail consumers without rewriting source text or IDs."""
+    for course in courses:
+        require(isinstance(course, dict), "invalid_catalog_metadata")
+        name = course.get("course_name")
+        require(isinstance(name, str) and bool(name.strip()), "invalid_catalog_metadata")
+    for unit in units:
+        require(isinstance(unit, dict), "invalid_catalog_metadata")
+        require(all(isinstance(unit.get(key), str) and unit[key] for key in (
+            "unit_key", "unit_name", "embed_text", "text_sha256", "unit_type")), "invalid_catalog_metadata")
+        require(all(unit.get(key) is None or isinstance(unit[key], str) for key in (
+            "source", "ncs_unit_code")), "invalid_catalog_metadata")
+        hours = unit.get("hours")
+        require(hours is None or (type(hours) in (int, float) and math.isfinite(hours) and hours >= 0),
+                "invalid_catalog_metadata")
+
+
+def load_artifacts(root, *, pinned=True):
     import numpy as np
 
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
@@ -97,11 +115,18 @@ def load_artifacts(root):
     units = [json.loads(line) for line in (root / "units.jsonl").read_text().splitlines() if line]
     vectors = np.load(root / "vectors.npy", allow_pickle=False)
     query = np.load(root / "smoke-query.npy", allow_pickle=False)
-    require(len(courses) == 406 and len(units) == 6099, "artifact_row_count_mismatch")
-    require(vectors.shape == (6099, 1024) and vectors.dtype == np.float32, "vector_shape_mismatch")
+    require(bool(courses) and bool(units), "empty_catalog_batch")
+    require(manifest.get("counts", {}).get("courses") == len(courses)
+            and manifest.get("counts", {}).get("units") == len(units), "artifact_row_count_mismatch")
+    if pinned:
+        require(len(courses) == 406 and len(units) == 6099, "artifact_row_count_mismatch")
+    validate_metadata(courses, units)
+    require(vectors.shape == (len(units), 1024) and vectors.dtype == np.float32, "vector_shape_mismatch")
     require(query.shape == (1024,) and query.dtype == np.float32, "query_shape_mismatch")
     keys = {(course["course_id"], course["tme"]) for course in courses}
-    require(len(keys) == 406 and len({unit["unit_key"] for unit in units}) == 6099, "duplicate_artifact_key")
+    require(len(keys) == len(courses) and len({unit["unit_key"] for unit in units}) == len(units), "duplicate_artifact_key")
+    require(all(isinstance(value, str) and value for key in keys for value in key), "invalid_offering_key")
+    require(keys == {(unit["course_id"], unit["tme"]) for unit in units}, "course_without_units")
     for row, unit in enumerate(units):
         require(unit["vector_row"] == row, "vector_row_mismatch")
         require((unit["course_id"], unit["tme"]) in keys, "course_unit_orphan")

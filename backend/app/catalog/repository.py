@@ -50,7 +50,7 @@ WITH matching AS MATERIALIZED (
   SELECT course_id,tme,unit_key,unit_name,embed_text,text_sha256,unit_type,ncs_unit_code,
          source,hours,is_inferred,is_noise,provenance,
          embedding <=> CAST(:vector AS vector) AS distance
-  FROM work24_bge.course_unit
+   FROM work24_bge.snapshot_unit
   WHERE active AND profile_id=:profile AND dataset_id=:dataset
 ), ranked AS (
   SELECT matching.*,row_number() OVER (
@@ -61,9 +61,9 @@ SELECT * FROM ranked WHERE evidence_rank<=:evidence_limit
 ORDER BY course_id,tme,evidence_rank
 """
 COURSES_SQL = """
-SELECT c.course_id,c.tme,c.metadata FROM work24_bge.course c
-WHERE EXISTS (
- SELECT 1 FROM work24_bge.course_unit u
+SELECT c.course_id,c.tme,c.metadata FROM work24_bge.snapshot_course c
+WHERE c.dataset_id=:dataset AND EXISTS (
+ SELECT 1 FROM work24_bge.snapshot_unit u
  WHERE u.course_id=c.course_id AND u.tme=c.tme
    AND u.active AND u.profile_id=:profile AND u.dataset_id=:dataset
 )
@@ -160,12 +160,14 @@ class CatalogRepository:
             raise CatalogError("invalid_catalog_identity")
         self.engine, self.profile_id, self.dataset_id = engine, profile_id, dataset_id
 
-    def _snapshot(self, connection: Connection) -> CatalogSnapshot:
+    def _snapshot(self, connection: Connection, snapshot: CatalogSnapshot | None = None) -> CatalogSnapshot:
+        profile = snapshot.profile_id if snapshot else self.profile_id
+        dataset = snapshot.dataset_id if snapshot else self.dataset_id
         row = connection.execute(text("""
             SELECT p.config,d.manifest FROM work24_bge.embedding_profile p
             JOIN work24_bge.dataset_snapshot d ON d.profile_id=p.profile_id
             WHERE p.profile_id=:profile AND d.dataset_id=:dataset
-        """), {"profile": self.profile_id, "dataset": self.dataset_id}).first()
+        """), {"profile": profile, "dataset": dataset}).first()
         if row is None:
             raise CatalogError("catalog_snapshot_unavailable")
         config, manifest = row
@@ -173,22 +175,32 @@ class CatalogRepository:
             raise CatalogError("invalid_catalog_profile")
         if any(key not in config or canonical_hash(config[key]) != canonical_hash(value) for key, value in REQUIRED_CONFIG.items()):
             raise CatalogError("incompatible_embedding_profile")
-        if (canonical_hash(config) != self.profile_id or manifest.get("embedding_config") != config
-                or manifest.get("embedding_profile_id") != self.profile_id
-                or manifest.get("dataset_id") != self.dataset_id
-                or canonical_hash(manifest.get("input_files")) != self.dataset_id):
+        if (canonical_hash(config) != profile or manifest.get("embedding_config") != config
+                or manifest.get("embedding_profile_id") != profile
+                or manifest.get("dataset_id") != dataset
+                or canonical_hash(manifest.get("input_files")) != dataset):
             raise CatalogError("catalog_identity_mismatch")
         try:
             created = date.fromisoformat(manifest["created_on"])
         except (ValueError, TypeError, KeyError):
             raise CatalogError("invalid_catalog_snapshot_date") from None
-        return CatalogSnapshot(self.profile_id, self.dataset_id, BGE_REVISION, canonical_hash(manifest), created)
+        return CatalogSnapshot(profile, dataset, BGE_REVISION, canonical_hash(manifest), created)
 
-    def prepare(self) -> CatalogSnapshot:
+    def prepare(self, snapshot: CatalogSnapshot | None = None) -> CatalogSnapshot:
         try:
             with self.engine.connect() as connection, connection.begin():
                 _read_only(connection)
-                return self._snapshot(connection)
+                anchor = self._snapshot(connection)
+                if snapshot is not None:
+                    if snapshot.profile_id != anchor.profile_id or self._snapshot(connection, snapshot) != snapshot:
+                        raise CatalogError("catalog_snapshot_changed")
+                    return snapshot
+                dataset = connection.execute(text("SELECT dataset_id FROM work24_bge.active_catalog WHERE singleton")).scalar_one_or_none()
+                if dataset is None:
+                    raise CatalogError("catalog_snapshot_unavailable")
+                selected = CatalogSnapshot(anchor.profile_id, dataset, anchor.revision,
+                                           anchor.manifest_sha256, anchor.snapshot_created_on)
+                return self._snapshot(connection, selected)
         except SQLAlchemyError:
             raise CatalogError("catalog_database_unavailable") from None
 
@@ -198,12 +210,12 @@ class CatalogRepository:
     ) -> SearchResult:
         validate_options(as_of, filters, limit, evidence_limit)
         values = validated_vector(vector)
-        params = {"profile": self.profile_id, "dataset": self.dataset_id,
+        params = {"profile": snapshot.profile_id, "dataset": snapshot.dataset_id,
                   "vector": json.dumps(values, allow_nan=False), "evidence_limit": evidence_limit}
         try:
             with self.engine.connect() as connection, connection.begin():
                 _read_only(connection)
-                if self._snapshot(connection) != snapshot:
+                if snapshot.profile_id != self.profile_id or self._snapshot(connection, snapshot) != snapshot:
                     raise CatalogError("catalog_snapshot_changed")
                 units = connection.execute(text(UNITS_SQL), params).mappings().all()
                 courses = connection.execute(text(COURSES_SQL), params).mappings().all()

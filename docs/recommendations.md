@@ -19,7 +19,7 @@ The URLs describe services reachable from the running worker. A local SSH tunnel
 
 Optional limits: `RECOMMENDATION_MODEL_TIMEOUT_SECONDS` (60), `RECOMMENDATION_EMBEDDING_TIMEOUT_SECONDS` (30), `RECOMMENDATION_MODEL_MAX_TOKENS` (2048), `RECOMMENDATION_MODEL_MAX_RESPONSE_BYTES` (131072). Socket timeouts bound individual HTTP operations, not a whole-job wall-clock deadline. Responses and request context have explicit size limits. The adapter conservatively reserves UTF-8 prompt bytes, output tokens and 256 template-overhead tokens within the known 8192-token context; oversized confirmed input fails explicitly instead of being silently shortened. Candidate evidence excerpts are at most 160 characters, and full source text remains in internal provenance.
 
-Configuration validation and `capture_context()` do not call either model. They capture the pinned catalog manifest and model/configuration identity. The runner rechecks that identity before retrieval and checks the returned catalog snapshot again. Changed profiles/datasets/configuration fail rather than silently switching sources.
+Configuration validation and `capture_context()` do not call either model. They capture the active catalog manifest and model/configuration identity. The runner validates and retrieves that retained version even if an operator [activates a later batch](catalog-batches.md) before execution. It checks model/configuration identity and the returned catalog snapshot again; modified or unavailable historical snapshots fail explicitly. Public result retrieval continues returning the stored result independently of the active pointer.
 
 ## Processing and grounding
 
