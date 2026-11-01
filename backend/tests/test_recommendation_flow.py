@@ -301,15 +301,24 @@ class RecommendationFlowTests(unittest.TestCase):
 
     def test_cancel_during_provider_discards_result(self):
         accepted = self.submit()
+        self.assertEqual(accepted.status_code, 202, accepted.text)
+        callback_called = Event()
 
         def cancel(snapshot, phase):
+            callback_called.set()
             response = self.client.post(
                 "/api/jobs/" + accepted.json()["job_id"] + "/cancel",
                 headers={"X-CSRF-Token": self.csrf},
             )
             self.assertEqual(response.status_code, 200)
 
-        self.work(SyntheticRunner(cancel))
+        self.assertTrue(
+            self.work(SyntheticRunner(cancel)),
+            "worker must claim the test job; execution-slot or queue contention is not cancellation",
+        )
+        self.assertTrue(
+            callback_called.is_set(), "provider must reach cancellation callback"
+        )
         self.assertEqual(self.job(accepted)["status"], "cancelled")
         self.assertEqual(self.count_results(), 0)
 
