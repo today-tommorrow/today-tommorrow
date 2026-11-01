@@ -22,8 +22,10 @@ From `backend`, with the configured local DB environment, run `L0_DATABASE_TESTS
 
 ### Recorded verification — 2026-11-01
 
-Python 3.14.6, Node 26.5.0 and isolated PostgreSQL 16.14/pgvector 0.6.0 were used. Migration 0009 applied successfully. Full `./check` passed: 275 web tests, 257 backend tests (one optional reimport test skipped), 22 launcher tests, 18 catalog unit tests and 10 catalog integration tests, plus type/lint/format/build checks.
+Python 3.14.6, Node 26.5.0 and isolated PostgreSQL 16.14/pgvector 0.6.0 were used. Migration 0009 applied successfully. Full `./check` passed: 276 web tests, 257 backend tests (one optional reimport test skipped), 22 launcher tests, 18 catalog unit tests and 10 catalog integration tests, plus type/lint/format/build checks.
 
-A real HTTP server on `127.0.0.1:62731` and a synthetic authenticated user verified registration/replay 202, document/profile GET 200, the no-material bypass guard 422, and anonymous GET 401. The persisted state remained `queued` with no job and revision 1. Cookies and original private values were not included in the report. Evidence remains local in `../text18-verification/{full-check.log,http-result.json}` relative to the verification checkout.
+A real HTTP server on `127.0.0.1:62731` and a synthetic authenticated user verified registration/replay 202, document/profile GET 200, the no-material bypass guard 422, and anonymous GET 401. The persisted state remained `queued` with no job and revision 1. Cookies and original private values were not included in the report. Evidence remains local in `../text18-verification/{full-check-final.log,http-result.json}` relative to the verification checkout.
 
 A new browser end-to-end run was not performed because port 5173 was occupied by another workstream; its service was left untouched. Existing web tests passed. No GPU/model calls were made. GitHub Actions remained disabled per the team's explicit instruction; local checks are the verification evidence for this change. This completes only the text intake slice of issue #18, not file/OCR support or semantic analysis.
+
+The final run used `VITE_API_BASE_URL=http://127.0.0.1:5179/api API_TARGET=http://127.0.0.1:62731 ./check` with a dedicated Vite proxy on 5179 and the task database on 62730. This avoids depending on another workstream’s web service.
