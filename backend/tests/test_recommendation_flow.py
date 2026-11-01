@@ -5,7 +5,8 @@ import unittest
 from concurrent.futures import ThreadPoolExecutor
 from copy import deepcopy
 from datetime import UTC, datetime, timedelta
-from threading import Barrier, Event
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Barrier, Event, Thread
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
@@ -18,6 +19,7 @@ from test_database_boundary import local_engine
 from app.jobs import store as jobs
 from app.jobs.models import Job
 from app.main import app
+from app.recommendations.model import GemmaRecommendations
 from app.recommendations.models import RecommendationRun
 from app.recommendations.worker import run_once
 
@@ -396,6 +398,83 @@ class RecommendationFlowTests(unittest.TestCase):
         self.assertNotEqual(retry.json()["job_id"], accepted.json()["job_id"])
         self.assertTrue(self.work())
         self.assertEqual(self.count_results(), 1)
+
+    def test_http_model_failure_preserves_input_and_explicit_retry_persists_once(self):
+        class FailureHandler(BaseHTTPRequestHandler):
+            calls = 0
+
+            def do_POST(self):
+                type(self).calls += 1
+                self.rfile.read(int(self.headers["Content-Length"]))
+                self.send_response(503)
+                self.end_headers()
+
+            def log_message(self, *args):
+                pass
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), FailureHandler)
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        self.addCleanup(thread.join)
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        provider = GemmaRecommendations(
+            f"http://127.0.0.1:{server.server_port}", "synthetic-http", timeout=2
+        )
+        before = self.client.get(f"/api/profiles/{self.profile['id']}").json()
+        clock = patch("app.recommendations.service.datetime", wraps=datetime)
+        fixed_time = clock.start()
+        fixed_time.now.return_value = datetime.now(UTC)
+        self.addCleanup(clock.stop)
+        accepted = self.submit("http-failure")
+        self.assertEqual(accepted.status_code, 202)
+        with Session(self.engine) as db:
+            frozen = deepcopy(db.get(Job, UUID(accepted.json()["job_id"])).input_json)
+        self.assertEqual(frozen["answers"], before["answers"])
+        self.assertEqual(frozen["profile_revision"], before["revision"])
+        self.assertEqual(frozen["selection_summaries"], before["selection_summaries"])
+
+        def fail_over_http(snapshot, report_phase):
+            report_phase("profiling")
+            provider.generate("profiling", {}, {"type": "object"})
+
+        self.assertTrue(self.work(SyntheticRunner(fail_over_http)))
+        self.assertEqual(FailureHandler.calls, 1)
+        failed = self.job(accepted)
+        self.assertEqual(failed["status"], "failed")
+        self.assertEqual(failed["error"]["code"], "recommendation_failed")
+        self.assertEqual(self.count_results(), 0)
+        after = self.client.get(f"/api/profiles/{self.profile['id']}").json()
+        self.assertEqual(after["revision"], before["revision"])
+        self.assertEqual(after["answers"], before["answers"])
+        self.assertEqual(after["documents"], before["documents"])
+        self.assertEqual(after["review_token"], before["review_token"])
+        self.assertEqual(after["answers"]["document_decision"], "none")
+        retry = self.submit("http-retry", after)
+        self.assertEqual(retry.status_code, 202)
+        self.assertNotEqual(retry.json()["job_id"], accepted.json()["job_id"])
+        self.assertEqual(self.submit("http-retry", after).json(), retry.json())
+        with Session(self.engine) as db:
+            self.assertEqual(
+                db.get(Job, UUID(retry.json()["job_id"])).input_json, frozen
+            )
+        self.assertTrue(self.work())
+        succeeded = self.job(retry)
+        self.assertEqual(succeeded["status"], "succeeded")
+        self.assertEqual(self.count_results(), 1)
+        result_path = (
+            "/api/recommendations/" + succeeded["result"]["recommendation_run_id"]
+        )
+        first = self.client.get(result_path)
+        second = self.client.get(result_path)
+        self.assertEqual(first.status_code, 200)
+        self.assertEqual(first.json(), second.json())
+        self.assertEqual(first.json()["profile_snapshot"], before["answers"])
+        with Session(self.engine) as db:
+            run = db.get(RecommendationRun, UUID(first.json()["id"]))
+            self.assertEqual(str(run.job_id), retry.json()["job_id"])
+            self.assertEqual(run.input_json, frozen)
+        self.assertEqual(self.job(accepted)["status"], "failed")
 
     def test_invalid_provider_output_cannot_be_persisted(self):
         accepted = self.submit()
