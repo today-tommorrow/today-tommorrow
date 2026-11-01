@@ -3,15 +3,22 @@
 import hashlib
 import json
 from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime
 from threading import Barrier
+from unittest.mock import patch
 from uuid import UUID
 
 import test_profile_drafts
 from fastapi.testclient import TestClient
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.documents.models import Document, DocumentChunk
+from app.intake.models import IntakeProfile
+from app.intake.question_models import IntakeRequest
+from app.intake.question_service import invalidate
+from app.jobs.models import Job
 
 
 class TextDocumentsTests(test_profile_drafts.ProfileDraftTests):
@@ -111,3 +118,58 @@ class TextDocumentsTests(test_profile_drafts.ProfileDraftTests):
         with ThreadPoolExecutor(max_workers=2) as pool:
             results = list(pool.map(submit, ["one", "two"]))
         self.assertEqual(sorted(results), [202, 409])
+
+    def test_failure_after_invalidation_rolls_back_everything(self):
+        profile = self.create()
+        profile_id = UUID(profile["id"])
+        with Session(self.engine) as db, db.begin():
+            job = Job(
+                profile_id=profile_id,
+                user_id=self.user_id,
+                kind="intake_question",
+                status="queued",
+                phase="queued",
+                profile_revision=0,
+                idempotency_key="rollback-job",
+                request_hash="synthetic",
+                input_json={},
+                created_at=datetime.now(UTC),
+            )
+            db.add(job)
+            db.flush()
+            job_id = job.id
+
+        def fail_after_invalidation(db, identifier):
+            invalidate(db, identifier)
+            raise SQLAlchemyError("synthetic failure")
+
+        with patch(
+            "app.documents.service.invalidate", side_effect=fail_after_invalidation
+        ):
+            response = self.register(
+                profile, "synthetic private content", key="rollback-request"
+            )
+        self.assertEqual(response.status_code, 503)
+        self.assertNotIn("synthetic private content", response.text)
+        with Session(self.engine) as db:
+            saved = db.get(IntakeProfile, profile_id)
+            self.assertEqual(saved.revision, 0)
+            self.assertEqual(saved.answers_json, {})
+            self.assertEqual(saved.status, "draft")
+            self.assertIsNone(
+                db.scalar(select(Document).where(Document.profile_id == profile_id))
+            )
+            self.assertIsNone(
+                db.scalar(
+                    select(DocumentChunk).where(DocumentChunk.profile_id == profile_id)
+                )
+            )
+            self.assertIsNone(
+                db.scalar(
+                    select(IntakeRequest).where(
+                        IntakeRequest.profile_id == profile_id,
+                        IntakeRequest.operation == "register_text",
+                    )
+                )
+            )
+            self.assertEqual(db.get(Job, job_id).status, "queued")
