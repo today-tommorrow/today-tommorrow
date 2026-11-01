@@ -135,7 +135,12 @@ class ExtractionTests(unittest.TestCase):
         output = io.BytesIO()
         writer.write(output)
         self.assertEqual(extract_file(output.getvalue(), "pdf")["status"], "failed")
+        del page[NameObject("/Annots")]
+        output = io.BytesIO()
+        writer.write(output)
+        self.assertEqual(extract_file(output.getvalue(), "pdf")["status"], "failed")
         del writer._root_object[NameObject("/AcroForm")]
+        page[NameObject("/Annots")] = ArrayObject([widget_ref])
         output = io.BytesIO()
         writer.write(output)
         self.assertEqual(extract_file(output.getvalue(), "pdf")["status"], "failed")
