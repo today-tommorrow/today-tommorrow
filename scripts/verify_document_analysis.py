@@ -9,23 +9,17 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+from pypdf import PdfWriter
+from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+from sqlalchemy.exc import SQLAlchemyError
+
+if TYPE_CHECKING:
+    from app.ai.document_analysis import DocumentAnalysis, DocumentChunkInput
 
 ROOT = Path(__file__).resolve().parents[1]
 BACKEND = ROOT / "backend"
-sys.path.insert(0, str(BACKEND))
-# The existing extractor starts a Python subprocess; give it the same checkout.
-os.environ["PYTHONPATH"] = str(BACKEND) + os.pathsep + os.environ.get("PYTHONPATH", "")
-
-from app.ai.document_analysis import (
-    PROMPT_VERSION,
-    DocumentAnalysis,
-    DocumentAnalysisError,
-    DocumentChunkInput,
-    GemmaDocumentAnalyzer,
-)
-from pypdf import PdfWriter
-from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
-
 DOCUMENT_ID = "d8448fbd-4697-4ccb-bf4b-083a32c10515"
 CHUNK_IDS = (
     "10e7e667-304e-4863-86d6-264f99a26001",
@@ -85,6 +79,8 @@ def evaluate(
     chunks: tuple[DocumentChunkInput, ...],
     locators: tuple[str, ...],
 ) -> dict:
+    from app.ai.document_analysis import PROMPT_VERSION
+
     by_id = {chunk.chunk_id: chunk for chunk in chunks}
     expected_ids = tuple(chunk.chunk_id for chunk in chunks)
     lineage = all(
@@ -135,10 +131,21 @@ def evaluate(
 
 
 def run() -> dict:
-    from app.documents.routes import extract_file
+    from app.ai.document_analysis import DocumentChunkInput, GemmaDocumentAnalyzer
+    from app.documents.routes import DocumentError, extract_file
 
     start = time.monotonic()
-    extracted = extract_file(synthetic_pdf(), "pdf")
+    previous_path = os.environ.get("PYTHONPATH")
+    os.environ["PYTHONPATH"] = str(BACKEND) + os.pathsep + (previous_path or "")
+    try:
+        extracted = extract_file(synthetic_pdf(), "pdf")
+    except DocumentError:
+        return {"status": "failed", "failure_code": "synthetic_pdf_extraction_failed"}
+    finally:
+        if previous_path is None:
+            os.environ.pop("PYTHONPATH", None)
+        else:
+            os.environ["PYTHONPATH"] = previous_path
     if extracted.get("status") != "queued" or len(extracted.get("chunks", [])) != 2:
         return {"status": "failed", "failure_code": "synthetic_pdf_extraction_failed"}
     pairs = extracted["chunks"]
@@ -179,6 +186,20 @@ def main() -> int:
         )
         return 2
     try:
+        sys.path.insert(0, str(BACKEND))
+        from app.ai.document_analysis import DocumentAnalysisError
+    except (
+        ImportError,
+        ValueError,
+        TypeError,
+        RuntimeError,
+        OSError,
+        AttributeError,
+        SQLAlchemyError,
+    ):
+        print(json.dumps({"status": "failed", "failure_code": "verification_failed"}))
+        return 1
+    try:
         report = run()
     except DocumentAnalysisError as exc:
         code = (
@@ -193,7 +214,16 @@ def main() -> int:
             "failure_code": code,
             "processed_chunk_count": len(exc.processed_chunk_ids),
         }
-    except Exception:  # noqa: BLE001 - Never print untrusted exception contents.
+    except (
+        ImportError,
+        ValueError,
+        TypeError,
+        RuntimeError,
+        OSError,
+        AttributeError,
+        LookupError,
+        SQLAlchemyError,
+    ):
         report = {"status": "failed", "failure_code": "verification_failed"}
     print(json.dumps(report, ensure_ascii=False))
     return 0 if report["status"] == "passed" else 1
