@@ -57,3 +57,30 @@ The real-model record reports `gemma4-checklist`, revision `29d097773436b69ff9fe
 Private local evidence: `.outline/issue31-failure-recovery/failure-recovery-evidence.json`, `failure-preserved-input.jpg`, and `retry-result-reloaded.jpg`. Environment/session files and database dumps stay outside version control.
 
 Still unverified by this slice: material registration/interpretation/deletion, real Google OAuth, an independent teammate's complete A/B walkthrough, DB outage, physical GPU cancellation, and the full cross-system failure matrix. Issue #31 remains partially complete.
+
+## Result-write rejection and recovery (#31)
+
+A result-table write rejection is distinct from a model HTTP error or a complete database outage. The recommendation worker inserts the result and marks its job successful in one transaction. An insertion error must roll back that transaction; if the database remains reachable and job writes still work, the separate failure transaction can expose the generic `recommendation_failed` status. A disconnected database may prevent that failure update too, so this scenario does not establish full-outage recovery.
+
+The bounded fault is a temporary denial of `INSERT` on `today_app.recommendation_runs` for the application role in an exclusive test database. It must leave profile, session and job access unchanged. Capture the original permission state and register restoration before injection; verify the application role is neither superuser nor table owner and that its effective insert permission becomes false. Restore the original permission state before explicit retry and on cleanup. Never apply this experiment to a shared or production database.
+
+Acceptance: the first attempt reaches persistence and fails safely with zero result rows; the reviewed profile and frozen submission remain intact. After permission restoration, explicit retry creates a distinct job and key, saves exactly one result associated with that retry, and preserves the original frozen input. Result reads must match the saved record. This does not verify blocked writes, lease expiry, physical GPU cancellation, or material-input recovery.
+
+The ACL regression is opt-in because it changes table privileges temporarily. After configuring the normal guarded local database URLs, set `EXCLUSIVE_TEST_PORT` to that database's port and ensure no other API/worker uses it. Run from `backend/`:
+
+```sh
+L0_DATABASE_TESTS=1 ISSUE31_EXCLUSIVE_ACL_TEST=1 ISSUE31_EXCLUSIVE_ACL_PORT="$EXCLUSIVE_TEST_PORT" \
+  python -m unittest discover -s tests -p test_recommendation_flow.py -k test_denied_result_insert_rolls_back_and_retry_preserves_snapshot -v
+```
+
+The test checks loopback host, matching application/migration database targets, the explicitly designated port, application role privileges, and absence of pre-existing queued/running jobs before starting the scenario. It registers cleanup before mutation and restores the original ACL in a `finally` block before retry. The successful model runner in this regression is synthetic.
+
+### Actual browser result-write recovery, 2026-11-01
+
+On main `62c8083` plus this regression, a separate loopback PostgreSQL clone was used exclusively for the fault. The application role was neither superuser nor table owner; its effective result-table INSERT privilege was verified false. All other application table access remained available. A synthetic authenticated session and HTTP-seeded complete no-document profile started at the browser review/submit screen. Its selection-summary list was empty; this run does not verify generated-question wording or real OAuth.
+
+The first actual GPU attempt failed after 171.064 seconds at `persisting`, with safe diagnostic category `database_error` and public `recommendation_failed`. Zero recommendation runs existed. Answers, revision and frozen input remained intact. After restoring the exact original table ACL, explicit browser retry created a different job and idempotency key. It succeeded after 169.701 seconds (pipeline: 168779 ms), storing one run containing one course item. The original and retry snapshots and saved input were equal; the stored run belonged only to the retry job. Two authenticated result reads matched the database, and browser navigation plus reload displayed the same run. These are individual timings, not reliability or latency-distribution measurements.
+
+The successful run reports real-model execution with `gemma4-checklist`, revision `29d097773436b69ff9feafd636ab4cf873786537`, prompt `work24-recommendation-grounded-4`. The experiment used the existing remote Gemma/BGE services without changing or stopping them. The original ACL was verified restored with effective INSERT enabled. The ordinary regression database was separate from the live browser fault database.
+
+Local evidence is retained in `.outline/issue31-db-write-recovery/db-write-evidence.json`, `db-failure-preserved-input.jpg`, and `db-retry-result-reloaded.jpg`; credentials and database dumps are excluded from version control. This completes the bounded immediate result-write rejection/recovery scenario, not issue #31's full outage, material-input, OAuth or teammate E2E requirements.
