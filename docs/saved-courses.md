@@ -35,7 +35,7 @@
 }
 ```
 
-위 JSON의 이름과 UUID는 계약 설명용 합성 값이다. 실제 서비스는 원본 교육만 저장하며 합성 교육을 주입하지 않는다. 빈 목록은 같은 필드를 가진 `items: []`, `next_cursor: null`이다. 오류는 `{code,message,request_id}` 형태이며 DB 원문/비밀번호를 노출하지 않는다.
+위 JSON의 이름과 UUID는 계약 설명용 합성 값이다. 실제 서비스는 원본 교육만 저장하며 합성 교육을 주입하지 않는다. 빈 목록은 같은 필드를 가진 `items: []`, `next_cursor: null`이다. 인증·업무 오류는 `{code,message,request_id}` 형태이며 DB 원문/비밀번호를 노출하지 않는다. UUID와 limit의 형식 검증 실패는 FastAPI의 422 `detail` 응답을 사용한다.
 
 기존 웹의 `{items}`만 소비하던 계약을 `items,next_cursor,catalog_version_id`로 명확히 했다. 각 관심 항목에는 `saved_catalog_version_id`와 `catalog_status`가 필수다. 페이지 이동 중 409를 받으면 화면에 갱신 사실을 알리고 첫 페이지부터 다시 조회한다.
 
@@ -61,4 +61,24 @@ uv run --locked ruff check . ../scripts ../tools/catalog
 
 12개 집중 검사가 실제 PostgreSQL 16.14/pgvector 0.6.0과 고정 원본 406개 과정/6,099개 단위에서 통과했다. 합성 인증 세션으로 실제 인증·CSRF를 거쳐 저장/재조회/해제를 검사했다. 동시 PUT, 원본 ID 보존, 다른 계정 분리, 누락/변조 cursor, 동점 keyset, 페이지 중 저장/해제, 카탈로그 교체와 사라진 과정 snapshot, 원본 서비스 실패도 포함한다. 교체 검사는 테스트 관리자만 원본을 잠시 변경하고 복구한다; 서비스 계정에는 원본 쓰기 권한이 없다.
 
-최종 PR에는 통합 `./check`와 실제 웹/API 연결 검증 결과를 별도로 기록한다. 이 집중 검사만으로 웹 전체 동작을 검증했다고 표시하지 않는다. GPU 검증은 N/A다.
+2026-11-01 통합 `./check`가 통과했다. 웹 250개, backend 145개 실행(명시적 CI 전용 재적재 검사 1개 제외), 실행 도구 22개, catalog 단위 11개, catalog 통합 4개를 검사했다. TypeScript·ESLint·Prettier·Ruff·웹 build도 통과했다. 제외된 `DatabaseBoundaryTests.test_reimport_keeps_application_rows_and_education_keys`는 표준 `./check`가 `L0_REIMPORT_TESTS=0`으로 지정하는 검사다.
+
+별도 실제 uvicorn HTTP 요청 47개로 반복·동시 PUT, DELETE, 계정 격리, 인증·CSRF, 오류 상태, keyset 페이지, 카탈로그 교체와 snapshot 복구를 확인했다. 검사 후 원본 카탈로그 버전과 fingerprint를 복구했다. 실행 환경은 Python 3.14.6, Node 26.5.0, npm 11.17.0, uv 0.12.5, PostgreSQL 16.14, pgvector 0.6.0이다.
+
+원본 패키지는 commit `043f8b8e96620994aff06b0edc2d235f793f0b5a`, ZIP SHA256 `c6cd4618bc4b9fcca925161ee09ed683faf77f8ebf45cfa5831bb6bffdbaeb8e`다. Dataset은 `7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80`, embedding profile은 `770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90`으로 고정했다.
+
+### React와 실제 HTTP 연결 재현
+
+`./setup`과 migration을 마치고 `./dev`로 API를 실행한다. `.env`의 `PUBLIC_ORIGIN`은 기존 개발 계약인 `http://127.0.0.1:5173`을 사용하고, `API_TARGET`은 실행 중인 API 주소와 일치시킨다. 별도 터미널에서 저장소 루트 기준으로 실행한다. 아래 임시 파일이 이미 있으면 다른 새 경로를 사용한다.
+
+```sh
+backend/.venv/bin/python scripts/seed-synthetic-saved-session.py --root "$PWD" --output /tmp/saved-ui-session.json
+cd web
+TEST_SESSION_FILE=/tmp/saved-ui-session.json npx vitest run --config integration/saved-courses.config.ts
+cd ..
+backend/.venv/bin/python scripts/seed-synthetic-saved-session.py --root "$PWD" --output /tmp/saved-ui-session.json --cleanup
+```
+
+이 선택 실행 검사는 통과했다. 실제 `SaveCourse`와 `SavedCourses` 컴포넌트를 jsdom에서 렌더링하고, 실제 API·DB로 저장(204)·목록·재진입·해제(204)·빈 목록 재조회를 확인한다. 테스트 전용 메모리 export로 기존 컴포넌트에 접근하며 동작을 대체하지 않는다. 진입 데이터는 실제 공개 교육이고 인증 계정만 합성이다. seed 도구는 로컬 `work24_dev` 경계를 검사하고 자격정보 파일을 0600으로 독점 생성한다. 성공·실패 후 cleanup 명령으로 테스트 계정과 파일을 제거하고 자격정보는 커밋하지 않는다.
+
+이 결과는 실제 HTTP에 연결한 React 컴포넌트 검증이다. Google 로그인·교육 상세 진입·추천 모델을 포함한 전체 브라우저 E2E 검증을 의미하지 않는다. 카탈로그 교체·페이지 복구는 실제 DB/HTTP 검사와 별도 UI 상태 검사로 확인했다. 모델 호출이 없는 #29의 GPU 검증은 N/A다.
