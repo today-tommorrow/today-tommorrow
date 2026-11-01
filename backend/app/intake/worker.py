@@ -1,19 +1,70 @@
 """Run with `python -m app.intake.worker`; no test provider is available by config."""
 
 import argparse
+import logging
 import os
 import time
 from datetime import UTC, datetime
 from threading import Event, Thread
 
+from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.ai.questions import QuestionError
 from app.db import SessionLocal
 from app.intake import store
 from app.intake.question_config import QuestionSettings
 from app.intake.question_service import save_question
 from app.jobs import store as jobs
 from app.jobs.execution import execution_slot
+
+LOGGER = logging.getLogger(__name__)
+FAILURE_CODES = frozenset(
+    {
+        "generation_cancelled",
+        "invalid_generation_context",
+        "invalid_model_response",
+        "model_http_error",
+        "model_response_too_large",
+        "model_timeout",
+        "model_unavailable",
+        "duplicate_or_empty_question_option",
+        "duplicate_question_patch",
+        "empty_question",
+        "forbidden_question_content",
+        "forbidden_question_patch",
+        "inconsistent_budget_patch",
+        "ineligible_question_target",
+        "invalid_question_json",
+        "invalid_question_patch",
+        "missing_budget_amount",
+        "unresolved_question_target",
+    }
+)
+
+
+def failure_category(error: Exception) -> str:
+    """Return only known fixed codes; never format provider or validation content."""
+    if isinstance(error, QuestionError):
+        if (
+            len(error.args) == 1
+            and type(error.args[0]) is str
+            and error.args[0] in FAILURE_CODES
+        ):
+            return error.args[0]
+        return "unexpected_error"
+    if isinstance(error, SQLAlchemyError):
+        return "database_error"
+    if isinstance(error, ValidationError):
+        return "validation_error"
+    if (
+        type(error) is ValueError
+        and len(error.args) == 1
+        and type(error.args[0]) is str
+        and error.args[0] == "provider_model_changed"
+    ):
+        return "provider_model_changed"
+    return "unexpected_error"
 
 
 class LostLease(Exception):
@@ -50,6 +101,7 @@ def _run_once(
     if claim is None:
         return False
     stop, cancelled = Event(), Event()
+    stage = "provider_generation"
 
     def heartbeat():
         while not stop.wait(max(0.25, lease_seconds / 3)):
@@ -76,6 +128,7 @@ def _run_once(
         draft = provider.generate(claim.input_json["context"], cancelled=cancelled)
         stop.set()
         thread.join(timeout=5)
+        stage = "question_persistence"
         with factory() as db, db.begin():
             profile = store.get_profile(db, claim.profile_id, claim.user_id, lock=True)
             if jobs.owns(db, claim, now=datetime.now(UTC), clock=utcnow) is None:
@@ -96,8 +149,14 @@ def _run_once(
                 raise LostLease()
     except LostLease:
         pass  # The whole result transaction rolled back; a new owner may finish.
-    except Exception:
-        # Provider exceptions may contain user/model content. Persist only this code.
+    except Exception as error:
+        # Only fixed categories leave the worker; public job errors stay generic.
+        LOGGER.warning(
+            "question_generation_failed job_id=%s stage=%s category=%s",
+            claim.id,
+            stage,
+            failure_category(error),
+        )
         try:
             with factory() as db, db.begin():
                 jobs.fail(
