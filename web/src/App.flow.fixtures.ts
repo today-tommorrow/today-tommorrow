@@ -207,6 +207,7 @@ export function createFlowFixture(faults: Faults = {}) {
       status: 'succeeded',
       phase: 'completed',
       profile_id: profile.id,
+      profile_revision: profile.revision,
       result,
       error: null,
       created_at: timestamp,
@@ -302,6 +303,24 @@ export function createFlowFixture(faults: Faults = {}) {
     if (path === '/api/profiles' && method === 'POST')
       return Response.json(profile, { status: 201 })
     if (path === base && method === 'GET') return Response.json(profile)
+    if (path === `${base}/recommendation-job` && method === 'GET') {
+      const current = [...jobs.values()]
+        .filter(
+          (item) =>
+            item.kind === 'recommendation' &&
+            item.profile_revision === profile.revision,
+        )
+        .sort(
+          (a, b) =>
+            b.created_at.localeCompare(a.created_at) ||
+            b.id.localeCompare(a.id),
+        )[0]
+      return Response.json({
+        profile_id: profile.id,
+        revision: profile.revision,
+        job: current ?? null,
+      })
+    }
     if (path === `${base}/questions` && method === 'POST') {
       expect(profile.intake_state.next_action).toBe('generate_question')
       expect(body.expected_revision).toBe(profile.revision)

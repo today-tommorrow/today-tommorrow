@@ -75,6 +75,7 @@ function job(status: Job['status']): Job {
     status,
     phase: status === 'succeeded' ? 'completed' : 'assessing',
     profile_id: profile.id,
+    profile_revision: profile.revision,
     result: status === 'succeeded' ? { recommendation_run_id: runId } : null,
     error: null,
     created_at: '2026-11-01T00:00:00Z',
@@ -83,8 +84,14 @@ function job(status: Job['status']): Job {
   }
 }
 
-function Harness({ onRun }: { onRun: (id: string) => void }) {
-  const [current, setCurrent] = useState(profile)
+function Harness({
+  onRun,
+  initial = profile,
+}: {
+  onRun: (id: string) => void
+  initial?: Profile
+}) {
+  const [current, setCurrent] = useState(initial)
   return <Intake profile={current} onProfile={setCurrent} onRun={onRun} />
 }
 
@@ -117,6 +124,173 @@ afterEach(() => {
   vi.unstubAllEnvs()
   sessionStorage.clear()
   setCsrfToken(null)
+})
+
+describe('서버 추천 작업 복구', () => {
+  it('새 탭에서 확인 중 제출을 막고 완료 작업을 복구한다', async () => {
+    let resolveRecovery!: (value: Response) => void
+    const recovery = new Promise<Response>((resolve) => {
+      resolveRecovery = resolve
+    })
+    const onRun = vi.fn()
+    const fetch = serve((path) => {
+      if (path.endsWith('/recommendation-job')) return recovery
+      if (path === `/api/jobs/${jobId}`) return Response.json(job('succeeded'))
+      throw new Error(`Unexpected path: ${path}`)
+    })
+    render(
+      <Harness onRun={onRun} initial={{ ...profile, status: 'submitted' }} />,
+    )
+    expect(submitButton().disabled).toBe(true)
+    fireEvent.click(submitButton())
+    resolveRecovery(
+      Response.json({
+        profile_id: profile.id,
+        revision: profile.revision,
+        job: job('succeeded'),
+      }),
+    )
+    await waitFor(() => expect(onRun).toHaveBeenCalledWith(runId))
+    expect(fetch.mock.calls.some(([url]) => url.endsWith('/submit'))).toBe(
+      false,
+    )
+  })
+
+  it('늦은 이전 버전 응답은 새 입력의 결과를 열지 않는다', async () => {
+    let resolveOld!: (value: Response) => void
+    const old = new Promise<Response>((resolve) => {
+      resolveOld = resolve
+    })
+    let count = 0
+    const onRun = vi.fn()
+    serve((path) => {
+      if (path.endsWith('/recommendation-job')) {
+        count += 1
+        return count === 1
+          ? old
+          : Response.json({
+              profile_id: profile.id,
+              revision: profile.revision + 1,
+              job: null,
+            })
+      }
+      throw new Error(`Unexpected path: ${path}`)
+    })
+    const submitted = { ...profile, status: 'submitted' as const }
+    const view = render(
+      <Intake profile={submitted} onProfile={vi.fn()} onRun={onRun} />,
+    )
+    view.rerender(
+      <Intake
+        profile={{ ...submitted, revision: profile.revision + 1 }}
+        onProfile={vi.fn()}
+        onRun={onRun}
+      />,
+    )
+    resolveOld(
+      Response.json({
+        profile_id: profile.id,
+        revision: profile.revision,
+        job: job('succeeded'),
+      }),
+    )
+    await waitFor(() => expect(submitButton().disabled).toBe(false))
+    expect(onRun).not.toHaveBeenCalled()
+  })
+
+  it('기억된 이전 버전 추천 작업은 결과로 이동하지 않는다', async () => {
+    sessionStorage.setItem(storageKey, jobId)
+    const onRun = vi.fn()
+    serve((path) => {
+      if (path.endsWith('/recommendation-job'))
+        return Response.json({
+          profile_id: profile.id,
+          revision: profile.revision,
+          job: null,
+        })
+      if (path === `/api/jobs/${jobId}`)
+        return Response.json({
+          ...job('succeeded'),
+          profile_revision: profile.revision - 1,
+        })
+      throw new Error(`Unexpected path: ${path}`)
+    })
+    render(
+      <Harness onRun={onRun} initial={{ ...profile, status: 'submitted' }} />,
+    )
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: resumeLabel })).toBeTruthy(),
+    )
+    fireEvent.click(screen.getByRole('button', { name: resumeLabel }))
+    await screen.findByRole('alert')
+    expect(onRun).not.toHaveBeenCalled()
+    expect(sessionStorage.getItem(storageKey)).toBeNull()
+  })
+
+  it('작업 조회 후 입력이 변경되면 이전 결과를 열지 않는다', async () => {
+    sessionStorage.setItem(storageKey, jobId)
+    const onRun = vi.fn()
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string) => {
+        const path = new URL(url).pathname
+        if (path === '/api/onboarding/options') return Response.json(options)
+        if (path === `/api/profiles/${profile.id}`)
+          return Response.json({ ...profile, revision: profile.revision + 1 })
+        if (path === `/api/jobs/${jobId}`)
+          return Response.json(job('succeeded'))
+        throw new Error(`Unexpected path: ${path}`)
+      }),
+    )
+    render(<Harness onRun={onRun} />)
+    fireEvent.click(screen.getByRole('button', { name: resumeLabel }))
+    await screen.findByText('입력이 바뀌어 이전 추천을 표시하지 않았어요.')
+    expect(onRun).not.toHaveBeenCalled()
+    expect(sessionStorage.getItem(storageKey)).toBeNull()
+  })
+
+  it('기존 탭 작업을 복구 작업으로 덮지 않는다', async () => {
+    sessionStorage.setItem(storageKey, 'saved-question-job')
+    serve((path) => {
+      if (path.endsWith('/recommendation-job'))
+        return Response.json({
+          profile_id: profile.id,
+          revision: profile.revision,
+          job: job('running'),
+        })
+      throw new Error(`Unexpected path: ${path}`)
+    })
+    render(
+      <Harness onRun={vi.fn()} initial={{ ...profile, status: 'submitted' }} />,
+    )
+    await screen.findByRole('button', { name: '추천 작업 다시 확인' })
+    expect(sessionStorage.getItem(storageKey)).toBe('saved-question-job')
+    expect(submitButton().disabled).toBe(true)
+  })
+
+  it('복구 오류는 제출을 막고 재확인을 제공한다', async () => {
+    let count = 0
+    serve((path) => {
+      if (path.endsWith('/recommendation-job')) {
+        count += 1
+        return count === 1
+          ? Response.json({}, { status: 503 })
+          : Response.json({
+              profile_id: profile.id,
+              revision: profile.revision,
+              job: null,
+            })
+      }
+      throw new Error(`Unexpected path: ${path}`)
+    })
+    render(
+      <Harness onRun={vi.fn()} initial={{ ...profile, status: 'submitted' }} />,
+    )
+    fireEvent.click(
+      await screen.findByRole('button', { name: '추천 작업 다시 확인' }),
+    )
+    await waitFor(() => expect(submitButton().disabled).toBe(false))
+  })
 })
 
 describe('추천 제출과 저장된 결과 복구', () => {

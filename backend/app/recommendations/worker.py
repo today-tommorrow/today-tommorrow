@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import os
 import time
 from copy import deepcopy
@@ -17,6 +18,7 @@ from app.db import SessionLocal, engine
 from app.intake import store
 from app.jobs import store as jobs
 from app.jobs.execution import execution_slot
+from app.recommendations.contracts import RecommendationError
 from app.recommendations.models import RecommendationRun
 
 if TYPE_CHECKING:
@@ -40,6 +42,46 @@ PHASES = frozenset(
         "persisting",
     }
 )
+LOGGER = logging.getLogger(__name__)
+FAILURE_CODES = frozenset(
+    {
+        "invalid_assessment",
+        "invalid_catalog_metadata",
+        "invalid_model_context",
+        "invalid_model_grounding",
+        "invalid_model_response",
+        "invalid_model_stage",
+        "invalid_recommendation_input",
+        "invalid_recommendation_result",
+        "model_context_too_large",
+        "model_response_too_large",
+        "recommendation_context_changed",
+        "recommendation_goal_missing",
+        "recommendation_input_too_large",
+        "recommendation_materials_unsupported",
+        "recommendation_model_http_error",
+        "recommendation_model_timeout",
+        "recommendation_model_unavailable",
+        "recommendation_provider_unavailable",
+    }
+)
+
+
+def failure_category(error: Exception) -> str:
+    """Select fixed categories without formatting potentially private exceptions."""
+    if isinstance(error, RecommendationError):
+        if (
+            len(error.args) == 1
+            and type(error.args[0]) is str
+            and error.args[0] in FAILURE_CODES
+        ):
+            return error.args[0]
+        return "unexpected_error"
+    if isinstance(error, SQLAlchemyError):
+        return "database_error"
+    if isinstance(error, TimeoutError):
+        return "provider_timeout"
+    return "unexpected_error"
 
 
 class LostLease(Exception):
@@ -84,6 +126,7 @@ def _run_once(
     if claim is None:
         return False
     stop, cancelled = Event(), Event()
+    last_phase = "freezing"
 
     def heartbeat() -> None:
         while not stop.wait(max(0.25, lease_seconds / 3)):
@@ -103,6 +146,7 @@ def _run_once(
                 return
 
     def report_phase(phase: str) -> None:
+        nonlocal last_phase
         if phase not in PHASES:
             raise ValueError("invalid_recommendation_phase")
         if cancelled.is_set():
@@ -113,6 +157,7 @@ def _run_once(
                 cancelled.set()
                 raise LostLease()
             row.phase = phase
+        last_phase = phase
 
     thread = Thread(target=heartbeat, daemon=True)
     thread.start()
@@ -180,8 +225,14 @@ def _run_once(
                 raise LostLease()
     except LostLease:
         pass
-    except Exception:
+    except Exception as error:
         # Provider/DB failures can contain user text or secrets: only persist a fixed code.
+        LOGGER.warning(
+            "recommendation_failed job_id=%s phase=%s category=%s",
+            claim.id,
+            last_phase,
+            failure_category(error),
+        )
         try:
             with factory() as db, db.begin():
                 jobs.fail(

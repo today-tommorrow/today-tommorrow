@@ -1,9 +1,9 @@
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.auth.dependencies import DB, authenticated, authenticated_write
@@ -13,7 +13,12 @@ from app.intake import store
 from app.intake.requests import IdempotencyConflict
 from app.jobs.store import JobConflict
 from app.recommendations.schemas import SubmitRequest
-from app.recommendations.service import RecommendationServiceError, get_result, submit
+from app.recommendations.service import (
+    RecommendationServiceError,
+    current_job,
+    get_result,
+    submit,
+)
 
 router = APIRouter(prefix="/api")
 ReadUser = Annotated[SessionPrincipal, Depends(authenticated)]
@@ -122,6 +127,43 @@ def submit_profile(
         raise RecommendationServiceError(404, "recommendation_not_found") from None
     except IdempotencyConflict, JobConflict:
         raise RecommendationServiceError(409, "idempotency_conflict") from None
+    except SQLAlchemyError:
+        db.rollback()
+        raise RecommendationServiceError(503, "recommendation_unavailable") from None
+
+
+class CurrentRecommendationJob(BaseModel):
+    id: str
+    kind: Literal["recommendation"]
+    status: Literal[
+        "queued", "running", "succeeded", "failed", "cancelled", "superseded"
+    ]
+    phase: str
+    profile_id: str
+    profile_revision: int
+    result: dict[str, str] | None
+    error: dict[str, str] | None
+    created_at: str
+    finished_at: str | None
+    completed_stages: list[str]
+
+
+class CurrentRecommendationJobResponse(BaseModel):
+    profile_id: str
+    revision: int
+    job: CurrentRecommendationJob | None
+
+
+@router.get(
+    "/profiles/{id}/recommendation-job", response_model=CurrentRecommendationJobResponse
+)
+def read_current_job(id: str, user: ReadUser, db: DB):
+    try:
+        return JSONResponse(
+            current_job(db, identifier(id), user.user.id), headers=PRIVATE
+        )
+    except store.ProfileNotFound:
+        raise RecommendationServiceError(404, "recommendation_not_found") from None
     except SQLAlchemyError:
         db.rollback()
         raise RecommendationServiceError(503, "recommendation_unavailable") from None
