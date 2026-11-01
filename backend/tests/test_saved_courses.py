@@ -4,18 +4,21 @@ import os
 import unittest
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
+from threading import Barrier
 from unittest.mock import patch
 from uuid import uuid4
 
 import test_profile_drafts as profiles
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select, text, update
+from sqlalchemy import event, func, select, text, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from test_database_boundary import local_engine
 
 from app.main import app
 from app.saved_courses.catalog import canonical, course_uuid, read_catalog, safe_url
 from app.saved_courses.models import SavedCourse
+from app.saved_courses.service import save
 
 
 class SavedContractTests(unittest.TestCase):
@@ -95,11 +98,47 @@ class SavedDatabaseTests(unittest.TestCase):
         self.assertEqual(self.listing().json()["items"], [])
 
     def test_parallel_put_is_idempotent(self):
-        with ThreadPoolExecutor(max_workers=4) as pool:
-            responses = list(pool.map(lambda _: self.save(self.ids[0]), range(8)))
-        self.assertEqual({r.status_code for r in responses}, {204})
+        barrier = Barrier(4)
+
+        def synchronize_insert(connection, cursor, statement, parameters, context, executemany):
+            # All requests have observed no save before PostgreSQL arbitrates
+            # concurrent inserts against both owner-scoped unique constraints.
+            if context.isinsert and context.compiled.statement.table.name == "saved_courses":
+                barrier.wait(timeout=10)
+
+        def put(identifier):
+            with TestClient(app, base_url=profiles.ORIGIN) as client:
+                client.cookies.set("today_tommorrow_session", self.fixture.token)
+                return self.save(identifier, client=client)
+
+        event.listen(self.engine, "before_cursor_execute", synchronize_insert)
+        try:
+            with ThreadPoolExecutor(max_workers=4) as pool:
+                for identifier in self.ids:
+                    with self.subTest(identifier=identifier):
+                        responses = list(pool.map(put, [identifier] * 4))
+                        self.assertEqual([r.status_code for r in responses], [204] * 4)
+        finally:
+            event.remove(self.engine, "before_cursor_execute", synchronize_insert)
         with Session(self.engine) as db:
-            self.assertEqual(db.scalar(select(func.count()).select_from(SavedCourse).where(SavedCourse.user_id == self.owner)), 1)
+            rows = db.scalars(select(SavedCourse).where(SavedCourse.user_id == self.owner)).all()
+            self.assertEqual(len(rows), len(self.ids))
+            before = {row.course_id: (row.created_at, row.saved_catalog_version_id, row.saved_snapshot) for row in rows}
+            for row in rows:
+                self.assertEqual(row.saved_catalog_version_id, self.catalog.version)
+                self.assertEqual(row.saved_snapshot, self.catalog.courses[row.course_id].summary.model_dump(mode="json"))
+        for identifier in self.ids:
+            self.assertEqual(self.save(identifier).status_code, 204)
+        with Session(self.engine) as db:
+            rows = db.scalars(select(SavedCourse).where(SavedCourse.user_id == self.owner)).all()
+            self.assertEqual({row.course_id: (row.created_at, row.saved_catalog_version_id, row.saved_snapshot) for row in rows}, before)
+
+    def test_save_does_not_suppress_foreign_key_errors(self):
+        with Session(self.engine) as db:
+            with self.assertRaises(IntegrityError) as raised:
+                save(db, uuid4(), self.ids[0], self.catalog)
+            self.assertEqual(raised.exception.orig.sqlstate, "23503")
+            db.rollback()
 
     def test_accounts_are_isolated_even_for_same_public_course(self):
         self.assertEqual(self.save(self.ids[0]).status_code, 204)

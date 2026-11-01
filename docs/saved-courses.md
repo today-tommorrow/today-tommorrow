@@ -75,6 +75,46 @@ uv run --locked ruff check . ../scripts ../tools/catalog
 
 원본 패키지는 commit `043f8b8e96620994aff06b0edc2d235f793f0b5a`, ZIP SHA256 `c6cd4618bc4b9fcca925161ee09ed683faf77f8ebf45cfa5831bb6bffdbaeb8e`다. Dataset은 `7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80`, embedding profile은 `770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90`으로 고정했다.
 
+### Concurrent-save regression (2026-11-01, #29)
+
+On main `d68a949`, concurrent first saves could return 503: the insert handled
+conflicts on `(user_id, course_id)` while `uq_saved_source_owner` independently
+enforced `(user_id, source_course_id)`. A preceding lookup does not serialize
+concurrent requests. The insert now uses `ON CONFLICT DO NOTHING` without a target
+so PostgreSQL arbitrates both existing identity constraints. It keeps the winning
+row unchanged. Foreign-key errors still propagate; this is not a general SQL-error
+catch. See the [PostgreSQL INSERT contract](https://www.postgresql.org/docs/16/sql-insert.html).
+
+Reproduce after preparing the same isolated PostgreSQL database and pinned archive
+described above, then run from `backend`:
+
+```sh
+L0_DATABASE_TESTS=1 PYTHONPATH=.:tests uv run --locked python -m unittest test_saved_courses.SavedDatabaseTests.test_parallel_put_is_idempotent
+L0_DATABASE_TESTS=1 uv run --locked python -m unittest discover -s tests -p 'test_saved_courses.py'
+```
+
+The concurrency test runs four authenticated TestClients per course across five
+public course IDs. An SQLAlchemy execution barrier aligns inserts after every
+request has observed an absent save; PostgreSQL executes the production SQL against
+the unchanged schema. Before the fix, every course group failed the all-204
+assertion, and PostgreSQL logged `duplicate key value violates unique constraint
+"uq_saved_source_owner"`. After the fix, all 20 concurrent PUTs returned 204 with
+one row per account/course. Replays preserved `created_at`,
+`saved_catalog_version_id`, and `saved_snapshot`.
+
+All 13 saved-course tests passed on Python 3.14.6, PostgreSQL 16.14 and pgvector
+0.6.0. They also cover account isolation, catalog-switch snapshot retention,
+authentication/CSRF, cursor validation and deletion. A real missing-owner insert
+still raises foreign-key SQLSTATE `23503`. No schema or API contract changed;
+model/GPU execution is N/A.
+
+The full local `./check` passed: 276 web tests; 263 backend tests with the standard
+reimport check skipped; 22 launcher tests; 30 catalog unit tests; and 11 catalog
+integration tests with the separately enabled records-database check skipped.
+TypeScript, ESLint, Prettier, Ruff, pinned-catalog verification and the production
+web build passed. The owned disposable database and volume were removed afterward.
+GitHub Actions and the scheduler remained disabled.
+
 ### React와 실제 HTTP 연결 재현
 
 `./setup`과 migration을 마치고 `./dev`로 API를 실행한다. `.env`의 `PUBLIC_ORIGIN`은 기존 개발 계약인 `http://127.0.0.1:5173`을 사용하고, `API_TARGET`은 실행 중인 API 주소와 일치시킨다. 별도 터미널에서 저장소 루트 기준으로 실행한다. 아래 임시 파일이 이미 있으면 다른 새 경로를 사용한다.
