@@ -548,6 +548,11 @@ class DocumentLifecycleTests(FileDocumentsTests):
                 idempotency_key="mixed-a",
                 request_hash="mixed-a",
                 input_json={
+                    "sources": [
+                        {"id": "0", "text": "a"},
+                        {"id": "other-item", "text": "sample"},
+                        {"source_item_ids": ["other-item"], "label": "sample"},
+                    ],
                     "reviewed_items": [
                         {
                             "id": "0",
@@ -560,7 +565,7 @@ class DocumentLifecycleTests(FileDocumentsTests):
                             "label": "sample",
                             "evidence_quote": "a",
                         },
-                    ]
+                    ],
                 },
                 result_json={"text": "a"},
                 created_at=datetime.now(UTC),
@@ -597,6 +602,13 @@ class DocumentLifecycleTests(FileDocumentsTests):
                         "label": "sample",
                         "evidence_quote": "a",
                     }
+                ],
+            )
+            self.assertEqual(
+                db.get(Job, mixed_id).input_json["sources"],
+                [
+                    {"id": "other-item", "text": "sample"},
+                    {"source_item_ids": ["other-item"], "label": "sample"},
                 ],
             )
             self.assertIsNone(db.get(Job, mixed_id).result_json)

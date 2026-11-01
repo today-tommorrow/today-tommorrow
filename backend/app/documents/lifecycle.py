@@ -78,7 +78,7 @@ def linked_quotes(value, identifiers):
     return quotes
 
 
-def scrub(value, identifiers, quotes):
+def scrub(value, identifiers, quotes, *, source_record=False):
     if isinstance(value, str):
         if value in identifiers or any(quote and quote in value for quote in quotes):
             return None
@@ -87,7 +87,8 @@ def scrub(value, identifiers, quotes):
         return [
             clean
             for item in value
-            if (clean := scrub(item, identifiers, quotes)) is not None
+            if (clean := scrub(item, identifiers, quotes, source_record=source_record))
+            is not None
         ]
     if isinstance(value, dict):
         source_ids = [
@@ -95,6 +96,14 @@ def scrub(value, identifiers, quotes):
             for key in ("document_id", "chunk_id", "source_item_id")
             if isinstance(value.get(key), str) and value[key]
         ]
+        if isinstance(value.get("source_item_ids"), list):
+            source_ids.extend(
+                item
+                for item in value["source_item_ids"]
+                if isinstance(item, str) and item
+            )
+        if source_record and isinstance(value.get("id"), str) and value["id"]:
+            source_ids.append(value["id"])
         if source_ids and not references(value, identifiers):
             return deepcopy(value)
         if any(
@@ -111,7 +120,7 @@ def scrub(value, identifiers, quotes):
                 clean := (
                     deepcopy(v)
                     if k in {"answers", "confirmed_answers"}
-                    else scrub(v, identifiers, quotes)
+                    else scrub(v, identifiers, quotes, source_record=k == "sources")
                 )
             )
             is not None
