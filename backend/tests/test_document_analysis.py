@@ -159,6 +159,22 @@ class DocumentAnalysisTests(unittest.TestCase):
         self.assertEqual(empty.proposals, ())
         self.assertEqual(empty.processed_chunk_ids, (CHUNK1, CHUNK2))
 
+    def test_repeated_labels_keep_distinct_quotes_and_conflicting_states(self):
+        text = "I used Python. I want to learn Python."
+        items = [
+            item(CHUNK1, "Python", "I used Python", "have"),
+            item(CHUNK1, "Python", "I want to learn Python", "have"),
+            item(CHUNK1, "Python", "I want to learn Python", "want_to_learn"),
+        ]
+        self.responses = [(200, output(items), 0)]
+        result = self.client.analyze(
+            DOCUMENT, "resume", (DocumentChunkInput(CHUNK1, text),)
+        )
+        self.assertEqual(
+            [(p.label, p.suggested_state, p.evidence_quote) for p in result.proposals],
+            [(x["label"], x["suggested_state"], x["evidence_quote"]) for x in items],
+        )
+
     def test_invalid_provider_budgets_are_rejected_safely(self):
         base = {"timeout": 1, "max_tokens": 512, "max_response_bytes": 65536}
         for url, kwargs in (
