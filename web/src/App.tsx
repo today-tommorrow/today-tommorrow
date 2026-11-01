@@ -335,7 +335,7 @@ export function App() {
     <>
       <header className="site-header">
         <a className="brand" href="/">
-          다음<span>오늘에서 내일로</span>
+          오늘내일<span>오늘에서 내일로</span>
         </a>
         {session && (
           <div className="actions">
@@ -411,7 +411,7 @@ export function App() {
         </ScreenBoundary>
         <HealthStatus />
       </main>
-      <footer>다음 · 확인한 정보로 찾는 배움</footer>
+      <footer>오늘내일 · 확인한 정보로 찾는 배움</footer>
     </>
   )
 }
