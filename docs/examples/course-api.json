@@ -1,0 +1,715 @@
+{
+  "scope": "Real pinned Work24 course API; synthetic authenticated test session omitted. No recommendation/model output.",
+  "empty_comparison": "Not applicable: valid comparison requires two or three unique course IDs; invalid input returns 422.",
+  "examples": [
+    {
+      "name": "detail",
+      "request": {
+        "method": "GET",
+        "path": "/api/courses/2afc55de-dfc6-5e9a-a942-5a90729cb93d"
+      },
+      "status": 200,
+      "response": {
+        "id": "2afc55de-dfc6-5e9a-a942-5a90729cb93d",
+        "name": "외국인 취업교육(안성리조트2026)",
+        "provider_name": "중소기업중앙회",
+        "field_code": null,
+        "source_system": "work24",
+        "course_type": "unknown",
+        "evidence_level": "listing_only",
+        "detail_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+        "is_demo": false,
+        "description": "외국인 취업교육기관 운영에 관한 기준 제 6조, 제 8조에 의거 외국인 근로자들에게 필요한 교과편성을 총하여 업체 적응능력 향상과 직장생활의 기초적인 지식 습득으로 현장성 확보 및 효율성 향상 습득으로 현장성 확보 및 효율성 향상",
+        "prerequisites": null,
+        "learning_outcomes": [],
+        "offerings": [
+          {
+            "id": "d38b332e-4ffe-541d-9e38-96cb97cbac6d",
+            "external_offering_id": "35",
+            "cohort": "35",
+            "start_date": "2026-11-02",
+            "end_date": "2026-11-04",
+            "enrollment_start": null,
+            "enrollment_end": null,
+            "delivery_mode": "offline",
+            "region": "서울 영등포구",
+            "schedule": null,
+            "training_hours": 16.0,
+            "tuition_krw": 202700,
+            "listed_self_pay_krw": null,
+            "eligibility_text": null,
+            "recruitment_status": "unknown",
+            "checked_at": null
+          }
+        ],
+        "evidence": [
+          {
+            "id": "d1588459-9ed4-5150-bd1b-362cfd577e3f",
+            "field_path": "course_name",
+            "quote": "외국인 취업교육(안성리조트2026)",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "fe09f2ba-e64a-5443-895e-a24644cc5823",
+            "field_path": "institution",
+            "quote": "중소기업중앙회",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "54fe4f91-de86-51ff-b46c-d434dc0f3ed9",
+            "field_path": "objective",
+            "quote": "외국인 취업교육기관 운영에 관한 기준 제 6조, 제 8조에 의거 외국인 근로자들에게 필요한 교과편성을 총하여 업체 적응능력 향상과 직장생활의 기초적인 지식 습득으로 현장성 확보 및 효율성 향상 습득으로 현장성 확보 및 효율성 향상",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "79245f35-a4c6-51d2-bb69-d84a98ad74eb",
+            "field_path": "mode",
+            "quote": "서울 집체",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "9c780305-1051-52dc-b890-b77b5810d476",
+            "field_path": "region",
+            "quote": "서울 영등포구",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "905abe1d-0b5b-59b3-809d-bfe7719c6a2d",
+            "field_path": "start_date",
+            "quote": "2026-11-02T00:00:00",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "af4e5add-f8b5-5d6d-a9de-2e1a414b9264",
+            "field_path": "end_date",
+            "quote": "2026-11-04T00:00:00",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "7fde23fd-9c6d-5a58-a157-81bd37649ee8",
+            "field_path": "training_hours",
+            "quote": "16",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "9b29d1e4-1389-5322-9078-6e6bbc51588c",
+            "field_path": "training_fee",
+            "quote": "202700",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "4213e87d-3ab1-5b36-b156-96a33081f901",
+            "field_path": "units.5c320fc07fef2ff4dd47fd678ec776f633104fe6108efc0fc2ec85dae56bf7b6",
+            "quote": "외국인 취업교육(안성리조트2026) | 노동관계법",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "3ba75f7f-48f3-579d-bf4d-bb7f83550feb",
+            "field_path": "units.7053b19cf085d5930b75b7c9eea55920588827a6adabc593577935f99226eb20",
+            "quote": "외국인 취업교육(안성리조트2026) | 외국인 취업교육기관 운영에 관한 기준 제 6조, 제 8조에 의거 외국인 근로자들에게 필요한 교과편성을 총하여 업체 적응능력 향상과 직장생활의 기초적인 지식 습득으로 현장성 확보 및 효율성 향상 습득으로 현장성 확보 및 효율성 향상",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "0b28e523-3b7c-57aa-874e-83ea878c99b4",
+            "field_path": "units.723b02ba8a3a893f29e47af284584f0362842f486cc45e9faa6701e53eec922d",
+            "quote": "외국인 취업교육(안성리조트2026) | 소양과목(9시간) 1. 한국의 직장문화 2. 관계법(노동 및 출입국) 3. 고충상담절차 및 성희롱 예방교육\n전공과목(7시간) 1. 산업안전보건(산업안전) 2. 산업안전(기초기능)",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "31b1c18f-8234-50f9-8780-a2382a77d467",
+            "field_path": "units.7d17080297a8f2beeddcb091092f02b16a56dabddb6133701b2dcd76a553b40f",
+            "quote": "외국인 취업교육(안성리조트2026) | 출입국관계법",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "72f3c059-1676-584a-ae6c-a3e55b863855",
+            "field_path": "units.7dcb19a4f9019f5cc0865c7557229dbbe806e88803dface347724f320d74bc57",
+            "quote": "외국인 취업교육(안성리조트2026) | 기초기능",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "346295f0-27ca-5cfb-8759-b4c423ef463d",
+            "field_path": "units.bcaeb84eff2bef3953b8024107a9ba18bcd0e17d5b921f6e33926bd85eb5d80f",
+            "quote": "외국인 취업교육(안성리조트2026) | 고충상담",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "6b3fd75d-8686-5617-80a5-95025aeda0d0",
+            "field_path": "units.d6ec8dd2668f9783a75b9b5f56621fe88e66a9db39c5fcc74742b531418f27c8",
+            "quote": "외국인 취업교육(안성리조트2026) | 한국의직장문화",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          },
+          {
+            "id": "f59f7b99-227d-5584-a823-76470eebda0d",
+            "field_path": "units.f40fbce84a59152cba97c683a7bed7bf3d35827940b39e1ac5732868057e1737",
+            "quote": "외국인 취업교육(안성리조트2026) | 산업안전보건",
+            "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "source_system": "work24",
+            "checked_at": null,
+            "verification_state": "observed"
+          }
+        ],
+        "missing_fields": [
+          "field_code",
+          "course_type",
+          "checked_at",
+          "prerequisites",
+          "learning_outcomes",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.enrollment_start",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.enrollment_end",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.schedule",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.listed_self_pay_krw",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.eligibility_text",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.recruitment_status",
+          "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.checked_at"
+        ]
+      }
+    },
+    {
+      "name": "compare",
+      "request": {
+        "method": "GET",
+        "path": "/api/courses/compare?ids=2afc55de-dfc6-5e9a-a942-5a90729cb93d,1c397966-9f54-5339-a292-888aca138d28"
+      },
+      "status": 200,
+      "response": {
+        "items": [
+          {
+            "id": "2afc55de-dfc6-5e9a-a942-5a90729cb93d",
+            "name": "외국인 취업교육(안성리조트2026)",
+            "provider_name": "중소기업중앙회",
+            "field_code": null,
+            "source_system": "work24",
+            "course_type": "unknown",
+            "evidence_level": "listing_only",
+            "detail_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+            "is_demo": false,
+            "description": "외국인 취업교육기관 운영에 관한 기준 제 6조, 제 8조에 의거 외국인 근로자들에게 필요한 교과편성을 총하여 업체 적응능력 향상과 직장생활의 기초적인 지식 습득으로 현장성 확보 및 효율성 향상 습득으로 현장성 확보 및 효율성 향상",
+            "prerequisites": null,
+            "learning_outcomes": [],
+            "offerings": [
+              {
+                "id": "d38b332e-4ffe-541d-9e38-96cb97cbac6d",
+                "external_offering_id": "35",
+                "cohort": "35",
+                "start_date": "2026-11-02",
+                "end_date": "2026-11-04",
+                "enrollment_start": null,
+                "enrollment_end": null,
+                "delivery_mode": "offline",
+                "region": "서울 영등포구",
+                "schedule": null,
+                "training_hours": 16.0,
+                "tuition_krw": 202700,
+                "listed_self_pay_krw": null,
+                "eligibility_text": null,
+                "recruitment_status": "unknown",
+                "checked_at": null
+              }
+            ],
+            "evidence": [
+              {
+                "id": "d1588459-9ed4-5150-bd1b-362cfd577e3f",
+                "field_path": "course_name",
+                "quote": "외국인 취업교육(안성리조트2026)",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "fe09f2ba-e64a-5443-895e-a24644cc5823",
+                "field_path": "institution",
+                "quote": "중소기업중앙회",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "54fe4f91-de86-51ff-b46c-d434dc0f3ed9",
+                "field_path": "objective",
+                "quote": "외국인 취업교육기관 운영에 관한 기준 제 6조, 제 8조에 의거 외국인 근로자들에게 필요한 교과편성을 총하여 업체 적응능력 향상과 직장생활의 기초적인 지식 습득으로 현장성 확보 및 효율성 향상 습득으로 현장성 확보 및 효율성 향상",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "79245f35-a4c6-51d2-bb69-d84a98ad74eb",
+                "field_path": "mode",
+                "quote": "서울 집체",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "9c780305-1051-52dc-b890-b77b5810d476",
+                "field_path": "region",
+                "quote": "서울 영등포구",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "905abe1d-0b5b-59b3-809d-bfe7719c6a2d",
+                "field_path": "start_date",
+                "quote": "2026-11-02T00:00:00",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "af4e5add-f8b5-5d6d-a9de-2e1a414b9264",
+                "field_path": "end_date",
+                "quote": "2026-11-04T00:00:00",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "7fde23fd-9c6d-5a58-a157-81bd37649ee8",
+                "field_path": "training_hours",
+                "quote": "16",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "9b29d1e4-1389-5322-9078-6e6bbc51588c",
+                "field_path": "training_fee",
+                "quote": "202700",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "4213e87d-3ab1-5b36-b156-96a33081f901",
+                "field_path": "units.5c320fc07fef2ff4dd47fd678ec776f633104fe6108efc0fc2ec85dae56bf7b6",
+                "quote": "외국인 취업교육(안성리조트2026) | 노동관계법",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "3ba75f7f-48f3-579d-bf4d-bb7f83550feb",
+                "field_path": "units.7053b19cf085d5930b75b7c9eea55920588827a6adabc593577935f99226eb20",
+                "quote": "외국인 취업교육(안성리조트2026) | 외국인 취업교육기관 운영에 관한 기준 제 6조, 제 8조에 의거 외국인 근로자들에게 필요한 교과편성을 총하여 업체 적응능력 향상과 직장생활의 기초적인 지식 습득으로 현장성 확보 및 효율성 향상 습득으로 현장성 확보 및 효율성 향상",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "0b28e523-3b7c-57aa-874e-83ea878c99b4",
+                "field_path": "units.723b02ba8a3a893f29e47af284584f0362842f486cc45e9faa6701e53eec922d",
+                "quote": "외국인 취업교육(안성리조트2026) | 소양과목(9시간) 1. 한국의 직장문화 2. 관계법(노동 및 출입국) 3. 고충상담절차 및 성희롱 예방교육\n전공과목(7시간) 1. 산업안전보건(산업안전) 2. 산업안전(기초기능)",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "31b1c18f-8234-50f9-8780-a2382a77d467",
+                "field_path": "units.7d17080297a8f2beeddcb091092f02b16a56dabddb6133701b2dcd76a553b40f",
+                "quote": "외국인 취업교육(안성리조트2026) | 출입국관계법",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "72f3c059-1676-584a-ae6c-a3e55b863855",
+                "field_path": "units.7dcb19a4f9019f5cc0865c7557229dbbe806e88803dface347724f320d74bc57",
+                "quote": "외국인 취업교육(안성리조트2026) | 기초기능",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "346295f0-27ca-5cfb-8759-b4c423ef463d",
+                "field_path": "units.bcaeb84eff2bef3953b8024107a9ba18bcd0e17d5b921f6e33926bd85eb5d80f",
+                "quote": "외국인 취업교육(안성리조트2026) | 고충상담",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "6b3fd75d-8686-5617-80a5-95025aeda0d0",
+                "field_path": "units.d6ec8dd2668f9783a75b9b5f56621fe88e66a9db39c5fcc74742b531418f27c8",
+                "quote": "외국인 취업교육(안성리조트2026) | 한국의직장문화",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "f59f7b99-227d-5584-a823-76470eebda0d",
+                "field_path": "units.f40fbce84a59152cba97c683a7bed7bf3d35827940b39e1ac5732868057e1737",
+                "quote": "외국인 취업교육(안성리조트2026) | 산업안전보건",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001133529&tracseTme=35",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              }
+            ],
+            "missing_fields": [
+              "field_code",
+              "course_type",
+              "checked_at",
+              "prerequisites",
+              "learning_outcomes",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.enrollment_start",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.enrollment_end",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.schedule",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.listed_self_pay_krw",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.eligibility_text",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.recruitment_status",
+              "offerings.d38b332e-4ffe-541d-9e38-96cb97cbac6d.checked_at"
+            ]
+          },
+          {
+            "id": "1c397966-9f54-5339-a292-888aca138d28",
+            "name": "항공경비요원초기 교육과정",
+            "provider_name": "주식회사항공보안아카데미",
+            "field_code": null,
+            "source_system": "work24",
+            "course_type": "unknown",
+            "evidence_level": "listing_only",
+            "detail_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+            "is_demo": false,
+            "description": "불법 방해 행위를 하는데 사용될 수 있는 무기 또는 폭발물 등 위험성이 있는 물품을 탐지 및 수색하기 위한 기초적이고 필수적인 교육과정을 수료함으로써 국가 항공보안에 이바지하고자 함.",
+            "prerequisites": null,
+            "learning_outcomes": [],
+            "offerings": [
+              {
+                "id": "3f63a012-53ad-55e0-860d-5d27e15e507e",
+                "external_offering_id": "23",
+                "cohort": "23",
+                "start_date": "2026-11-02",
+                "end_date": "2026-11-05",
+                "enrollment_start": null,
+                "enrollment_end": null,
+                "delivery_mode": "offline",
+                "region": "서울 강서구",
+                "schedule": null,
+                "training_hours": 30.0,
+                "tuition_krw": 268000,
+                "listed_self_pay_krw": null,
+                "eligibility_text": null,
+                "recruitment_status": "unknown",
+                "checked_at": null
+              }
+            ],
+            "evidence": [
+              {
+                "id": "99b00504-ff9f-5a89-bf54-3a24ac022326",
+                "field_path": "course_name",
+                "quote": "항공경비요원초기 교육과정",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "3eeda7db-a049-57e5-92b2-8297eb08d63d",
+                "field_path": "institution",
+                "quote": "주식회사항공보안아카데미",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "275ccafb-f8fd-59fe-a393-8ec120755db8",
+                "field_path": "objective",
+                "quote": "불법 방해 행위를 하는데 사용될 수 있는 무기 또는 폭발물 등 위험성이 있는 물품을 탐지 및 수색하기 위한 기초적이고 필수적인 교육과정을 수료함으로써 국가 항공보안에 이바지하고자 함.",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "e2bd08fa-f43c-5f8e-856a-0d2bdd0cd331",
+                "field_path": "mode",
+                "quote": "서울 집체",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "62622bdd-5b98-591f-af1f-f8726ee4c456",
+                "field_path": "region",
+                "quote": "서울 강서구",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "dff7f937-ef41-5c64-98ed-a13aebcbda53",
+                "field_path": "start_date",
+                "quote": "2026-11-02T00:00:00",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "99c0071c-d3b8-5b8a-bd5e-6efeca8bcaae",
+                "field_path": "end_date",
+                "quote": "2026-11-05T00:00:00",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "ec5819db-d78e-5d48-a172-37dfceeb7c53",
+                "field_path": "training_hours",
+                "quote": "30",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "1554c25d-fc69-5c0c-8fde-e10917e00c7c",
+                "field_path": "training_fee",
+                "quote": "268000",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "2fe4a639-2d4a-59f0-bd5c-7aa883c0814e",
+                "field_path": "units.0d77331d388abb2c18cbe2bffe62e949a980253001dc76e3183d22fb49d9ba30",
+                "quote": "항공경비요원초기 교육과정 | 항공보안개요 : 항공보안의 목적, 공항보안 현황, 검색요령, 보호구역 개요 등",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "46d172e8-0506-5163-a300-e0dcb4ec09c8",
+                "field_path": "units.1751347a2dcb922354143f9785ba95ac9106ebab2f83fa4a8ddedfa5d5825039",
+                "quote": "항공경비요원초기 교육과정 | 항공경비의 이해 및 과정안내 : 항공경비요원 초기 과정에 대한 안내 및 등록",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "9ee7b244-ad90-5c04-9fd5-eb32d2369d34",
+                "field_path": "units.2188daab6a487226c4cb5b039e82a9eddf6da119793b40bfd963528f5eae57b9",
+                "quote": "항공경비요원초기 교육과정 | 항공보안위협 동향 : 항공보안 위협 관련 현황",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "18e29401-15bc-5179-8973-269327ddd012",
+                "field_path": "units.31c9bc5ac8f52f401545a574d09074c970dcba94fb831f01348ac956627617b5",
+                "quote": "항공경비요원초기 교육과정 | 우발계획 및 인적요인 : 우발계획에 의한 대처방법, 사고관리/보고/기록",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "fe523fae-c830-5f4e-979b-508f65da4053",
+                "field_path": "units.4d467b1c6b94f7323ac0c6cf7f27a96b5da77c4cc98974013fb24600eccc7e46",
+                "quote": "항공경비요원초기 교육과정 | 항공보안법 : 보안검색 관련 법적 근거 및 검색권한, 검색 관련 법령",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "b5775d7f-dbcf-5e39-87e4-91d7f6d524ce",
+                "field_path": "units.593ffec35210c279cba24e5eb6f25ae0bf459516594c0ee904788ae9bb911eb6",
+                "quote": "항공경비요원초기 교육과정 | 위해물품 및 위장무기 : 위장 무기, 위해 물품 식별법",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "d0e86c46-1909-5e13-841e-b0418366df3c",
+                "field_path": "units.6e48275631c1f5a739245b394c0f7becdd504e02657f0964fa7900dbd78e7115",
+                "quote": "항공경비요원초기 교육과정 | 보호구역 출입통제 : 보호구역에 대한 출입통제방법",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "55038709-f4f6-5faf-8922-45d304ca3fd2",
+                "field_path": "units.8c1ec601f63ecbd87499c6c5fd9dbe90609e7db9b6aff26d14400bcf1b11353f",
+                "quote": "항공경비요원초기 교육과정 | 초소근무 및 순찰 : 공항(여객터미널) 출입통제 절차 및 방법",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "515a33f8-56d0-5ba0-8073-8d444beeb658",
+                "field_path": "units.9e41aa405accc7a7be6ec725b307be85d9969dfa2c834e52b664f73040d58ba3",
+                "quote": "항공경비요원초기 교육과정 | 항공보안장비 : 각종 보안장비 종류 및 운용 요령 장비테스트 및 응급조치 요령",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "e06fe03e-80ba-547d-ad4e-ede2f7e404ae",
+                "field_path": "units.9f42cd65b40557eccdf0332aa74dba6f8482bf4ef555f97199eb1927ec4c4ad3",
+                "quote": "항공경비요원초기 교육과정 | 폭발물 : 폭발물 및 위해 물품인지 및 발견 시조치",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "95996074-5caf-55ae-ac80-bf72a3140cf6",
+                "field_path": "units.a1bb5e9c8b8a44b051e996e6a15f04cfa339697376265a25f5f5716c80d2e1c4",
+                "quote": "항공경비요원초기 교육과정 | 불법 방해 행위를 하는데 사용될 수 있는 무기 또는 폭발물 등 위험성이 있는 물품을 탐지 및 수색하기 위한 기초적이고 필수적인 교육과정을 수료함으로써 국가 항공보안에 이바지하고자 함.",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "fa21e8ca-01b4-5223-bc3b-4e4c24e20af6",
+                "field_path": "units.a2a68af08b7ad179df432d37e07057c8705223c796dab0708bc54e29eae3e3c5",
+                "quote": "항공경비요원초기 교육과정 | 대인/차량검색 이론 : 승객, 휴대물, 위탁수하물, 차량 보안검색관련 규정 및 절차",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "17347210-7f57-56fa-b0b0-c533d352e228",
+                "field_path": "units.b37d25b2b8514992ebe74c8faa054c072911ba311b84c120277c70b59fd7810a",
+                "quote": "항공경비요원초기 교육과정 | 대인/차량 검색 실습 : MD, HD, 개봉검색, 수검색, 차량 검색 등 보안검색방법",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              },
+              {
+                "id": "985df3ee-bf15-5fb7-a185-e801bd63b7d4",
+                "field_path": "units.e4e623fce663e52f924d377603a0d8b524f54b46ec110c4e7ed3d7b672c87170",
+                "quote": "항공경비요원초기 교육과정 | 항공기/화물청사 경비 : 항공기경비 및 통제, 수상한 자 발견/체포",
+                "source_url": "https://www.work24.go.kr/hr/a/a/3100/selectTracseDetl.do?tracseId=ABA20253001145266&tracseTme=23",
+                "source_system": "work24",
+                "checked_at": null,
+                "verification_state": "observed"
+              }
+            ],
+            "missing_fields": [
+              "field_code",
+              "course_type",
+              "checked_at",
+              "prerequisites",
+              "learning_outcomes",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.enrollment_start",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.enrollment_end",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.schedule",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.listed_self_pay_krw",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.eligibility_text",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.recruitment_status",
+              "offerings.3f63a012-53ad-55e0-860d-5d27e15e507e.checked_at"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate",
+      "request": {
+        "method": "GET",
+        "path": "/api/courses/compare?ids=2afc55de-dfc6-5e9a-a942-5a90729cb93d,2afc55de-dfc6-5e9a-a942-5a90729cb93d"
+      },
+      "status": 422,
+      "response": {
+        "code": "invalid_course_request",
+        "message": "교육 ID와 비교할 교육 2~3개를 확인해주세요.",
+        "request_id": "322141d56489458f8c38f7a80cca5069"
+      }
+    },
+    {
+      "name": "missing",
+      "request": {
+        "method": "GET",
+        "path": "/api/courses/compare?ids=2afc55de-dfc6-5e9a-a942-5a90729cb93d,00000000-0000-4000-8000-000000000000"
+      },
+      "status": 404,
+      "response": {
+        "code": "course_not_found",
+        "message": "요청한 교육을 찾을 수 없습니다.",
+        "request_id": "70a719fd676b449882d48cca8ee86933"
+      }
+    }
+  ]
+}
