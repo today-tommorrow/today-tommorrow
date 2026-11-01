@@ -4,17 +4,16 @@ import json
 import os
 import unittest
 from copy import deepcopy
-from datetime import date
 from unittest.mock import patch
 from uuid import UUID
 
+import test_profile_drafts as profiles
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from test_catalog_search import course, search, unit
 from test_database_boundary import local_engine
-from test_catalog_search import course, unit, search
 from test_recommendation_flow import ANSWERS
 from test_recommendation_pipeline import FakeModel
-import test_profile_drafts as profiles
 
 from app.catalog.repository import CatalogRepository, canonical_hash
 from app.catalog.service import SearchService
