@@ -31,11 +31,13 @@ def save(db: Session, user_id: UUID, identifier: UUID, catalog: Catalog) -> None
     course = catalog.courses.get(identifier)
     if course is None:
         raise SavedCourseError(404, "course_not_found")
+    # Both the public course key and exact source key identify an owner's save.
+    # Arbitrating only the primary key can race with uq_saved_source_owner.
     db.execute(insert(SavedCourse).values(
         user_id=user_id, course_id=identifier, source_course_id=course.source_id,
         saved_catalog_version_id=catalog.version,
         saved_snapshot=course.summary.model_dump(mode="json"), created_at=datetime.now(UTC),
-    ).on_conflict_do_nothing(index_elements=["user_id", "course_id"]))
+    ).on_conflict_do_nothing())
 
 
 def remove(db: Session, user_id: UUID, identifier: UUID) -> None:
