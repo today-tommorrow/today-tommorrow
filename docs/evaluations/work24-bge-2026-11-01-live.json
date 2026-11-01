@@ -1,0 +1,6198 @@
+{
+  "report_schema_version": 1,
+  "generated_at": "2026-11-01T03:22:42.139378+00:00",
+  "execution_mode": "live_bge_cuda",
+  "actual_bge_results": true,
+  "metric_scope": "Recall measures only preconfirmed expected courses, not exhaustive corpus relevance. Unjudged returns are not false positives. Failed searches are excluded from successful metrics and counted separately.",
+  "evaluation_dataset": {
+    "id": "work24-search-evaluation",
+    "version": "1.0.0",
+    "sha256": "597133d3c63833e7d7ab1d2e73648c0f7b2984db63726bed0f7c051ebae25ca5",
+    "description": "Precommitted partial relevance expectations for the Work24/BGE exact search corpus. Seven title probes, Korean paraphrases, mixed English/Korean terms, and explicitly unjudged diagnostic goals. No exhaustive relevance, false-positive, or zero-result claim.",
+    "provenance": {
+      "judgments_frozen_on": "2026-11-01",
+      "method": "Source course titles and minimal curriculum facts reviewed before running these queries. Expectations are fixed independently of retrieval output. No model-generated relevance labels are used.",
+      "source_package_sha256": "c6cd4618bc4b9fcca925161ee09ed683faf77f8ebf45cfa5831bb6bffdbaeb8e",
+      "source_courses_sha256": "f342acab6b2ee02824b09820c40f4cd736c1ceb5b13aca1d00634308c3f34a7b",
+      "source_units_sha256": "9f3557f2b7f1e870d540e9a9805b30b9d8ceea9d93579d458e9f87dd81b2c90b",
+      "source_retention": "Only minimal course IDs, public title facts and curriculum keywords are retained. Source-package redistribution permission has not been established; no raw source records, full curriculum, embeddings or vectors are included.",
+      "expected_courses": [
+        {
+          "id": "AIG20250000539886",
+          "title": "[완전정복] 패킷 트레이서를 활용한 네트워크 관리와 보안 끝장내기",
+          "basis": "스위치·라우터 보안, SSH, VLAN curriculum"
+        },
+        {
+          "id": "AIG20250000539889",
+          "title": "파이썬과 머신러닝을 활용한 반도체 제조 공정 데이터 분석",
+          "basis": "pandas, 회귀, 반도체 공정 데이터 curriculum"
+        },
+        {
+          "id": "AIG20260000545806",
+          "title": "구글 AI로 시작하는 실전 프로토타이핑",
+          "basis": "생성형 AI, Google Apps Script 자동화 curriculum"
+        },
+        {
+          "id": "ABA20263001502338",
+          "title": "[인재키움] 기업 절세 전략 수립을 위한 법인세 문제해결 실무(찾아가는 훈련)",
+          "basis": "법인세 신고, 세무 curriculum"
+        },
+        {
+          "id": "ABA20263001500869",
+          "title": "노동법 A to Z 근로계약부터 인사관리까지 핵심 총정리",
+          "basis": "근로계약, 인사관리 curriculum"
+        },
+        {
+          "id": "ACG20263001254427",
+          "title": "산업안전기사 필수핵심 필기1 (산업재해, 인간공학, 기계·기구)",
+          "basis": "산업재해 예방, 기계안전 curriculum"
+        },
+        {
+          "id": "AIG20240000498079",
+          "title": "[정보보안] 취약점분석 등 정보보안 전문가 취업캠프",
+          "basis": "정보보안, 보안로그 분석 curriculum; timetable is not established"
+        }
+      ],
+      "limitations": [
+        "Partial known-positive judgments do not define the full relevant corpus.",
+        "No negative course judgments are preconfirmed in this version; a zero false-positive count means no explicitly labeled negatives were returned, not perfect precision.",
+        "Unjudged broad, similar-topic and potentially absent-topic cases are independent review probes.",
+        "No expected_empty assertion is made without source-wide ground truth.",
+        "Recruitment status, personal eligibility, cost and timetable are not established by semantic relevance."
+      ],
+      "review_protocol": "Review minimal source curriculum evidence against the stated intent before looking at ranks where practical. Add positive/negative labels only with a recorded reason, preserve ambiguous results as unjudged, increment the dataset version, record the new byte hash, and retain earlier artifacts. Never label candidates merely because they were retrieved."
+    },
+    "catalog": {
+      "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+      "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181"
+    }
+  },
+  "snapshot": {
+    "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+    "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+    "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "manifest_sha256": "f4a79774ae2a470d7a9b80626cece532ad821900923069ba6875c9c9816cd88c",
+    "snapshot_created_on": "2026-11-01"
+  },
+  "search_settings": {
+    "limit": 30,
+    "evidence_limit": 3,
+    "cutoffs": [
+      1,
+      5,
+      10,
+      30
+    ],
+    "retrieval_mode": "exact",
+    "approximate": false,
+    "retrieval_config_versions": [
+      "work24-exact-max-v1"
+    ]
+  },
+  "environment": {
+    "code_commit": "d337455d1795a99b6aa84058d7f8894f3d8e4c3d",
+    "code_worktree_dirty": false,
+    "python": "3.14.6",
+    "python_implementation": "CPython",
+    "os": "Darwin",
+    "os_release": "23.3.0",
+    "architecture": "arm64",
+    "packages": {
+      "sqlalchemy": "2.1.6",
+      "psycopg": "3.3.6"
+    },
+    "postgresql": "16.14 (Debian 16.14-1.pgdg12+1)",
+    "pgvector": "0.6.0",
+    "query_runtime": {
+      "adapter": "BgeM3Embeddings",
+      "service_profile": "bge-m3-flagembedding-cuda-v1",
+      "device": "cuda:0",
+      "dtype": "torch.float16",
+      "verification": "adapter validates model metadata before each query; errors are recorded as failed cases"
+    },
+    "required_embedding_config": {
+      "repository": "BAAI/bge-m3",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "dimensions": 1024,
+      "max_length": 512,
+      "query_max_length": 512,
+      "passage_max_length": 512,
+      "pooling": "cls",
+      "inference_dtype": "float16",
+      "storage_dtype": "float32",
+      "normalize_embeddings": true,
+      "return_dense": true,
+      "return_sparse": false,
+      "return_colbert_vecs": false,
+      "quantization": null,
+      "truncate_dim": null,
+      "attention_implementation": "sdpa",
+      "postprocessing": "FlagEmbedding internal L2 -> numpy.float32 -> L2 again with denominator max(norm,1e-12)",
+      "query_preprocessing": "verbatim competency sentence; no strip, rewrite or prefix",
+      "document_preprocessing": "verbatim embed_text; no strip, rewrite, chunking, Unicode normalization or prefix",
+      "tokenizer": {
+        "class": "XLMRobertaTokenizerFast",
+        "is_fast": true,
+        "padding": "dynamic_per_batch",
+        "padding_side": "right",
+        "truncation_side": "right",
+        "add_special_tokens": true,
+        "truncation": true
+      }
+    },
+    "request_timeout_seconds": 30.0
+  },
+  "summary": {
+    "requested_cases": 20,
+    "successful_cases": 20,
+    "failed_cases": 0,
+    "unjudged_cases": 7,
+    "requested_metric_eligible_cases": 13,
+    "successful_metric_eligible_cases": 13,
+    "empty_cases": 0,
+    "unexpected_empty_cases": 0,
+    "empty_expectation_mismatches": 0,
+    "cases_with_false_positives": 0,
+    "cases_with_duplicates": 0,
+    "metrics_at_k": {
+      "1": {
+        "macro_expected_set_recall": 0.9230769230769231,
+        "mrr": 0.9230769230769231,
+        "cases_with_missing_expected": 1
+      },
+      "5": {
+        "macro_expected_set_recall": 1.0,
+        "mrr": 0.9615384615384616,
+        "cases_with_missing_expected": 0
+      },
+      "10": {
+        "macro_expected_set_recall": 1.0,
+        "mrr": 0.9615384615384616,
+        "cases_with_missing_expected": 0
+      },
+      "30": {
+        "macro_expected_set_recall": 1.0,
+        "mrr": 0.9615384615384616,
+        "cases_with_missing_expected": 0
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "exact-title-network",
+      "query": "[완전정복] 패킷 트레이서를 활용한 네트워크 관리와 보안 끝장내기",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20250000539886. Basis: 스위치·라우터 보안, SSH, VLAN curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "AIG20250000539886"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000539886",
+          "source_tme": "94",
+          "similarity": 0.9660201380843402,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ACG20263001447769",
+          "source_tme": "60",
+          "similarity": 0.6369892115874974,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001199855",
+          "source_tme": "103",
+          "similarity": 0.5987033065655758,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ACG20263001320140",
+          "source_tme": "11",
+          "similarity": 0.5987033065655758,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001366287",
+          "source_tme": "61",
+          "similarity": 0.5987033065655758,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001382369",
+          "source_tme": "32",
+          "similarity": 0.5987033065655758,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ACG20263001406193",
+          "source_tme": "13",
+          "similarity": 0.5987033065655758,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001425081",
+          "source_tme": "41",
+          "similarity": 0.5987033065655758,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ABA20263001383906",
+          "source_tme": "4",
+          "similarity": 0.575537563227505,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001251617",
+          "source_tme": "27",
+          "similarity": 0.5585745546228277,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001422327",
+          "source_tme": "41",
+          "similarity": 0.5585745546228277,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001321344",
+          "source_tme": "100",
+          "similarity": 0.5567291612519626,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.5555483334583603,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.5555483334583603,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AVA20263001248400",
+          "source_tme": "26",
+          "similarity": 0.5555483334583603,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20263001157754",
+          "source_tme": "39",
+          "similarity": 0.5504489929286864,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001321328",
+          "source_tme": "83",
+          "similarity": 0.5504489929286864,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001256987",
+          "source_tme": "172",
+          "similarity": 0.5500442937108913,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ABA20263001422289",
+          "source_tme": "3",
+          "similarity": 0.5457717993515492,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ABA20263001218982",
+          "source_tme": "233",
+          "similarity": 0.5369203018677886,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001246894",
+          "source_tme": "208",
+          "similarity": 0.5364326441932744,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001366293",
+          "source_tme": "61",
+          "similarity": 0.5364326441932744,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001384657",
+          "source_tme": "32",
+          "similarity": 0.5364326441932744,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001458983",
+          "source_tme": "40",
+          "similarity": 0.5351988236665568,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "AVA20263001406594",
+          "source_tme": "4",
+          "similarity": 0.5351988236665568,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "AVA20263001406637",
+          "source_tme": "6",
+          "similarity": 0.5345162949735425,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001406007",
+          "source_tme": "60",
+          "similarity": 0.5328581133061985,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.5250101558873311,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001192107",
+          "source_tme": "159",
+          "similarity": 0.5250101558873311,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001438173",
+          "source_tme": "67",
+          "similarity": 0.524720775311074,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001218982",
+        "ABA20263001383906",
+        "ABA20263001422289",
+        "ACG20253001127483",
+        "ACG20263001157754",
+        "ACG20263001192107",
+        "ACG20263001199855",
+        "ACG20263001246894",
+        "ACG20263001251617",
+        "ACG20263001256987",
+        "ACG20263001273801",
+        "ACG20263001320140",
+        "ACG20263001321328",
+        "ACG20263001321344",
+        "ACG20263001366287",
+        "ACG20263001366293",
+        "ACG20263001372796",
+        "ACG20263001382369",
+        "ACG20263001384657",
+        "ACG20263001406007",
+        "ACG20263001406193",
+        "ACG20263001422327",
+        "ACG20263001425081",
+        "ACG20263001438173",
+        "ACG20263001447769",
+        "ACG20263001458983",
+        "AVA20263001248400",
+        "AVA20263001406594",
+        "AVA20263001406637"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.350451
+    },
+    {
+      "id": "exact-title-semiconductor",
+      "query": "파이썬과 머신러닝을 활용한 반도체 제조 공정 데이터 분석",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20250000539889. Basis: pandas, 회귀, 반도체 공정 데이터 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "AIG20250000539889"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000539889",
+          "source_tme": "94",
+          "similarity": 0.9100510370792211,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000501486",
+          "source_tme": "6",
+          "similarity": 0.6254782863103836,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABB20253001145832",
+          "source_tme": "3",
+          "similarity": 0.6231245359591727,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABB20263001168816",
+          "source_tme": "5",
+          "similarity": 0.5711118663682788,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.5693056413738261,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20250000531434",
+          "source_tme": "5",
+          "similarity": 0.5543704133298685,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.549123054638274,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.5427774352662994,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "AVA20263001248421",
+          "source_tme": "34",
+          "similarity": 0.5407011074036692,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001201126",
+          "source_tme": "243",
+          "similarity": 0.518351389317096,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "AVA20253001150451",
+          "source_tme": "36",
+          "similarity": 0.518351389317096,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "AIG20250000539888",
+          "source_tme": "94",
+          "similarity": 0.5162089024844441,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ABB20263001157188",
+          "source_tme": "3",
+          "similarity": 0.5146887762566309,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.5131642375339343,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ABB20253001150106",
+          "source_tme": "3",
+          "similarity": 0.5126296434590116,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20263001407830",
+          "source_tme": "56",
+          "similarity": 0.511915937421201,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "AIG20250000535947",
+          "source_tme": "4",
+          "similarity": 0.511492029174925,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ABB20263001170548",
+          "source_tme": "2",
+          "similarity": 0.509207591140046,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001325060",
+          "source_tme": "22",
+          "similarity": 0.4995852410546089,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001356663",
+          "source_tme": "18",
+          "similarity": 0.49859629567254493,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001384624",
+          "source_tme": "32",
+          "similarity": 0.49859629567254493,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001504136",
+          "source_tme": "1",
+          "similarity": 0.49859629567254493,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20240000459227",
+          "source_tme": "11",
+          "similarity": 0.49671922633888843,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001383216",
+          "source_tme": "7",
+          "similarity": 0.4939064825093584,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "AIG20250000522280",
+          "source_tme": "2",
+          "similarity": 0.49230168782765804,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "AIG20250000513014",
+          "source_tme": "5",
+          "similarity": 0.4920900620141624,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001417820",
+          "source_tme": "74",
+          "similarity": 0.48932374982010596,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20263001317885",
+          "source_tme": "11",
+          "similarity": 0.48776426838423426,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABB20253001150048",
+          "source_tme": "2",
+          "similarity": 0.4873460080428724,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "AIG20250000525521",
+          "source_tme": "4",
+          "similarity": 0.48596806949663085,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABB20253001145832",
+        "ABB20253001150048",
+        "ABB20253001150106",
+        "ABB20263001157188",
+        "ABB20263001168816",
+        "ABB20263001170548",
+        "ACG20263001201126",
+        "ACG20263001317885",
+        "ACG20263001325060",
+        "ACG20263001356663",
+        "ACG20263001383216",
+        "ACG20263001384624",
+        "ACG20263001407830",
+        "ACG20263001417820",
+        "ACG20263001504136",
+        "AIG20240000459068",
+        "AIG20240000459227",
+        "AIG20240000498079",
+        "AIG20250000501481",
+        "AIG20250000501486",
+        "AIG20250000513014",
+        "AIG20250000522280",
+        "AIG20250000525521",
+        "AIG20250000531434",
+        "AIG20250000535947",
+        "AIG20250000539888",
+        "AIG20260000545060",
+        "AVA20253001150451",
+        "AVA20263001248421"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.348327
+    },
+    {
+      "id": "exact-title-automation",
+      "query": "구글 AI로 시작하는 실전 프로토타이핑",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20260000545806. Basis: 생성형 AI, Google Apps Script 자동화 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "AIG20260000545806"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20260000545806",
+          "source_tme": "11",
+          "similarity": 0.8670083959693689,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000506847",
+          "source_tme": "8",
+          "similarity": 0.5740859083558892,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001407830",
+          "source_tme": "56",
+          "similarity": 0.5739032201142081,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABB20263001168816",
+          "source_tme": "5",
+          "similarity": 0.5699040806407872,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20240000498178",
+          "source_tme": "8",
+          "similarity": 0.5473380251925598,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.5389666557312012,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ACG20263001495422",
+          "source_tme": "1",
+          "similarity": 0.5341752767562866,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "AIG20250000529679",
+          "source_tme": "2",
+          "similarity": 0.5282804055046803,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ABA20263001317646",
+          "source_tme": "26",
+          "similarity": 0.5250329375267029,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001399623",
+          "source_tme": "13",
+          "similarity": 0.5236482804489612,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001384938",
+          "source_tme": "56",
+          "similarity": 0.5200750517800429,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.5109354257583618,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.5016867518424988,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "AIG20250000501387",
+          "source_tme": "6",
+          "similarity": 0.5003780424369557,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20250000543113",
+          "source_tme": "4",
+          "similarity": 0.497606649923523,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20250000501486",
+          "source_tme": "6",
+          "similarity": 0.49303641998334036,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ABA20263001407603",
+          "source_tme": "27",
+          "similarity": 0.4925413140605348,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001375433",
+          "source_tme": "5",
+          "similarity": 0.48763042835826886,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ABB20253001145832",
+          "source_tme": "3",
+          "similarity": 0.48585939407348633,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001504112",
+          "source_tme": "1",
+          "similarity": 0.48401787781822037,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001496587",
+          "source_tme": "1",
+          "similarity": 0.48352450132369995,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ABB20263001252783",
+          "source_tme": "1",
+          "similarity": 0.4812018705488943,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20250000535947",
+          "source_tme": "4",
+          "similarity": 0.4795207095431867,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001251617",
+          "source_tme": "27",
+          "similarity": 0.4768026159288067,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001422327",
+          "source_tme": "41",
+          "similarity": 0.4768026159288067,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "AIG20250000539888",
+          "source_tme": "94",
+          "similarity": 0.47463685274124146,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20250000513014",
+          "source_tme": "5",
+          "similarity": 0.47338480074587197,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ABA20263001165508",
+          "source_tme": "10",
+          "similarity": 0.47195976972579956,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABA20263001326184",
+          "source_tme": "4",
+          "similarity": 0.4677678981104052,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "AIG20240000459227",
+          "source_tme": "11",
+          "similarity": 0.46700850522417103,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001165508",
+        "ABA20263001317646",
+        "ABA20263001326184",
+        "ABA20263001407603",
+        "ABB20253001145832",
+        "ABB20263001168816",
+        "ABB20263001252783",
+        "ACG20263001251617",
+        "ACG20263001375433",
+        "ACG20263001384938",
+        "ACG20263001399623",
+        "ACG20263001407830",
+        "ACG20263001422327",
+        "ACG20263001495422",
+        "ACG20263001496587",
+        "ACG20263001504112",
+        "AIG20240000459068",
+        "AIG20240000459227",
+        "AIG20240000498178",
+        "AIG20250000501387",
+        "AIG20250000501481",
+        "AIG20250000501486",
+        "AIG20250000506847",
+        "AIG20250000513014",
+        "AIG20250000529679",
+        "AIG20250000535947",
+        "AIG20250000539888",
+        "AIG20250000543113",
+        "AIG20260000545060"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.310945
+    },
+    {
+      "id": "exact-title-tax",
+      "query": "[인재키움] 기업 절세 전략 수립을 위한 법인세 문제해결 실무(찾아가는 훈련)",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: ABA20263001502338. Basis: 법인세 신고, 세무 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "ABA20263001502338"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ABA20263001502338",
+          "source_tme": "1",
+          "similarity": 0.9650132039197226,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ABA20263001480712",
+          "source_tme": "1",
+          "similarity": 0.71049265328006,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABA20263001464669",
+          "source_tme": "1",
+          "similarity": 0.5982892869883362,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABA20263001298516",
+          "source_tme": "1",
+          "similarity": 0.5500755310058633,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001164349",
+          "source_tme": "134",
+          "similarity": 0.5475219161795515,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ABA20263001454530",
+          "source_tme": "1",
+          "similarity": 0.5463917581076487,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20250000505103",
+          "source_tme": "5",
+          "similarity": 0.5439254855998586,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001179833",
+          "source_tme": "36",
+          "similarity": 0.538588111232294,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20253001149370",
+          "source_tme": "34",
+          "similarity": 0.5361568608190586,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20253001137374",
+          "source_tme": "51",
+          "similarity": 0.5329143285376726,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001400300",
+          "source_tme": "93",
+          "similarity": 0.5326192657578515,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABA20263001511699",
+          "source_tme": "1",
+          "similarity": 0.5271054755856971,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000517158",
+          "source_tme": "2",
+          "similarity": 0.5262734889984169,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001317880",
+          "source_tme": "11",
+          "similarity": 0.5232490924893728,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20250000511160",
+          "source_tme": "1",
+          "similarity": 0.5159912397866785,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ABA20263001393089",
+          "source_tme": "2",
+          "similarity": 0.5150725841522253,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001383217",
+          "source_tme": "7",
+          "similarity": 0.5102188003324032,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.5087461168321383,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001300536",
+          "source_tme": "16",
+          "similarity": 0.5086679761807913,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001205904",
+          "source_tme": "35",
+          "similarity": 0.5084290069980932,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001409315",
+          "source_tme": "13",
+          "similarity": 0.5075059826668592,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001317885",
+          "source_tme": "11",
+          "similarity": 0.5067130033202778,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ABA20263001496869",
+          "source_tme": "1",
+          "similarity": 0.5057257112428203,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001382176",
+          "source_tme": "7",
+          "similarity": 0.5032066406730804,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ABB20263001162744",
+          "source_tme": "4",
+          "similarity": 0.5029634686973814,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.5006517470271445,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20250000533945",
+          "source_tme": "8",
+          "similarity": 0.5002912134192481,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "AIG20250000503785",
+          "source_tme": "1",
+          "similarity": 0.4988711476998917,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABB20263001170548",
+          "source_tme": "2",
+          "similarity": 0.4988017082928673,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001201187",
+          "source_tme": "251",
+          "similarity": 0.4972610473632848,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001298516",
+        "ABA20263001393089",
+        "ABA20263001454530",
+        "ABA20263001464669",
+        "ABA20263001480712",
+        "ABA20263001496869",
+        "ABA20263001511699",
+        "ABB20263001162744",
+        "ABB20263001170548",
+        "ACG20253001127483",
+        "ACG20253001137374",
+        "ACG20253001149370",
+        "ACG20263001164349",
+        "ACG20263001179833",
+        "ACG20263001201187",
+        "ACG20263001205904",
+        "ACG20263001300536",
+        "ACG20263001317880",
+        "ACG20263001317885",
+        "ACG20263001382176",
+        "ACG20263001383217",
+        "ACG20263001400300",
+        "ACG20263001409315",
+        "AIG20250000501481",
+        "AIG20250000503785",
+        "AIG20250000505103",
+        "AIG20250000511160",
+        "AIG20250000517158",
+        "AIG20250000533945"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.355693
+    },
+    {
+      "id": "exact-title-labor",
+      "query": "노동법 A to Z 근로계약부터 인사관리까지 핵심 총정리",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: ABA20263001500869. Basis: 근로계약, 인사관리 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "ABA20263001500869"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ABA20263001500869",
+          "source_tme": "2",
+          "similarity": 0.9342881441116333,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ACG20263001351063",
+          "source_tme": "18",
+          "similarity": 0.5773077607154846,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABA20263001218989",
+          "source_tme": "233",
+          "similarity": 0.547614336013794,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ACG20263001205904",
+          "source_tme": "35",
+          "similarity": 0.5159343462068658,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ABA20263001404460",
+          "source_tme": "5",
+          "similarity": 0.5110976696014404,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20250000511160",
+          "source_tme": "1",
+          "similarity": 0.5108696222305298,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ACG20263001409315",
+          "source_tme": "13",
+          "similarity": 0.5105648497252052,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20253001149583",
+          "source_tme": "43",
+          "similarity": 0.5096479058265686,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001284249",
+          "source_tme": "151",
+          "similarity": 0.5048024654388428,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001383217",
+          "source_tme": "7",
+          "similarity": 0.4965395337570626,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.49586020373048423,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001382176",
+          "source_tme": "7",
+          "similarity": 0.4949206556308876,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ABA20253001133529",
+          "source_tme": "35",
+          "similarity": 0.4941607724140773,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001504112",
+          "source_tme": "1",
+          "similarity": 0.49213191866874695,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20250000517702",
+          "source_tme": "3",
+          "similarity": 0.48864662647247314,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20253001149370",
+          "source_tme": "34",
+          "similarity": 0.48611946362613057,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001382178",
+          "source_tme": "7",
+          "similarity": 0.48593437671661377,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AIG20250000526515",
+          "source_tme": "2",
+          "similarity": 0.4827888443579256,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "AIG20250000503785",
+          "source_tme": "1",
+          "similarity": 0.4810775231672818,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001300536",
+          "source_tme": "16",
+          "similarity": 0.47822861308540765,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ABA20263001317646",
+          "source_tme": "26",
+          "similarity": 0.476867809202308,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001162002",
+          "source_tme": "276",
+          "similarity": 0.4740833326627819,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001180818",
+          "source_tme": "36",
+          "similarity": 0.4740833326627819,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001366344",
+          "source_tme": "41",
+          "similarity": 0.4740833326627819,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001419191",
+          "source_tme": "32",
+          "similarity": 0.4740833326627819,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001192107",
+          "source_tme": "159",
+          "similarity": 0.4739784582840486,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001494223",
+          "source_tme": "1",
+          "similarity": 0.4725525975227356,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "AIG20250000505103",
+          "source_tme": "5",
+          "similarity": 0.47093073763824334,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001153265",
+          "source_tme": "67",
+          "similarity": 0.47078105633145984,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001400300",
+          "source_tme": "93",
+          "similarity": 0.46817984987377304,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001133529",
+        "ABA20263001218989",
+        "ABA20263001317646",
+        "ABA20263001404460",
+        "ACG20253001127483",
+        "ACG20253001149370",
+        "ACG20253001149583",
+        "ACG20263001153265",
+        "ACG20263001162002",
+        "ACG20263001180818",
+        "ACG20263001192107",
+        "ACG20263001205904",
+        "ACG20263001284249",
+        "ACG20263001300536",
+        "ACG20263001351063",
+        "ACG20263001366344",
+        "ACG20263001382176",
+        "ACG20263001382178",
+        "ACG20263001383217",
+        "ACG20263001400300",
+        "ACG20263001409315",
+        "ACG20263001419191",
+        "ACG20263001494223",
+        "ACG20263001504112",
+        "AIG20250000503785",
+        "AIG20250000505103",
+        "AIG20250000511160",
+        "AIG20250000517702",
+        "AIG20250000526515"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.326811
+    },
+    {
+      "id": "exact-title-safety",
+      "query": "산업안전기사 필수핵심 필기1 (산업재해, 인간공학, 기계·기구)",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: ACG20263001254427. Basis: 산업재해 예방, 기계안전 curriculum. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "ACG20263001254427"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ACG20263001254427",
+          "source_tme": "27",
+          "similarity": 0.9531188691045893,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000533325",
+          "source_tme": "1",
+          "similarity": 0.7671374817408646,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001251433",
+          "source_tme": "31",
+          "similarity": 0.7408000539779599,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ACG20263001325060",
+          "source_tme": "22",
+          "similarity": 0.733759061470089,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001153265",
+          "source_tme": "67",
+          "similarity": 0.692363220908451,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001513005",
+          "source_tme": "1",
+          "similarity": 0.6916182041168262,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20250000528677",
+          "source_tme": "2",
+          "similarity": 0.6714363894294691,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001157386",
+          "source_tme": "39",
+          "similarity": 0.6589083685442754,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "AVA20263001248377",
+          "source_tme": "34",
+          "similarity": 0.6431292508167487,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001407791",
+          "source_tme": "14",
+          "similarity": 0.6356485703200966,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001407533",
+          "source_tme": "13",
+          "similarity": 0.6337133864335198,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001316367",
+          "source_tme": "24",
+          "similarity": 0.6309819441448494,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000527208",
+          "source_tme": "2",
+          "similarity": 0.6256444267736572,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001324866",
+          "source_tme": "24",
+          "similarity": 0.6186534762382552,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001419176",
+          "source_tme": "8",
+          "similarity": 0.6181238748879582,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20250000503256",
+          "source_tme": "5",
+          "similarity": 0.6163827548255276,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20253001142277",
+          "source_tme": "44",
+          "similarity": 0.6132841523503044,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001408590",
+          "source_tme": "34",
+          "similarity": 0.6033113835268399,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001409315",
+          "source_tme": "13",
+          "similarity": 0.599074685628732,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001441413",
+          "source_tme": "5",
+          "similarity": 0.5955355649548095,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001334135",
+          "source_tme": "66",
+          "similarity": 0.5936749819710871,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001407288",
+          "source_tme": "13",
+          "similarity": 0.5882640130362513,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001172856",
+          "source_tme": "19",
+          "similarity": 0.5845790156973005,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001324611",
+          "source_tme": "11",
+          "similarity": 0.5755972609279999,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "AIG20250000503782",
+          "source_tme": "4",
+          "similarity": 0.5754279918841149,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001226498",
+          "source_tme": "33",
+          "similarity": 0.5732850432395976,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20250000517702",
+          "source_tme": "3",
+          "similarity": 0.5731830255280133,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20263001503900",
+          "source_tme": "1",
+          "similarity": 0.5717728393213258,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20253001146101",
+          "source_tme": "43",
+          "similarity": 0.568059223641297,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001205904",
+          "source_tme": "35",
+          "similarity": 0.5672343889195456,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ACG20253001142277",
+        "ACG20253001146101",
+        "ACG20263001153265",
+        "ACG20263001157386",
+        "ACG20263001172856",
+        "ACG20263001205904",
+        "ACG20263001226498",
+        "ACG20263001251433",
+        "ACG20263001316367",
+        "ACG20263001324611",
+        "ACG20263001324866",
+        "ACG20263001325060",
+        "ACG20263001334135",
+        "ACG20263001407288",
+        "ACG20263001407533",
+        "ACG20263001407791",
+        "ACG20263001408590",
+        "ACG20263001409315",
+        "ACG20263001419176",
+        "ACG20263001441413",
+        "ACG20263001503900",
+        "ACG20263001513005",
+        "AIG20250000503256",
+        "AIG20250000503782",
+        "AIG20250000517702",
+        "AIG20250000527208",
+        "AIG20250000528677",
+        "AIG20250000533325",
+        "AVA20263001248377"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.329994
+    },
+    {
+      "id": "exact-title-security",
+      "query": "[정보보안] 취약점분석 등 정보보안 전문가 취업캠프",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20240000498079. Basis: 정보보안, 보안로그 분석 curriculum; timetable is not established. This is one expected course, not the exhaustive relevant set. Exact source title query; expectation fixed before retrieval. No expected rank is asserted.",
+      "expected_course_ids": [
+        "AIG20240000498079"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.9245484150811561,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.6606128614958294,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "AIG20250000521517",
+          "source_tme": "1",
+          "similarity": 0.6587972037908918,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABA20263001230511",
+          "source_tme": "2",
+          "similarity": 0.608448391397448,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.6033361733954007,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ABA20263001218989",
+          "source_tme": "233",
+          "similarity": 0.6015433790139423,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20250000534216",
+          "source_tme": "2",
+          "similarity": 0.5983867227550367,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "AIG20250000542500",
+          "source_tme": "1",
+          "similarity": 0.5954464851452855,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001417820",
+          "source_tme": "74",
+          "similarity": 0.5929109034809742,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "AIG20250000542957",
+          "source_tme": "1",
+          "similarity": 0.5872473891749203,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "AIG20250000542956",
+          "source_tme": "1",
+          "similarity": 0.5839545056779243,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABA20263001438191",
+          "source_tme": "54",
+          "similarity": 0.582886405329138,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001458983",
+          "source_tme": "40",
+          "similarity": 0.582886405329138,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.5809679204514006,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001504136",
+          "source_tme": "1",
+          "similarity": 0.5800583690318042,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20250000501486",
+          "source_tme": "6",
+          "similarity": 0.5777273694629108,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20253001127505",
+          "source_tme": "195",
+          "similarity": 0.5775637202728906,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001422215",
+          "source_tme": "41",
+          "similarity": 0.5775637202728906,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "AIG20240000498178",
+          "source_tme": "8",
+          "similarity": 0.576550024048985,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ABA20263001454530",
+          "source_tme": "1",
+          "similarity": 0.5754658155282087,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.5751814670806709,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001246894",
+          "source_tme": "208",
+          "similarity": 0.5704317262897413,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001366293",
+          "source_tme": "61",
+          "similarity": 0.5704317262897413,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001384657",
+          "source_tme": "32",
+          "similarity": 0.5704317262897413,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001157754",
+          "source_tme": "39",
+          "similarity": 0.5699273687557798,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001321328",
+          "source_tme": "83",
+          "similarity": 0.5699273687557798,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001201331",
+          "source_tme": "251",
+          "similarity": 0.5687238316967387,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.5673882453988635,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABA20253001148235",
+          "source_tme": "8",
+          "similarity": 0.5654460023210667,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.5652074904554408,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001148235",
+        "ABA20263001218989",
+        "ABA20263001230511",
+        "ABA20263001438191",
+        "ABA20263001454530",
+        "ACG20253001127483",
+        "ACG20253001127505",
+        "ACG20263001157754",
+        "ACG20263001201331",
+        "ACG20263001246894",
+        "ACG20263001273801",
+        "ACG20263001321328",
+        "ACG20263001366293",
+        "ACG20263001372796",
+        "ACG20263001384657",
+        "ACG20263001399120",
+        "ACG20263001417820",
+        "ACG20263001422215",
+        "ACG20263001458983",
+        "ACG20263001504136",
+        "AIG20240000459068",
+        "AIG20240000498178",
+        "AIG20250000501481",
+        "AIG20250000501486",
+        "AIG20250000521517",
+        "AIG20250000534216",
+        "AIG20250000542500",
+        "AIG20250000542956",
+        "AIG20250000542957"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.327007
+    },
+    {
+      "id": "korean-network-paraphrase",
+      "query": "스위치와 라우터의 보안을 설정하고 네트워크를 관리하는 방법을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20250000539886. Basis: 스위치·라우터 보안, SSH, VLAN curriculum. This is one expected course, not the exhaustive relevant set. ",
+      "expected_course_ids": [
+        "AIG20250000539886"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 0.0,
+          "reciprocal_rank": 0.0,
+          "missing_expected_course_ids": [
+            "AIG20250000539886"
+          ]
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 0.5,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ABA20263001218982",
+          "source_tme": "233",
+          "similarity": 0.6976965970705272,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000539886",
+          "source_tme": "94",
+          "similarity": 0.6807917140970571,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.6715725660324144,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.6715725660324144,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AVA20263001248400",
+          "source_tme": "26",
+          "similarity": 0.6715725660324144,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001321344",
+          "source_tme": "100",
+          "similarity": 0.6602167892197622,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ACG20263001406007",
+          "source_tme": "60",
+          "similarity": 0.6583843223796322,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001246894",
+          "source_tme": "208",
+          "similarity": 0.6568060125824218,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001366293",
+          "source_tme": "61",
+          "similarity": 0.6568060125824218,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001384657",
+          "source_tme": "32",
+          "similarity": 0.6568060125824218,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.6132403429377001,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABA20263001422289",
+          "source_tme": "3",
+          "similarity": 0.613234066174385,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ABA20253001148235",
+          "source_tme": "8",
+          "similarity": 0.6079532918943998,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ABA20263001273480",
+          "source_tme": "203",
+          "similarity": 0.5972687130089926,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001170703",
+          "source_tme": "272",
+          "similarity": 0.5953031664725343,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20263001432982",
+          "source_tme": "67",
+          "similarity": 0.5949845491345158,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "AVA20253001150484",
+          "source_tme": "36",
+          "similarity": 0.5949845491345158,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001251617",
+          "source_tme": "27",
+          "similarity": 0.5934824943542523,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001422327",
+          "source_tme": "41",
+          "similarity": 0.5934824943542523,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001251684",
+          "source_tme": "208",
+          "similarity": 0.5883394059044011,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001301737",
+          "source_tme": "108",
+          "similarity": 0.5881946577793767,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001336637",
+          "source_tme": "144",
+          "similarity": 0.581306149803859,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001336657",
+          "source_tme": "144",
+          "similarity": 0.5759578256657332,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001273805",
+          "source_tme": "208",
+          "similarity": 0.572841431329166,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001372766",
+          "source_tme": "14",
+          "similarity": 0.572841431329166,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "AVA20263001248388",
+          "source_tme": "26",
+          "similarity": 0.572841431329166,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.5724248544916607,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20263001417820",
+          "source_tme": "74",
+          "similarity": 0.5659238358781445,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABA20263001273496",
+          "source_tme": "203",
+          "similarity": 0.5636327450932134,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.5620072149034024,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001148235",
+        "ABA20263001218982",
+        "ABA20263001273480",
+        "ABA20263001273496",
+        "ABA20263001422289",
+        "ACG20263001170703",
+        "ACG20263001246894",
+        "ACG20263001251617",
+        "ACG20263001251684",
+        "ACG20263001273801",
+        "ACG20263001273805",
+        "ACG20263001301737",
+        "ACG20263001321344",
+        "ACG20263001336637",
+        "ACG20263001336657",
+        "ACG20263001366293",
+        "ACG20263001372766",
+        "ACG20263001372796",
+        "ACG20263001384657",
+        "ACG20263001399120",
+        "ACG20263001406007",
+        "ACG20263001417820",
+        "ACG20263001422327",
+        "ACG20263001432982",
+        "ACG20263001439416",
+        "AIG20240000498079",
+        "AVA20253001150484",
+        "AVA20263001248388",
+        "AVA20263001248400"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.320099
+    },
+    {
+      "id": "korean-semiconductor-paraphrase",
+      "query": "반도체 제조 공정에서 나온 데이터를 파이썬으로 분석하고 회귀 모형을 만들고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20250000539889. Basis: pandas, 회귀, 반도체 공정 데이터 curriculum. This is one expected course, not the exhaustive relevant set. ",
+      "expected_course_ids": [
+        "AIG20250000539889"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000539889",
+          "source_tme": "94",
+          "similarity": 0.8165327553907862,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ABB20253001145832",
+          "source_tme": "3",
+          "similarity": 0.5897650053887077,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "AIG20250000501486",
+          "source_tme": "6",
+          "similarity": 0.5744198731905187,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "AIG20250000531434",
+          "source_tme": "5",
+          "similarity": 0.5451254899538227,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.5342966754944145,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.5234185613220503,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ABB20263001168816",
+          "source_tme": "5",
+          "similarity": 0.5133115665091961,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "AIG20250000539888",
+          "source_tme": "94",
+          "similarity": 0.5103165811488974,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "AIG20250000515004",
+          "source_tme": "3",
+          "similarity": 0.509301976755558,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.508825005152823,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001407830",
+          "source_tme": "56",
+          "similarity": 0.5077504070922856,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABB20263001153248",
+          "source_tme": "2",
+          "similarity": 0.48559005601435934,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000534823",
+          "source_tme": "2",
+          "similarity": 0.48542389186763124,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ABB20253001150106",
+          "source_tme": "3",
+          "similarity": 0.48409823836360144,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20250000535947",
+          "source_tme": "4",
+          "similarity": 0.4824778889871292,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20240000459227",
+          "source_tme": "11",
+          "similarity": 0.47883860829953717,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ABB20253001144740",
+          "source_tme": "4",
+          "similarity": 0.47800760167769707,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AIG20250000525521",
+          "source_tme": "4",
+          "similarity": 0.477541582804186,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "AIG20250000513014",
+          "source_tme": "5",
+          "similarity": 0.47746004365742345,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ABA20263001317646",
+          "source_tme": "26",
+          "similarity": 0.47709804636824416,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "AIG20250000536890",
+          "source_tme": "1",
+          "similarity": 0.4756237722747413,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001366301",
+          "source_tme": "61",
+          "similarity": 0.4754133380826332,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20250000522280",
+          "source_tme": "2",
+          "similarity": 0.47501958683308265,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001407288",
+          "source_tme": "13",
+          "similarity": 0.4729416056240562,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ABB20253001150048",
+          "source_tme": "2",
+          "similarity": 0.47203893876191816,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ABB20263001157188",
+          "source_tme": "3",
+          "similarity": 0.4716934089386533,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20260000545806",
+          "source_tme": "11",
+          "similarity": 0.47157241658219473,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20253001127505",
+          "source_tme": "195",
+          "similarity": 0.46938706843218436,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001422215",
+          "source_tme": "41",
+          "similarity": 0.46938706843218436,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001317880",
+          "source_tme": "11",
+          "similarity": 0.46890436020208504,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001317646",
+        "ABB20253001144740",
+        "ABB20253001145832",
+        "ABB20253001150048",
+        "ABB20253001150106",
+        "ABB20263001153248",
+        "ABB20263001157188",
+        "ABB20263001168816",
+        "ACG20253001127505",
+        "ACG20263001317880",
+        "ACG20263001366301",
+        "ACG20263001407288",
+        "ACG20263001407830",
+        "ACG20263001422215",
+        "AIG20240000459227",
+        "AIG20240000498079",
+        "AIG20250000501481",
+        "AIG20250000501486",
+        "AIG20250000513014",
+        "AIG20250000515004",
+        "AIG20250000522280",
+        "AIG20250000525521",
+        "AIG20250000531434",
+        "AIG20250000534823",
+        "AIG20250000535947",
+        "AIG20250000536890",
+        "AIG20250000539888",
+        "AIG20260000545060",
+        "AIG20260000545806"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.349621
+    },
+    {
+      "id": "korean-labor-paraphrase",
+      "query": "근로계약서를 작성하고 직원 인사관리에 필요한 노동법을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: ABA20263001500869. Basis: 근로계약, 인사관리 curriculum. This is one expected course, not the exhaustive relevant set. ",
+      "expected_course_ids": [
+        "ABA20263001500869"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ABA20263001500869",
+          "source_tme": "2",
+          "similarity": 0.7029078360905893,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000511160",
+          "source_tme": "1",
+          "similarity": 0.6071121564969874,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABA20253001133529",
+          "source_tme": "35",
+          "similarity": 0.5929481408154555,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABA20263001404460",
+          "source_tme": "5",
+          "similarity": 0.5856518047271049,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20250000505103",
+          "source_tme": "5",
+          "similarity": 0.582418424415052,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20253001149583",
+          "source_tme": "43",
+          "similarity": 0.5795225907510303,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20250000526515",
+          "source_tme": "2",
+          "similarity": 0.5732693501332721,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001409315",
+          "source_tme": "13",
+          "similarity": 0.5643825377505928,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20253001149370",
+          "source_tme": "34",
+          "similarity": 0.5603899454721919,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001300536",
+          "source_tme": "16",
+          "similarity": 0.5597512817605246,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001205904",
+          "source_tme": "35",
+          "similarity": 0.5590550758707342,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABA20263001298516",
+          "source_tme": "1",
+          "similarity": 0.5574184851494169,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000517702",
+          "source_tme": "3",
+          "similarity": 0.5436766691593364,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001157754",
+          "source_tme": "39",
+          "similarity": 0.5433781043581714,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001321328",
+          "source_tme": "83",
+          "similarity": 0.5433781043581714,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ABA20263001257334",
+          "source_tme": "3",
+          "similarity": 0.5413716386113636,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.5406056545720924,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AIG20250000503233",
+          "source_tme": "2",
+          "similarity": 0.5385945714357837,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001336637",
+          "source_tme": "144",
+          "similarity": 0.5381055108120134,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "AVA20263001406637",
+          "source_tme": "6",
+          "similarity": 0.5327295780721744,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001400300",
+          "source_tme": "93",
+          "similarity": 0.5318287294013151,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001153265",
+          "source_tme": "67",
+          "similarity": 0.5314125697962984,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ABA20263001464669",
+          "source_tme": "1",
+          "similarity": 0.5287810529731487,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.5279005699394774,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001504112",
+          "source_tme": "1",
+          "similarity": 0.5277417550548762,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001351063",
+          "source_tme": "18",
+          "similarity": 0.5276493993223467,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20250000503785",
+          "source_tme": "1",
+          "similarity": 0.5256334199368808,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20263001407533",
+          "source_tme": "13",
+          "similarity": 0.5247575611165131,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.5239787073160797,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ABA20263001170664",
+          "source_tme": "3",
+          "similarity": 0.5219122430243067,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001133529",
+        "ABA20263001170664",
+        "ABA20263001257334",
+        "ABA20263001298516",
+        "ABA20263001404460",
+        "ABA20263001464669",
+        "ACG20253001127483",
+        "ACG20253001149370",
+        "ACG20253001149583",
+        "ACG20263001153265",
+        "ACG20263001157754",
+        "ACG20263001205904",
+        "ACG20263001300536",
+        "ACG20263001321328",
+        "ACG20263001336637",
+        "ACG20263001351063",
+        "ACG20263001399120",
+        "ACG20263001400300",
+        "ACG20263001407533",
+        "ACG20263001409315",
+        "ACG20263001439416",
+        "ACG20263001504112",
+        "AIG20250000503233",
+        "AIG20250000503785",
+        "AIG20250000505103",
+        "AIG20250000511160",
+        "AIG20250000517702",
+        "AIG20250000526515",
+        "AVA20263001406637"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.295197
+    },
+    {
+      "id": "mixed-network-terms",
+      "query": "Packet Tracer로 VLAN과 SSH를 설정하는 네트워크 보안 실습",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20250000539886. Basis: 스위치·라우터 보안, SSH, VLAN curriculum. This is one expected course, not the exhaustive relevant set. English/Korean terminology probe; no query rewriting is performed.",
+      "expected_course_ids": [
+        "AIG20250000539886"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000539886",
+          "source_tme": "94",
+          "similarity": 0.6637218995425868,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ACG20263001321344",
+          "source_tme": "100",
+          "similarity": 0.5777997877836522,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABB20263001153238",
+          "source_tme": "2",
+          "similarity": 0.5667252033896625,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABA20263001422289",
+          "source_tme": "3",
+          "similarity": 0.5514653263729461,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.5475977332831867,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.5475977332831867,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AVA20263001248400",
+          "source_tme": "26",
+          "similarity": 0.5475977332831867,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ABA20263001218982",
+          "source_tme": "233",
+          "similarity": 0.5433024609199345,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.5422185174627497,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001246894",
+          "source_tme": "208",
+          "similarity": 0.5361261208019933,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001366293",
+          "source_tme": "61",
+          "similarity": 0.5361261208019933,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001384657",
+          "source_tme": "32",
+          "similarity": 0.5361261208019933,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001251684",
+          "source_tme": "208",
+          "similarity": 0.5308879455659521,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001301737",
+          "source_tme": "108",
+          "similarity": 0.5302215778563564,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001170703",
+          "source_tme": "272",
+          "similarity": 0.5146236384812263,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20263001406007",
+          "source_tme": "60",
+          "similarity": 0.5130722079596766,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001432982",
+          "source_tme": "67",
+          "similarity": 0.5126827802454709,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AVA20253001150484",
+          "source_tme": "36",
+          "similarity": 0.5126827802454709,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.5099033105488682,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "AVA20263001406473",
+          "source_tme": "4",
+          "similarity": 0.5099033105488682,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "AIG20250000543113",
+          "source_tme": "4",
+          "similarity": 0.5019460467744483,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.5004897712493488,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001201331",
+          "source_tme": "251",
+          "similarity": 0.4990508259474282,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ABA20253001148235",
+          "source_tme": "8",
+          "similarity": 0.49855142857704937,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.4965229336592074,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "AIG20250000529679",
+          "source_tme": "2",
+          "similarity": 0.49095255244344194,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ABA20263001273480",
+          "source_tme": "203",
+          "similarity": 0.48758930263774336,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20253001127505",
+          "source_tme": "195",
+          "similarity": 0.4857931452044111,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001422215",
+          "source_tme": "41",
+          "similarity": 0.4857931452044111,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001199855",
+          "source_tme": "103",
+          "similarity": 0.48568540811540073,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001148235",
+        "ABA20263001218982",
+        "ABA20263001273480",
+        "ABA20263001422289",
+        "ABB20263001153238",
+        "ACG20253001127505",
+        "ACG20263001170703",
+        "ACG20263001199855",
+        "ACG20263001201331",
+        "ACG20263001246894",
+        "ACG20263001251684",
+        "ACG20263001273801",
+        "ACG20263001301737",
+        "ACG20263001321344",
+        "ACG20263001366293",
+        "ACG20263001372796",
+        "ACG20263001384657",
+        "ACG20263001399120",
+        "ACG20263001406007",
+        "ACG20263001422215",
+        "ACG20263001432982",
+        "ACG20263001439416",
+        "AIG20240000498079",
+        "AIG20250000501481",
+        "AIG20250000529679",
+        "AIG20250000543113",
+        "AVA20253001150484",
+        "AVA20263001248400",
+        "AVA20263001406473"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.31262
+    },
+    {
+      "id": "mixed-semiconductor-terms",
+      "query": "Python pandas와 machine learning regression으로 반도체 공정 데이터 분석",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20250000539889. Basis: pandas, 회귀, 반도체 공정 데이터 curriculum. This is one expected course, not the exhaustive relevant set. English/Korean terminology probe; no query rewriting is performed.",
+      "expected_course_ids": [
+        "AIG20250000539889"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000539889",
+          "source_tme": "94",
+          "similarity": 0.7905992865562439,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000501486",
+          "source_tme": "6",
+          "similarity": 0.6273871882327098,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABB20253001145832",
+          "source_tme": "3",
+          "similarity": 0.5741563185546599,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABB20263001170548",
+          "source_tme": "2",
+          "similarity": 0.5291706639033961,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AVA20263001248421",
+          "source_tme": "34",
+          "similarity": 0.515222161100975,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.5095255667254,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ABB20263001168816",
+          "source_tme": "5",
+          "similarity": 0.5031675550193409,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "AIG20250000531434",
+          "source_tme": "5",
+          "similarity": 0.4962126617178164,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001273470",
+          "source_tme": "24",
+          "similarity": 0.49394065069445137,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001317885",
+          "source_tme": "11",
+          "similarity": 0.49373228829301286,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ABB20253001150106",
+          "source_tme": "3",
+          "similarity": 0.49125146865844727,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABA20263001418967",
+          "source_tme": "2",
+          "similarity": 0.48730355501174927,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000543113",
+          "source_tme": "4",
+          "similarity": 0.4840009356737418,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001417820",
+          "source_tme": "74",
+          "similarity": 0.4839059114456177,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001438173",
+          "source_tme": "67",
+          "similarity": 0.48154228925704956,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20253001127505",
+          "source_tme": "195",
+          "similarity": 0.48140701429927857,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001422215",
+          "source_tme": "41",
+          "similarity": 0.48140701429927857,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001201126",
+          "source_tme": "243",
+          "similarity": 0.4781640496058439,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "AVA20253001150451",
+          "source_tme": "36",
+          "similarity": 0.4781640496058439,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001325060",
+          "source_tme": "22",
+          "similarity": 0.47731812230700643,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.47648701071739197,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.474617137748514,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20240000459227",
+          "source_tme": "11",
+          "similarity": 0.4730797426057023,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "AIG20250000539888",
+          "source_tme": "94",
+          "similarity": 0.47255593865443335,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20253001146101",
+          "source_tme": "43",
+          "similarity": 0.4707927125219882,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ABB20263001157188",
+          "source_tme": "3",
+          "similarity": 0.47038246602959854,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20260000543299",
+          "source_tme": "8",
+          "similarity": 0.4697858691215515,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20263001356663",
+          "source_tme": "18",
+          "similarity": 0.4682554006576538,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001384624",
+          "source_tme": "32",
+          "similarity": 0.4682554006576538,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001504136",
+          "source_tme": "1",
+          "similarity": 0.4682554006576538,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001418967",
+        "ABB20253001145832",
+        "ABB20253001150106",
+        "ABB20263001157188",
+        "ABB20263001168816",
+        "ABB20263001170548",
+        "ACG20253001127505",
+        "ACG20253001146101",
+        "ACG20263001201126",
+        "ACG20263001273470",
+        "ACG20263001317885",
+        "ACG20263001325060",
+        "ACG20263001356663",
+        "ACG20263001384624",
+        "ACG20263001417820",
+        "ACG20263001422215",
+        "ACG20263001438173",
+        "ACG20263001504136",
+        "AIG20240000459068",
+        "AIG20240000459227",
+        "AIG20240000498079",
+        "AIG20250000501486",
+        "AIG20250000531434",
+        "AIG20250000539888",
+        "AIG20250000543113",
+        "AIG20260000543299",
+        "AIG20260000545060",
+        "AVA20253001150451",
+        "AVA20263001248421"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.315931
+    },
+    {
+      "id": "mixed-automation-terms",
+      "query": "Google Apps Script와 생성형 AI로 업무 자동화 prototype 만들기",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "judged",
+      "judgment_reason": "Preconfirmed source course: AIG20260000545806. Basis: 생성형 AI, Google Apps Script 자동화 curriculum. This is one expected course, not the exhaustive relevant set. English/Korean terminology probe; no query rewriting is performed.",
+      "expected_course_ids": [
+        "AIG20260000545806"
+      ],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": true,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": 1.0,
+          "reciprocal_rank": 1.0,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20260000545806",
+          "source_tme": "11",
+          "similarity": 0.7933145165443477,
+          "judgment": "relevant"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.6038210864280359,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001407830",
+          "source_tme": "56",
+          "similarity": 0.5905290422001261,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ACG20263001384938",
+          "source_tme": "56",
+          "similarity": 0.585372914627443,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20250000535947",
+          "source_tme": "4",
+          "similarity": 0.5849761265544741,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001495422",
+          "source_tme": "1",
+          "similarity": 0.5726420283317607,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ABB20263001168816",
+          "source_tme": "5",
+          "similarity": 0.5726312567058949,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "AIG20240000498178",
+          "source_tme": "8",
+          "similarity": 0.5647417138593901,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ABA20263001409316",
+          "source_tme": "74",
+          "similarity": 0.5484770747762199,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001410572",
+          "source_tme": "86",
+          "similarity": 0.5484770747762199,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ABA20263001317646",
+          "source_tme": "26",
+          "similarity": 0.526766388012983,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABA20263001165508",
+          "source_tme": "10",
+          "similarity": 0.5245541021493622,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "AIG20250000501387",
+          "source_tme": "6",
+          "similarity": 0.5200939154512983,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.5181964326979865,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20263001398086",
+          "source_tme": "1",
+          "similarity": 0.511435970323208,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20250000506847",
+          "source_tme": "8",
+          "similarity": 0.5093126145210103,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "AIG20250000525521",
+          "source_tme": "4",
+          "similarity": 0.49300387626817144,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001399623",
+          "source_tme": "13",
+          "similarity": 0.48730064814991647,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.48536096556899255,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "AVA20263001406473",
+          "source_tme": "4",
+          "similarity": 0.48536096556899255,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ABA20263001317922",
+          "source_tme": "3",
+          "similarity": 0.479862155930739,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ABB20253001150048",
+          "source_tme": "2",
+          "similarity": 0.47925645360273683,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20250000539888",
+          "source_tme": "94",
+          "similarity": 0.47817424069796644,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ABB20253001150106",
+          "source_tme": "3",
+          "similarity": 0.47528174372207355,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20253001146067",
+          "source_tme": "43",
+          "similarity": 0.47501553669525765,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ABA20263001407603",
+          "source_tme": "27",
+          "similarity": 0.47495503499702973,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001317885",
+          "source_tme": "11",
+          "similarity": 0.4741782294193104,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ABB20263001153248",
+          "source_tme": "2",
+          "similarity": 0.47363460378234334,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABB20263001254007",
+          "source_tme": "4",
+          "similarity": 0.47168526559735646,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "AIG20250000530889",
+          "source_tme": "13",
+          "similarity": 0.4713190215039844,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001165508",
+        "ABA20263001317646",
+        "ABA20263001317922",
+        "ABA20263001407603",
+        "ABA20263001409316",
+        "ABB20253001150048",
+        "ABB20253001150106",
+        "ABB20263001153248",
+        "ABB20263001168816",
+        "ABB20263001254007",
+        "ACG20253001146067",
+        "ACG20263001317885",
+        "ACG20263001384938",
+        "ACG20263001399120",
+        "ACG20263001399623",
+        "ACG20263001407830",
+        "ACG20263001410572",
+        "ACG20263001495422",
+        "AIG20240000459068",
+        "AIG20240000498178",
+        "AIG20250000501387",
+        "AIG20250000506847",
+        "AIG20250000525521",
+        "AIG20250000530889",
+        "AIG20250000535947",
+        "AIG20250000539888",
+        "AIG20260000545060",
+        "AIG20263001398086",
+        "AVA20263001406473"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.337475
+    },
+    {
+      "id": "broad-career-goal",
+      "query": "새로운 직무로 이직하기 위해 어떤 교육을 들어야 할지 찾고 있어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Broad goal lacks a target competency. Independently review returned course curricula before assigning positive or negative labels; do not infer relevance from a generic title.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000511160",
+          "source_tme": "1",
+          "similarity": 0.6012460468714224,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000505103",
+          "source_tme": "5",
+          "similarity": 0.5952437938677263,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20253001137374",
+          "source_tme": "51",
+          "similarity": 0.5860856216890757,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "AIG20240000498076",
+          "source_tme": "10",
+          "similarity": 0.5769866521390313,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001432982",
+          "source_tme": "67",
+          "similarity": 0.5745550051596849,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001317885",
+          "source_tme": "11",
+          "similarity": 0.5693306244217645,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AVA20253001150462",
+          "source_tme": "46",
+          "similarity": 0.5689703739916873,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.5643887702723567,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001486235",
+          "source_tme": "3",
+          "similarity": 0.5637405774748071,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "AIG20250000520935",
+          "source_tme": "4",
+          "similarity": 0.5634603332442069,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.561534509292958,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001336657",
+          "source_tme": "144",
+          "similarity": 0.5615224168869992,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ABA20253001133529",
+          "source_tme": "35",
+          "similarity": 0.5597920417785803,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001170703",
+          "source_tme": "272",
+          "similarity": 0.5534094774586906,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001409315",
+          "source_tme": "13",
+          "similarity": 0.5511515018578763,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20250000533945",
+          "source_tme": "8",
+          "similarity": 0.549855004263973,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "AIG20250000530986",
+          "source_tme": "7",
+          "similarity": 0.5468909032604925,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ABA20263001480712",
+          "source_tme": "1",
+          "similarity": 0.5459409842631855,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001157754",
+          "source_tme": "39",
+          "similarity": 0.5458032975665813,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001321328",
+          "source_tme": "83",
+          "similarity": 0.5458032975665813,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001502405",
+          "source_tme": "1",
+          "similarity": 0.5455682494220297,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ABA20263001326184",
+          "source_tme": "4",
+          "similarity": 0.5449918021269082,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ABA20263001257334",
+          "source_tme": "3",
+          "similarity": 0.5444709605609265,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001317880",
+          "source_tme": "11",
+          "similarity": 0.5437754716739581,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001251684",
+          "source_tme": "208",
+          "similarity": 0.5431733675988513,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001301737",
+          "source_tme": "108",
+          "similarity": 0.5431733675988513,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20240000459227",
+          "source_tme": "11",
+          "similarity": 0.5426014338373369,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ABA20263001218989",
+          "source_tme": "233",
+          "similarity": 0.5344625552158903,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "AIG20250000507509",
+          "source_tme": "1",
+          "similarity": 0.5344591695715025,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "AIG20250000536132",
+          "source_tme": "4",
+          "similarity": 0.5340865691278524,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001133529",
+        "ABA20263001218989",
+        "ABA20263001257334",
+        "ABA20263001326184",
+        "ABA20263001480712",
+        "ACG20253001137374",
+        "ACG20263001157754",
+        "ACG20263001170703",
+        "ACG20263001251684",
+        "ACG20263001301737",
+        "ACG20263001317880",
+        "ACG20263001317885",
+        "ACG20263001321328",
+        "ACG20263001336657",
+        "ACG20263001409315",
+        "ACG20263001432982",
+        "ACG20263001439416",
+        "ACG20263001486235",
+        "ACG20263001502405",
+        "AIG20240000459068",
+        "AIG20240000459227",
+        "AIG20240000498076",
+        "AIG20250000505103",
+        "AIG20250000507509",
+        "AIG20250000511160",
+        "AIG20250000520935",
+        "AIG20250000530986",
+        "AIG20250000533945",
+        "AIG20250000536132",
+        "AVA20253001150462"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.321075
+    },
+    {
+      "id": "broad-digital-goal",
+      "query": "AI를 활용해서 일을 더 잘하고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Broad AI objective does not preconfirm any individual course. Review scope and level independently; do not promote observed top results into expectations.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ACG20263001407830",
+          "source_tme": "56",
+          "similarity": 0.6749143406697715,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ABB20263001168816",
+          "source_tme": "5",
+          "similarity": 0.6255089677415291,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABA20263001407603",
+          "source_tme": "27",
+          "similarity": 0.6251768395620938,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.6194222611705497,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001201126",
+          "source_tme": "243",
+          "similarity": 0.5880641761999101,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AVA20253001150451",
+          "source_tme": "36",
+          "similarity": 0.5880641761999101,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ABA20263001409316",
+          "source_tme": "74",
+          "similarity": 0.5798286622813766,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001410572",
+          "source_tme": "86",
+          "similarity": 0.5798286622813766,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ABA20263001317922",
+          "source_tme": "3",
+          "similarity": 0.577947718562256,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ABA20263001317646",
+          "source_tme": "26",
+          "similarity": 0.5771256513260133,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001317885",
+          "source_tme": "11",
+          "similarity": 0.57505716607145,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "AIG20260000545806",
+          "source_tme": "11",
+          "similarity": 0.567953808070608,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001495422",
+          "source_tme": "1",
+          "similarity": 0.5675295502718883,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001504112",
+          "source_tme": "1",
+          "similarity": 0.5652010609269461,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ABA20263001165508",
+          "source_tme": "10",
+          "similarity": 0.5625466275974106,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20263001384938",
+          "source_tme": "56",
+          "similarity": 0.5614872146095998,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "AIG20240000459068",
+          "source_tme": "39",
+          "similarity": 0.561183350121479,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AIG20250000501387",
+          "source_tme": "6",
+          "similarity": 0.5549121929731333,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20253001151607",
+          "source_tme": "193",
+          "similarity": 0.5492138371574489,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001340793",
+          "source_tme": "66",
+          "similarity": 0.5492138371574489,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001417922",
+          "source_tme": "67",
+          "similarity": 0.5492138371574489,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "AIG20263001398086",
+          "source_tme": "1",
+          "similarity": 0.547731551392767,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20250000506847",
+          "source_tme": "8",
+          "similarity": 0.5474449502726004,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "AIG20250000535947",
+          "source_tme": "4",
+          "similarity": 0.5400420749212548,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20253001137374",
+          "source_tme": "51",
+          "similarity": 0.535606932436806,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001179833",
+          "source_tme": "36",
+          "similarity": 0.5298622128244235,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "AIG20250000533945",
+          "source_tme": "8",
+          "similarity": 0.527119056198569,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ABA20263001336416",
+          "source_tme": "1",
+          "similarity": 0.524883819381855,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "AVA20253001150484",
+          "source_tme": "36",
+          "similarity": 0.523004008262997,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001455544",
+          "source_tme": "1",
+          "similarity": 0.5222731699591732,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001165508",
+        "ABA20263001317646",
+        "ABA20263001317922",
+        "ABA20263001336416",
+        "ABA20263001407603",
+        "ABA20263001409316",
+        "ABB20263001168816",
+        "ACG20253001137374",
+        "ACG20253001151607",
+        "ACG20263001179833",
+        "ACG20263001201126",
+        "ACG20263001317885",
+        "ACG20263001340793",
+        "ACG20263001384938",
+        "ACG20263001407830",
+        "ACG20263001410572",
+        "ACG20263001417922",
+        "ACG20263001455544",
+        "ACG20263001495422",
+        "ACG20263001504112",
+        "AIG20240000459068",
+        "AIG20250000501387",
+        "AIG20250000506847",
+        "AIG20250000533945",
+        "AIG20250000535947",
+        "AIG20260000545060",
+        "AIG20260000545806",
+        "AIG20263001398086",
+        "AVA20253001150451",
+        "AVA20253001150484"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.46551
+    },
+    {
+      "id": "similar-but-unreviewed-tax",
+      "query": "개인 연말정산과 종합소득세 신고를 직접 하는 방법을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Personal tax intent differs from the preconfirmed corporate-tax case. The known corporate-tax course is not automatically a false positive: inspect its actual curriculum before labeling it, and inspect the full corpus before asserting absence.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ACG20253001149370",
+          "source_tme": "34",
+          "similarity": 0.5918049988688531,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ABA20263001464669",
+          "source_tme": "1",
+          "similarity": 0.5855693119085696,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "AIG20250000515701",
+          "source_tme": "3",
+          "similarity": 0.5841550157208778,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABA20263001502338",
+          "source_tme": "1",
+          "similarity": 0.5807138335279336,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20250000533945",
+          "source_tme": "8",
+          "similarity": 0.5202289819717407,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20250000511160",
+          "source_tme": "1",
+          "similarity": 0.5154910087585449,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20250000505103",
+          "source_tme": "5",
+          "similarity": 0.5115231732895847,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001502405",
+          "source_tme": "1",
+          "similarity": 0.5087349707642224,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001432982",
+          "source_tme": "67",
+          "similarity": 0.508320152759552,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "AVA20253001150484",
+          "source_tme": "36",
+          "similarity": 0.508320152759552,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001162002",
+          "source_tme": "276",
+          "similarity": 0.5078672463973026,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001180818",
+          "source_tme": "36",
+          "similarity": 0.5078672463973026,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001366344",
+          "source_tme": "41",
+          "similarity": 0.5078672463973026,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001419191",
+          "source_tme": "32",
+          "similarity": 0.5078672463973026,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001205565",
+          "source_tme": "7",
+          "similarity": 0.5059052411261353,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.5037084817886353,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.5037084817886353,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AVA20263001248400",
+          "source_tme": "26",
+          "similarity": 0.5037084817886353,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "AIG20250000529679",
+          "source_tme": "2",
+          "similarity": 0.49674752393394783,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20253001149433",
+          "source_tme": "200",
+          "similarity": 0.49530893564224243,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.4943694917669743,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "AVA20263001406473",
+          "source_tme": "4",
+          "similarity": 0.4943694917669743,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AIG20250000517158",
+          "source_tme": "2",
+          "similarity": 0.4929434363279688,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001336637",
+          "source_tme": "144",
+          "similarity": 0.4925250117465856,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "AIG20250000520050",
+          "source_tme": "23",
+          "similarity": 0.49156519770622253,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001179833",
+          "source_tme": "36",
+          "similarity": 0.49030253291130066,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001496587",
+          "source_tme": "1",
+          "similarity": 0.4901245540306247,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "AIG20240000485525",
+          "source_tme": "4",
+          "similarity": 0.4877681150712865,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "AIG20250000503785",
+          "source_tme": "1",
+          "similarity": 0.48639133410350843,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001334135",
+          "source_tme": "66",
+          "similarity": 0.48551076564257034,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001464669",
+        "ABA20263001502338",
+        "ACG20253001149370",
+        "ACG20253001149433",
+        "ACG20263001162002",
+        "ACG20263001179833",
+        "ACG20263001180818",
+        "ACG20263001205565",
+        "ACG20263001273801",
+        "ACG20263001334135",
+        "ACG20263001336637",
+        "ACG20263001366344",
+        "ACG20263001372796",
+        "ACG20263001399120",
+        "ACG20263001419191",
+        "ACG20263001432982",
+        "ACG20263001496587",
+        "ACG20263001502405",
+        "AIG20240000485525",
+        "AIG20250000503785",
+        "AIG20250000505103",
+        "AIG20250000511160",
+        "AIG20250000515701",
+        "AIG20250000517158",
+        "AIG20250000520050",
+        "AIG20250000529679",
+        "AIG20250000533945",
+        "AVA20253001150484",
+        "AVA20263001248400",
+        "AVA20263001406473"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.354009
+    },
+    {
+      "id": "similar-but-unreviewed-security",
+      "query": "산업 현장의 기계 안전을 관리하는 것보다 웹사이트 보안 취약점을 분석하고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Safety/security terminology overlaps while task intent differs. Negation and curriculum relevance require independent review. Neither the industrial-safety nor cybersecurity course is assigned a label from this wording alone.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ACG20263001246894",
+          "source_tme": "208",
+          "similarity": 0.6087217330932617,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ACG20263001366293",
+          "source_tme": "61",
+          "similarity": 0.6087217330932617,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001384657",
+          "source_tme": "32",
+          "similarity": 0.6087217330932617,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.6015758751883592,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.5780961858091476,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.5780961858091476,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AVA20263001248400",
+          "source_tme": "26",
+          "similarity": 0.5780961858091476,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001199855",
+          "source_tme": "103",
+          "similarity": 0.5697674921085686,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001320140",
+          "source_tme": "11",
+          "similarity": 0.5697674921085686,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001382369",
+          "source_tme": "32",
+          "similarity": 0.5697674921085686,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001406193",
+          "source_tme": "13",
+          "similarity": 0.5697674921085686,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001425081",
+          "source_tme": "41",
+          "similarity": 0.5697674921085686,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ABA20253001148235",
+          "source_tme": "8",
+          "similarity": 0.5661670486727935,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ABA20263001486216",
+          "source_tme": "1",
+          "similarity": 0.5583599473023456,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.5565101768666411,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AVA20263001406473",
+          "source_tme": "4",
+          "similarity": 0.5565101768666411,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.553586092377539,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ABB20263001153248",
+          "source_tme": "2",
+          "similarity": 0.5518978176238793,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001284165",
+          "source_tme": "200",
+          "similarity": 0.5484526695665554,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.5434989929199219,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ACG20253001127505",
+          "source_tme": "195",
+          "similarity": 0.5407865917213812,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ACG20263001422215",
+          "source_tme": "41",
+          "similarity": 0.5407865917213812,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001157754",
+          "source_tme": "39",
+          "similarity": 0.5396543902055739,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001321328",
+          "source_tme": "83",
+          "similarity": 0.5396543902055739,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "AVA20263001406637",
+          "source_tme": "6",
+          "similarity": 0.5389910615091893,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001201331",
+          "source_tme": "251",
+          "similarity": 0.538275198289013,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001432982",
+          "source_tme": "67",
+          "similarity": 0.5377019919334665,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "AVA20253001150484",
+          "source_tme": "36",
+          "similarity": 0.5377019919334665,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "AIG20250000534216",
+          "source_tme": "2",
+          "similarity": 0.5343928655620147,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20263001251684",
+          "source_tme": "208",
+          "similarity": 0.5338989178002536,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001148235",
+        "ABA20263001486216",
+        "ABB20263001153248",
+        "ACG20253001127483",
+        "ACG20253001127505",
+        "ACG20263001157754",
+        "ACG20263001199855",
+        "ACG20263001201331",
+        "ACG20263001246894",
+        "ACG20263001251684",
+        "ACG20263001273801",
+        "ACG20263001284165",
+        "ACG20263001320140",
+        "ACG20263001321328",
+        "ACG20263001366293",
+        "ACG20263001372796",
+        "ACG20263001382369",
+        "ACG20263001384657",
+        "ACG20263001399120",
+        "ACG20263001406193",
+        "ACG20263001422215",
+        "ACG20263001425081",
+        "ACG20263001432982",
+        "ACG20263001439416",
+        "AIG20240000498079",
+        "AIG20250000534216",
+        "AVA20253001150484",
+        "AVA20263001248400",
+        "AVA20263001406473",
+        "AVA20263001406637"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.346127
+    },
+    {
+      "id": "empty-result-candidate-astronomy",
+      "query": "전파망원경을 보정하고 외계행성의 분광 관측 데이터를 분석하는 실습 교육",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Potential out-of-domain probe only. Corpus-wide absence has not been reviewed. Dense retrieval can return candidates for any nonblank query; neither expected_empty nor irrelevant IDs are asserted.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20250000539889",
+          "source_tme": "94",
+          "similarity": 0.5616473294286338,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000501486",
+          "source_tme": "6",
+          "similarity": 0.5559602379798889,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "AIG20250000543113",
+          "source_tme": "4",
+          "similarity": 0.5521796510273117,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "AIG20250000505527",
+          "source_tme": "9",
+          "similarity": 0.5439390268289472,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ABB20253001150106",
+          "source_tme": "3",
+          "similarity": 0.5219216320608138,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AIG20240000459227",
+          "source_tme": "11",
+          "similarity": 0.51213520620642,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20260000545294",
+          "source_tme": "2",
+          "similarity": 0.5117387161566394,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ABB20263001162744",
+          "source_tme": "4",
+          "similarity": 0.510865389005499,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "AIG20250000501481",
+          "source_tme": "9",
+          "similarity": 0.5103781806971848,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "ACG20263001441413",
+          "source_tme": "5",
+          "similarity": 0.5052199363708496,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "AIG20250000529679",
+          "source_tme": "2",
+          "similarity": 0.4994190037250519,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ABB20253001144423",
+          "source_tme": "5",
+          "similarity": 0.49130475572915433,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ABA20263001502338",
+          "source_tme": "1",
+          "similarity": 0.4912787079811096,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "ACG20263001324866",
+          "source_tme": "24",
+          "similarity": 0.4882439970970154,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20240000498178",
+          "source_tme": "8",
+          "similarity": 0.4872625317353767,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "AIG20250000522925",
+          "source_tme": "1",
+          "similarity": 0.48472467064857483,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.4830282936675382,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AIG20250000531434",
+          "source_tme": "5",
+          "similarity": 0.4827209156225065,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001170703",
+          "source_tme": "272",
+          "similarity": 0.4807470452340227,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ABA20263001393089",
+          "source_tme": "2",
+          "similarity": 0.47857770451440274,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "ABA20263001298516",
+          "source_tme": "1",
+          "similarity": 0.4779394282138697,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "ABA20253001145266",
+          "source_tme": "23",
+          "similarity": 0.4779367446899414,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "AVA20263001321903",
+          "source_tme": "15",
+          "similarity": 0.4770420207356211,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001154048",
+          "source_tme": "39",
+          "similarity": 0.47693905234336853,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001374066",
+          "source_tme": "5",
+          "similarity": 0.476523756980896,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.47512394189834595,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001407502",
+          "source_tme": "7",
+          "similarity": 0.47419068371113127,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ACG20263001417820",
+          "source_tme": "74",
+          "similarity": 0.47392228401170544,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ABA20253001133529",
+          "source_tme": "35",
+          "similarity": 0.4739148287671634,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "AIG20260000543299",
+          "source_tme": "8",
+          "similarity": 0.47368460579927374,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20253001133529",
+        "ABA20253001145266",
+        "ABA20263001298516",
+        "ABA20263001393089",
+        "ABA20263001502338",
+        "ABB20253001144423",
+        "ABB20253001150106",
+        "ABB20263001162744",
+        "ACG20263001154048",
+        "ACG20263001170703",
+        "ACG20263001324866",
+        "ACG20263001374066",
+        "ACG20263001407502",
+        "ACG20263001417820",
+        "ACG20263001439416",
+        "ACG20263001441413",
+        "AIG20240000459227",
+        "AIG20240000498178",
+        "AIG20250000501481",
+        "AIG20250000501486",
+        "AIG20250000505527",
+        "AIG20250000522925",
+        "AIG20250000529679",
+        "AIG20250000531434",
+        "AIG20250000539889",
+        "AIG20250000543113",
+        "AIG20260000543299",
+        "AIG20260000545060",
+        "AIG20260000545294",
+        "AVA20263001321903"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.375757
+    },
+    {
+      "id": "empty-result-candidate-preservation",
+      "query": "중세 양피지 필사본의 안료를 분석하고 고문서를 복원하는 실습 교육",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": null,
+        "availability": null,
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Potential out-of-domain probe only. Corpus-wide absence has not been reviewed. Review retrieved evidence independently; do not treat low similarity, an unfamiliar title, or nonempty output as proof of a false positive.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "ACG20253001149370",
+          "source_tme": "34",
+          "similarity": 0.49838322401046753,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "AIG20250000519976",
+          "source_tme": "16",
+          "similarity": 0.4816597413027449,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ACG20263001324611",
+          "source_tme": "11",
+          "similarity": 0.4804360270500183,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "AIG20250000543113",
+          "source_tme": "4",
+          "similarity": 0.4781676673343085,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "AIG20260000545294",
+          "source_tme": "2",
+          "similarity": 0.47441524267196655,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "AVA20253001150478",
+          "source_tme": "36",
+          "similarity": 0.47389474666746056,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "AIG20250000529679",
+          "source_tme": "2",
+          "similarity": 0.47268927422890117,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001407533",
+          "source_tme": "13",
+          "similarity": 0.46942558884620667,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "AIG20250000503345",
+          "source_tme": "5",
+          "similarity": 0.46901327186902075,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "AIG20250000505103",
+          "source_tme": "5",
+          "similarity": 0.46888295186961604,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "AIG20250000535850",
+          "source_tme": "3",
+          "similarity": 0.46656906804030807,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001205908",
+          "source_tme": "35",
+          "similarity": 0.466233132257053,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001160403",
+          "source_tme": "14",
+          "similarity": 0.46316495757311915,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "AIG20240000498178",
+          "source_tme": "8",
+          "similarity": 0.4631317991951647,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "AIG20250000542534",
+          "source_tme": "1",
+          "similarity": 0.46276456117630005,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ABB20253001150106",
+          "source_tme": "3",
+          "similarity": 0.46195562070475904,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001419176",
+          "source_tme": "8",
+          "similarity": 0.46064638856925977,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "AIG20250000535154",
+          "source_tme": "3",
+          "similarity": 0.46020275354385376,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001374066",
+          "source_tme": "5",
+          "similarity": 0.45988786459637576,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "AIG20260000545060",
+          "source_tme": "6",
+          "similarity": 0.458222600327576,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "AIG20250000503520",
+          "source_tme": "8",
+          "similarity": 0.4578036367893219,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "AIG20260000545806",
+          "source_tme": "11",
+          "similarity": 0.457682728767395,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20253001148336",
+          "source_tme": "22",
+          "similarity": 0.45759072647039534,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "AIG20250000511629",
+          "source_tme": "1",
+          "similarity": 0.4571403614115317,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001250931",
+          "source_tme": "9",
+          "similarity": 0.45676130571826956,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001350349",
+          "source_tme": "36",
+          "similarity": 0.45646537710623103,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ABA20263001298516",
+          "source_tme": "1",
+          "similarity": 0.4558488454908829,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "AIG20250000539889",
+          "source_tme": "94",
+          "similarity": 0.45472585885082917,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "AIG20250000522280",
+          "source_tme": "2",
+          "similarity": 0.45443251729011536,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ACG20253001127473",
+          "source_tme": "195",
+          "similarity": 0.4537122845649719,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001298516",
+        "ABB20253001150106",
+        "ACG20253001127473",
+        "ACG20253001148336",
+        "ACG20253001149370",
+        "ACG20263001160403",
+        "ACG20263001205908",
+        "ACG20263001250931",
+        "ACG20263001324611",
+        "ACG20263001350349",
+        "ACG20263001374066",
+        "ACG20263001407533",
+        "ACG20263001419176",
+        "AIG20240000498178",
+        "AIG20250000503345",
+        "AIG20250000503520",
+        "AIG20250000505103",
+        "AIG20250000511629",
+        "AIG20250000519976",
+        "AIG20250000522280",
+        "AIG20250000529679",
+        "AIG20250000535154",
+        "AIG20250000535850",
+        "AIG20250000539889",
+        "AIG20250000542534",
+        "AIG20250000543113",
+        "AIG20260000545060",
+        "AIG20260000545294",
+        "AIG20260000545806",
+        "AVA20253001150478"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.359328
+    },
+    {
+      "id": "unknown-personal-cost-and-timetable",
+      "query": "퇴근 후 주말에 무료로 정보보안 로그 분석을 배우고 싶어요",
+      "as_of": "2026-11-01",
+      "filters": {
+        "delivery_mode": null,
+        "start_from": null,
+        "start_to": null,
+        "listed_region": null,
+        "budget_krw": 0,
+        "availability": "evening_weekend",
+        "field_code": null
+      },
+      "judgment_status": "unjudged",
+      "judgment_reason": "No relevance or empty-result ground truth has been established for this case. Personal cost and timetable are unknown in the source contract. Review relevance separately from feasibility; unknown conditions must not become confirmed free/weekend eligibility.",
+      "expected_course_ids": [],
+      "judged_irrelevant_course_ids": [],
+      "expected_empty": null,
+      "status": "ok",
+      "returned_count": 30,
+      "unique_course_count": 30,
+      "metric_eligible": false,
+      "metrics_at_k": {
+        "1": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "5": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "10": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        },
+        "30": {
+          "expected_set_recall": null,
+          "reciprocal_rank": null,
+          "missing_expected_course_ids": []
+        }
+      },
+      "candidates": [
+        {
+          "rank": 1,
+          "source_course_id": "AIG20240000498079",
+          "source_tme": "7",
+          "similarity": 0.652641376695552,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 2,
+          "source_course_id": "ACG20263001399120",
+          "source_tme": "93",
+          "similarity": 0.5481436252593994,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 3,
+          "source_course_id": "ABB20263001153248",
+          "source_tme": "2",
+          "similarity": 0.5460838946054054,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 4,
+          "source_course_id": "ABA20263001218989",
+          "source_tme": "233",
+          "similarity": 0.5418587215416503,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 5,
+          "source_course_id": "ACG20253001127483",
+          "source_tme": "195",
+          "similarity": 0.5410594295192483,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 6,
+          "source_course_id": "ACG20263001192107",
+          "source_tme": "159",
+          "similarity": 0.5377961557446767,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 7,
+          "source_course_id": "ABA20263001230511",
+          "source_tme": "2",
+          "similarity": 0.5369366363362545,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 8,
+          "source_course_id": "ACG20263001273801",
+          "source_tme": "208",
+          "similarity": 0.5365119532928561,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 9,
+          "source_course_id": "ACG20263001372796",
+          "source_tme": "14",
+          "similarity": 0.5365119532928561,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 10,
+          "source_course_id": "AVA20263001248400",
+          "source_tme": "26",
+          "similarity": 0.5365119532928561,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 11,
+          "source_course_id": "ACG20263001439416",
+          "source_tme": "67",
+          "similarity": 0.5297079962666046,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 12,
+          "source_course_id": "ACG20263001157754",
+          "source_tme": "39",
+          "similarity": 0.5287215867257593,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 13,
+          "source_course_id": "ACG20263001321328",
+          "source_tme": "83",
+          "similarity": 0.5287215867257593,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 14,
+          "source_course_id": "AVA20263001406473",
+          "source_tme": "4",
+          "similarity": 0.5285454043366866,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 15,
+          "source_course_id": "ACG20263001336637",
+          "source_tme": "144",
+          "similarity": 0.5284487886161343,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 16,
+          "source_course_id": "ABA20263001422289",
+          "source_tme": "3",
+          "similarity": 0.5229464925213605,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 17,
+          "source_course_id": "ACG20263001246894",
+          "source_tme": "208",
+          "similarity": 0.5225393772125244,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 18,
+          "source_course_id": "ACG20263001366293",
+          "source_tme": "61",
+          "similarity": 0.5225393772125244,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 19,
+          "source_course_id": "ACG20263001384657",
+          "source_tme": "32",
+          "similarity": 0.5225393772125244,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 20,
+          "source_course_id": "ACG20263001284249",
+          "source_tme": "151",
+          "similarity": 0.5174119164102137,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 21,
+          "source_course_id": "AIG20250000534216",
+          "source_tme": "2",
+          "similarity": 0.514714390916491,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 22,
+          "source_course_id": "AIG20240000498209",
+          "source_tme": "9",
+          "similarity": 0.5145016891358306,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 23,
+          "source_course_id": "ACG20263001351063",
+          "source_tme": "18",
+          "similarity": 0.5114652209600684,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 24,
+          "source_course_id": "ACG20263001251684",
+          "source_tme": "208",
+          "similarity": 0.5099027741071291,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 25,
+          "source_course_id": "ACG20263001301737",
+          "source_tme": "108",
+          "similarity": 0.5099027741071291,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 26,
+          "source_course_id": "ACG20263001504112",
+          "source_tme": "1",
+          "similarity": 0.507826566696167,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 27,
+          "source_course_id": "ACG20263001201331",
+          "source_tme": "251",
+          "similarity": 0.5071932824609664,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 28,
+          "source_course_id": "ABA20263001409316",
+          "source_tme": "74",
+          "similarity": 0.5042162537574768,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 29,
+          "source_course_id": "ACG20263001410572",
+          "source_tme": "86",
+          "similarity": 0.5042162537574768,
+          "judgment": "unjudged"
+        },
+        {
+          "rank": 30,
+          "source_course_id": "ABA20263001486216",
+          "source_tme": "1",
+          "similarity": 0.5037295076605257,
+          "judgment": "unjudged"
+        }
+      ],
+      "false_positive_course_ids": [],
+      "unjudged_course_ids": [
+        "ABA20263001218989",
+        "ABA20263001230511",
+        "ABA20263001409316",
+        "ABA20263001422289",
+        "ABA20263001486216",
+        "ABB20263001153248",
+        "ACG20253001127483",
+        "ACG20263001157754",
+        "ACG20263001192107",
+        "ACG20263001201331",
+        "ACG20263001246894",
+        "ACG20263001251684",
+        "ACG20263001273801",
+        "ACG20263001284249",
+        "ACG20263001301737",
+        "ACG20263001321328",
+        "ACG20263001336637",
+        "ACG20263001351063",
+        "ACG20263001366293",
+        "ACG20263001372796",
+        "ACG20263001384657",
+        "ACG20263001399120",
+        "ACG20263001410572",
+        "ACG20263001439416",
+        "ACG20263001504112",
+        "AIG20240000498079",
+        "AIG20240000498209",
+        "AIG20250000534216",
+        "AVA20263001248400",
+        "AVA20263001406473"
+      ],
+      "duplicate_course_ids": {},
+      "empty": false,
+      "empty_reason": null,
+      "empty_expectation_matches": null,
+      "unexpected_empty": false,
+      "eligible_courses": 406,
+      "active_offerings": 406,
+      "excluded_counts": {},
+      "unsupported_conditions": [],
+      "elapsed_seconds": 0.336736
+    }
+  ]
+}

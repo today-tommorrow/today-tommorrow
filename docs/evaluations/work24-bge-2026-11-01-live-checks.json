@@ -1,0 +1,29 @@
+{
+  "hardware_observation": "NVIDIA L4, 23034 MiB, 580.159.04",
+  "postcheck": {
+    "database_after": {
+      "snapshot_courses": 406,
+      "snapshot_units": 6099,
+      "application_select": true,
+      "application_insert": false
+    },
+    "bge_metadata_unchanged": true,
+    "no_remote_modifications_performed": true,
+    "evaluation_attempts": 1,
+    "checksums": {
+      "live-evaluation.json": "109da31886fd783ac61ee2c0ccd31da8902dfe3427dbafbe4bda105b2d52bc5d",
+      "live-evaluation.md": "984b25c5d206530d047743f8f155863c13c2fcf5cdac26f6a2a7593b62c75f64",
+      "evaluation-fixture.json": "597133d3c63833e7d7ab1d2e73648c0f7b2984db63726bed0f7c051ebae25ca5"
+    }
+  },
+  "cleanup": {
+    "owned_container_removed": true,
+    "owned_tunnel_exit_succeeded": true,
+    "owned_tunnel_port_closed": true,
+    "temporary_credentials_removed": true,
+    "private_connection_log_removed": true,
+    "preserved_public_artifacts_secret_scan_passed": true,
+    "remote_configuration_changed": false,
+    "evaluation_attempts": 1
+  }
+}

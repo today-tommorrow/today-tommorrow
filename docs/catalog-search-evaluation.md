@@ -73,3 +73,7 @@ ruff check app/catalog/evaluation.py app/catalog/evaluate.py tests/test_catalog_
 ```
 
 The tests use synthetic repository responses and a synthetic vector behind the actual `SearchService` orchestration. They verify evaluator arithmetic, source identity, fixed snapshot/query forwarding, safe error handling, output summaries, dataset validation and no-connect help/options. These results validate the evaluation tool only; they are neither actual BGE relevance results nor CPU/GPU model verification. Actual GPU/DB execution requires the explicit command above and a separately retained live artifact. No model or database execution is required by these unit tests.
+
+## 실제 평가 기록
+
+2026-11-01 첫 실제 BGE 실행의 [한국어 결과 보고서](evaluations/work24-bge-2026-11-01-live.md)와 [원본 JSON](evaluations/work24-bge-2026-11-01-live.json)을 보존했다. 20개 질의 성공 중 지표 대상은 사전 양성 13개다. 미판정·오탐률 한계와 재현 환경을 보고서에 함께 기록했다.
