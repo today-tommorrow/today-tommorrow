@@ -27,6 +27,20 @@ function respond(body: unknown, status = 200) {
 
 // These HTTP boundary samples test UI contracts, not live API/DB/model E2E.
 describe('교육 조회의 공통 계약 샘플', () => {
+  it('출처 확인 시각이 없으면 날짜를 만들지 않고 미확인으로 표시한다', async () => {
+    respond({
+      ...courseDetailFixture,
+      evidence: courseDetailFixture.evidence.map((item) => ({
+        ...item,
+        checked_at: null,
+      })),
+    })
+    render(<CourseDetails courseId={courseDetailFixture.id} />)
+    await screen.findByRole('heading', { name: courseDetailFixture.name })
+    expect(screen.getByText('kmooc · observed · 미확인')).toBeTruthy()
+    expect(screen.queryByText(/kmooc · observed · 2026/)).toBeNull()
+  })
+
   it('상세 성공 응답의 출처와 미확인 조건을 보존한다', async () => {
     const fetch = respond(courseDetailFixture)
     render(<CourseDetails courseId={courseDetailFixture.id} />)

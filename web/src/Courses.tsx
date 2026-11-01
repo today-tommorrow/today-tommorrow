@@ -336,7 +336,8 @@ function EvidenceList({ items }: { items: Evidence[] }) {
         <li key={item.id}>
           {item.quote && <blockquote>{item.quote}</blockquote>}
           <p>
-            {item.source_system} · {item.verification_state} · {item.checked_at}
+            {item.source_system} · {item.verification_state} ·{' '}
+            {item.checked_at ?? '미확인'}
           </p>
           <SourceLink url={item.source_url} label="근거 원문 보기" />
         </li>
