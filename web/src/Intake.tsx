@@ -639,6 +639,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   async function acceptInterpretation(signal: AbortSignal) {
     if (
       !interpretation ||
+      pendingDocument ||
+      pendingDeletion ||
       interpretation.profile_id !== latest.current.id ||
       interpretation.status !== 'ready' ||
       interpretation.base_revision !== latest.current.revision
@@ -867,6 +869,10 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     if (signal.aborted) return
     const pending = { id, minimumRevision: expectedRevision + 1 }
     setPendingDeletion(pending)
+    if (
+      interpretation?.proposals.some((proposal) => proposal.document_id === id)
+    )
+      setInterpretation(null)
     if (pendingDocument?.document.id === id) {
       setPendingDocument(null)
       if (pendingJob === pendingDocument.document.job_id) rememberJob(null)
@@ -961,6 +967,8 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     !pendingDeletion &&
     (profile.reviewed_items.length > 0 || reviewRevision !== null)
   const interpretationReady =
+    pendingDocument === null &&
+    pendingDeletion === null &&
     interpretation?.profile_id === profile.id &&
     interpretation.status === 'ready' &&
     interpretation.base_revision === profile.revision

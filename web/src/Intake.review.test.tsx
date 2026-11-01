@@ -13,6 +13,7 @@ import { setCsrfToken } from './api'
 import { Intake } from './Intake'
 import type {
   Document,
+  Interpretation,
   Job,
   OnboardingOptions,
   Profile,
@@ -529,6 +530,75 @@ describe('실패 자료 재시도', () => {
 })
 
 describe('자료 삭제와 목록 복구', () => {
+  it.each([true, false])(
+    '삭제 자료에 연결된 해석 여부 %s에 따라 숨김·적용 차단을 유지한다',
+    async (affected) => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      const interpretationId = '00000000-0000-4000-8000-000000000009'
+      const interpretation: Interpretation = {
+        id: interpretationId,
+        profile_id: profileId,
+        base_revision: 2,
+        input_hash: 'synthetic-input-hash',
+        status: 'ready',
+        assistant_text: '합성 자료 해석 확인',
+        proposals: [
+          {
+            id: '00000000-0000-4000-8000-000000000010',
+            slot: 'goal_text',
+            value: { kind: 'text', text: '제안한 학습 목표' },
+            label: '합성 해석 제안',
+            source_type: 'document',
+            document_id: affected ? documentId : otherId,
+            chunk_id: null,
+            quote: '합성 해석 원문 인용',
+            status: 'proposed',
+            conflicts_with: null,
+          },
+        ],
+        model_id: 'synthetic-model',
+        prompt_version: '1',
+        created_at: '2026-11-01T00:00:00Z',
+        suggested_slots: [],
+      }
+      const fetch = serve((endpoint) => {
+        if (endpoint === `/api/interpretations/${interpretationId}`)
+          return Response.json(interpretation)
+        if (endpoint === deletePath) return new Response(null, { status: 204 })
+        if (endpoint === path) return new Response(null, { status: 503 })
+        throw new Error(`Unexpected ${endpoint}`)
+      })
+      render(
+        <Harness
+          initial={{
+            ...readyProfile(),
+            latest_interpretation_id: interpretationId,
+          }}
+        />,
+      )
+      await screen.findByRole('region', { name: '입력 해석 확인' })
+      await ready()
+      fireEvent.click(screen.getByRole('radio', { name: '맞아요' }))
+      expect(button('확인한 제안만 반영').disabled).toBe(false)
+      fireEvent.click(targetButton('자료 삭제'))
+      await screen.findByText(
+        '현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
+      )
+      if (affected)
+        expect(
+          screen.queryByRole('region', { name: '입력 해석 확인' }),
+        ).toBeNull()
+      else {
+        expect(
+          screen.getByRole('region', { name: '입력 해석 확인' }),
+        ).toBeTruthy()
+        expect(button('확인한 제안만 반영').disabled).toBe(true)
+      }
+      expect(writes(fetch)).toHaveLength(1)
+      expect(writes(fetch)[0][1].method).toBe('DELETE')
+    },
+  )
+
   it('삭제 확인을 취소하면 요청하지 않는다', async () => {
     vi.spyOn(window, 'confirm').mockReturnValue(false)
     const fetch = serve(() => {
