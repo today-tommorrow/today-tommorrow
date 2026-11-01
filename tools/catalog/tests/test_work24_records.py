@@ -89,6 +89,28 @@ class Work24RecordsTests(unittest.TestCase):
         self.assertEqual(result["report"]["quarantined"][0]["reason"], "legacy_parent_requires_mapping")
         self.assertEqual(result["parent_records"], [{"offering_key": ["new", "01"], "metadata_sha256": None}])
 
+    def test_unrecognized_parent_history_quarantines_only_its_offering(self) -> None:
+        adapter = normalized([record("legacy")])["courses"][0]["work24"]
+        histories = [("unrelated", {"optional_source_metadata": True}), ("empty", {})]
+        for field, malformed in (("values", []), ("raw_json", {}), ("raw_json", [None]), ("sources", {}),
+                                 ("sources", []), ("sources", [None]), ("field_provenance", []),
+                                 ("field_provenance", {"course_name": None})):
+            history = copy.deepcopy(adapter)
+            history[field] = malformed
+            histories.append((f"malformed_{field}_{type(malformed).__name__}", history))
+        for field in ("values", "raw_json", "sources", "field_provenance"):
+            history = copy.deepcopy(adapter)
+            del history[field]
+            histories.append((f"missing_{field}", history))
+        for label, history in histories:
+            with self.subTest(history=label):
+                legacy = {"course_id": "legacy", "tme": "01", "work24": history}
+                result = normalized([record("legacy"), record("new")], parent="1" * 64,
+                                    previous={"dataset_id": "1" * 64, "courses": [legacy]})
+                self.assertEqual([course["course_id"] for course in result["courses"]], ["new"])
+                self.assertEqual(result["report"]["quarantined"][0]["reason"], "legacy_parent_requires_mapping")
+                self.assertEqual(result["parent_records"], [{"offering_key": ["new", "01"], "metadata_sha256": None}])
+
     def test_package_reorders_vectors_by_key_and_excludes_quarantined_coverage(self) -> None:
         source = normalized([record("synthetic-B"), record("synthetic-A", curriculum=["First", "Second"])])
         result = normalized([record("synthetic-B"), record(), record(region="conflict")])

@@ -74,6 +74,17 @@ def merge_values(previous: dict, incoming: dict) -> tuple[dict, list[str]]:
     return merged, conflicts
 
 
+def has_adapter_history(history: object) -> bool:
+    return (isinstance(history, dict)
+            and isinstance(history.get("values"), dict)
+            and isinstance(history.get("raw_json"), list)
+            and all(isinstance(raw, dict) for raw in history["raw_json"])
+            and isinstance(history.get("field_provenance"), dict)
+            and all(isinstance(source, dict) for source in history["field_provenance"].values())
+            and isinstance(history.get("sources"), list) and bool(history["sources"])
+            and all(isinstance(source, dict) for source in history["sources"]))
+
+
 def course_metadata(values: dict, raw: list[dict], field_sources: dict, sources: list[dict]) -> dict:
     key = source_key(values)
     require(key is not None, "missing_source_identity")
@@ -142,10 +153,10 @@ def normalize(payload: dict, *, source_hash: str | None, collected_at: str | Non
         old = prior.get(key)
         raw_history, sources, field_sources = [], [], {}
         if old:
-            if not isinstance(old.get("work24"), dict):
+            history = old.get("work24")
+            if not has_adapter_history(history):
                 isolated.append({"offering_key": list(key), "reason": "legacy_parent_requires_mapping", "raw_json": rows})
                 continue
-            history = old["work24"]
             values, differences = merge_values(history["values"], values)
             conflicts.update(differences)
             raw_history = copy.deepcopy(history["raw_json"])
