@@ -92,8 +92,11 @@ def validate_records_parent(conn: psycopg.Connection, manifest: dict, courses: l
         for row in previous:
             unit = rows[row[0]]
             values = {**unit, "profile_id": unit["embedding_profile_id"], "active": True}
+            previous_vector, incoming_vector = vector_array(row[-1]), vectors[unit["vector_row"]]
             require(tuple(values[field] for field in fields) == tuple(row[:-1])
-                    and np.array_equal(vector_array(row[-1]), vectors[unit["vector_row"]]), "records_parent_units_mismatch")
+                    and previous_vector.shape == incoming_vector.shape
+                    and previous_vector.astype("<f4", copy=False).tobytes() == incoming_vector.astype("<f4", copy=False).tobytes(),
+                    "records_parent_units_mismatch")
 
 
 def stage(conn: psycopg.Connection, root: Path, expected_hash: str) -> dict:
