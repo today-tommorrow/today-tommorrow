@@ -33,6 +33,7 @@ const profile: Profile = {
       job_id: null,
       error_code: null,
       content_sha256: null,
+      review_confirmed: true,
       created_at: '2026-11-01T00:00:00Z',
     },
   ],

@@ -17,6 +17,7 @@ import type {
   Job,
   OnboardingOptions,
   Profile,
+  ReviewPatch,
   ReviewedItem,
 } from './types'
 
@@ -40,6 +41,7 @@ const source: Document = {
   job_id: null,
   error_code: 'synthetic_extraction_failure',
   content_sha256: null,
+  review_confirmed: true,
   created_at: '2026-11-01T00:00:00Z',
 }
 const other: Document = {
@@ -59,6 +61,9 @@ const items: ReviewedItem[] = [
     chunk_id: '00000000-0000-4000-8000-000000000006',
     evidence_quote: '자료 A 원문 인용',
     origin: 'document',
+    suggested_state: 'have',
+    source_locator: 'text:1',
+    content_sha256: 'test-source-digest',
   },
   {
     id: '00000000-0000-4000-8000-000000000007',
@@ -68,6 +73,9 @@ const items: ReviewedItem[] = [
     chunk_id: null,
     evidence_quote: '자료 B 원문 인용',
     origin: 'document',
+    suggested_state: 'have',
+    source_locator: 'text:1',
+    content_sha256: 'test-source-digest',
   },
 ]
 const profile: Profile = {
@@ -250,6 +258,122 @@ afterEach(() => {
 })
 
 describe('추출 내용 원문 대조와 저장', () => {
+  it('AI 제안은 사용자 확인과 분리하고 편집·확인 저장 후 다시 조회한 값을 표시한다', async () => {
+    let persisted: Profile = {
+      ...readyProfile(),
+      documents: [
+        { ...readyProfile().documents[0], review_confirmed: false },
+        other,
+      ],
+      reviewed_items: [{ ...items[0], state: 'have' }, items[1]],
+    }
+    const fetch = serve((endpoint, init) => {
+      if (endpoint === path) return Response.json(persisted)
+      expect(endpoint).toBe(`${path}/review-items`)
+      const body = JSON.parse(init.body as string) as ReviewPatch
+      persisted = {
+        ...persisted,
+        revision: persisted.revision + 1,
+        reviewed_items: persisted.reviewed_items.map((item) => ({
+          ...item,
+          ...body.items.find((edit) => edit.id === item.id),
+        })),
+        documents: persisted.documents.map((document) => ({
+          ...document,
+          review_confirmed: body.confirmed_document_ids.includes(document.id),
+        })),
+      }
+      return Response.json(persisted)
+    })
+    render(<Harness initial={persisted} />)
+    await ready()
+    const confirmation = () =>
+      screen.getByRole('checkbox', {
+        name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+      }) as HTMLInputElement
+    expect(
+      within(reviewGroup()).getByText('AI 제안: 경험이 있어요'),
+    ).toBeTruthy()
+    expect(within(reviewGroup()).getByText('원문 위치: text:1')).toBeTruthy()
+    expect(confirmation().checked).toBe(false)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(confirmation())
+    editLabel()
+    expect(confirmation().checked).toBe(false)
+    fireEvent.change(within(reviewGroup()).getByLabelText('나의 상태'), {
+      target: { value: 'want_to_learn' },
+    })
+    fireEvent.click(button('확인 내용 저장'))
+    await screen.findByText('확인 내용을 저장했어요.')
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    expect(JSON.parse(writes(fetch)[0][1].body as string)).toEqual({
+      expected_revision: 2,
+      confirmed_document_ids: [otherId],
+      items: [
+        {
+          id: itemId,
+          label: '사용자가 확인한 기초 내용',
+          state: 'want_to_learn',
+        },
+        { id: items[1].id, label: items[1].label, state: items[1].state },
+      ],
+    })
+    fireEvent.click(confirmation())
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(button('확인 내용 저장'))
+    await waitFor(() =>
+      expect(button('확인하고 교육 추천 받기').disabled).toBe(false),
+    )
+    cleanup()
+    render(<Harness initial={persisted} />)
+    await ready()
+    fireEvent.click(button('최신 입력 확인'))
+    await waitFor(() => expect(changed).toHaveBeenLastCalledWith(persisted))
+    expect(confirmation().checked).toBe(true)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(false)
+    const savedGroup = reviewGroup('사용자가 확인한 기초 내용')
+    expect(
+      (within(savedGroup).getByLabelText('나의 상태') as HTMLSelectElement)
+        .value,
+    ).toBe('want_to_learn')
+    expect(within(savedGroup).getByText(items[0].evidence_quote!)).toBeTruthy()
+    expect(within(savedGroup).getByText('원문 위치: text:1')).toBeTruthy()
+    expect(within(savedGroup).getByText('AI 제안: 경험이 있어요')).toBeTruthy()
+  })
+
+  it('빈 분석 결과도 원문 확인을 명시적으로 저장하기 전에는 제출하지 않는다', async () => {
+    const initial: Profile = {
+      ...readyProfile(),
+      documents: [{ ...readyProfile().documents[0], review_confirmed: false }],
+      reviewed_items: [],
+    }
+    const next: Profile = {
+      ...initial,
+      revision: 3,
+      documents: [{ ...initial.documents[0], review_confirmed: true }],
+    }
+    const fetch = serve(() => Response.json(next))
+    render(<Harness initial={initial} />)
+    await ready()
+    expect(screen.getByText(/분석 결과에서 제안된 항목이 없어요/)).toBeTruthy()
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(
+      screen.getByRole('checkbox', {
+        name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+      }),
+    )
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(button('확인 내용 저장'))
+    await screen.findByText('확인 내용을 저장했어요.')
+    expect(JSON.parse(writes(fetch)[0][1].body as string)).toEqual({
+      expected_revision: 2,
+      items: [],
+      confirmed_document_ids: [documentId],
+    })
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(false)
+    expect(changed).toHaveBeenLastCalledWith(next)
+  })
+
   it('서버 ID·label·state만 PATCH하고 원문·출처·다른 답변을 보존한다', async () => {
     const next: Profile = {
       ...readyProfile(3),
@@ -275,12 +399,18 @@ describe('추출 내용 원문 대조와 저장', () => {
       target: { value: 'have' },
     })
     expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    fireEvent.click(
+      screen.getByRole('checkbox', {
+        name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+      }),
+    )
     fireEvent.click(button('확인 내용 저장'))
     await screen.findByText('확인 내용을 저장했어요.')
     const [, init] = writes(fetch)[0]
     expect(init.method).toBe('PATCH')
     expect(JSON.parse(init.body as string)).toEqual({
       expected_revision: 2,
+      confirmed_document_ids: [documentId, otherId],
       items: [
         { id: itemId, label: '사용자가 확인한 기초 내용', state: 'have' },
         { id: items[1].id, label: items[1].label, state: items[1].state },
@@ -310,6 +440,10 @@ describe('추출 내용 원문 대조와 저장', () => {
     render(<Harness initial={readyProfile()} />)
     await ready()
     editLabel()
+    const confirmation = screen.getByRole('checkbox', {
+      name: `${source.display_name} 원문과 분석 결과를 확인했어요`,
+    }) as HTMLInputElement
+    fireEvent.click(confirmation)
     const save = button('확인 내용 저장')
     fireEvent.click(save)
     fireEvent.click(save)
@@ -322,6 +456,8 @@ describe('추출 내용 원문 대조와 저장', () => {
       (within(reviewGroup()).getByLabelText('표시 내용') as HTMLInputElement)
         .value,
     ).toBe('사용자가 확인한 기초 내용')
+    expect(confirmation.checked).toBe(true)
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
     fireEvent.click(button('확인 내용 저장'))
     await screen.findByText('확인 내용을 저장했어요.')
     expect(writes(fetch)[1][1].body).toBe(writes(fetch)[0][1].body)

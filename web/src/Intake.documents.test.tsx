@@ -59,6 +59,7 @@ const document: Document = {
   job_id: null,
   error_code: null,
   content_sha256: null,
+  review_confirmed: true,
   created_at: '2026-11-01T00:00:00Z',
 }
 const options: OnboardingOptions = {
@@ -214,7 +215,9 @@ describe('파일·텍스트 자료 등록', () => {
       (screen.getByLabelText('공개 자료 주소') as HTMLInputElement).value,
     ).toBe('https://example.org/synthetic')
     expect(
-      screen.getByText('추출 미리보기이며 원문 전체가 아닐 수 있어요.'),
+      screen.getByText(
+        '분석에 사용한 원문 미리보기이며 전체가 아닐 수 있어요.',
+      ),
     ).toBeTruthy()
     expect(
       changed.mock.calls.every(

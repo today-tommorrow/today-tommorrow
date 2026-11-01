@@ -247,6 +247,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const [pendingDeletion, setPendingDeletion] =
     useState<PendingDeletion | null>(null)
   const [reviewEdits, setReviewEdits] = useState<Record<string, ReviewEdit>>({})
+  const [documentConfirmations, setDocumentConfirmations] = useState<
+    Record<string, boolean>
+  >({})
   const [reviewRevision, setReviewRevision] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -1004,6 +1007,17 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   function editReview(id: string, edit: ReviewEdit) {
     if (reviewRevision === null) setReviewRevision(profile.revision)
     setReviewEdits((value) => ({ ...value, [id]: edit }))
+    const documentId = profile.reviewed_items.find(
+      (item) => item.id === id,
+    )?.document_id
+    if (documentId)
+      setDocumentConfirmations((value) => ({ ...value, [documentId]: false }))
+  }
+
+  function documentConfirmed(document: Document) {
+    return (
+      documentConfirmations[document.id] ?? document.review_confirmed === true
+    )
   }
 
   async function saveReview(signal: AbortSignal) {
@@ -1024,12 +1038,19 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       body: {
         expected_revision: expectedRevision,
         items,
+        confirmed_document_ids: latest.current.documents
+          .filter(
+            (document) =>
+              document.status === 'ready' && documentConfirmed(document),
+          )
+          .map((document) => document.id),
       },
       signal,
     })
     if (!signal.aborted) {
       applyProfile(next, expectedRevision + 1)
       setReviewEdits({})
+      setDocumentConfirmations({})
       setReviewRevision(null)
       setNotice('확인 내용을 저장했어요.')
     }
@@ -1039,7 +1060,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     profile.intake_state.next_action === 'review' &&
     !!profile.review_token &&
     profile.unresolved_conflicts.length === 0 &&
-    profile.documents.every((item) => item.status === 'ready') &&
+    profile.documents.every(
+      (item) => item.status === 'ready' && item.review_confirmed === true,
+    ) &&
     pendingJob === null &&
     recoveryState === 'ready' &&
     reviewRevision === null &&
@@ -1067,7 +1090,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     reviewRevision !== null && reviewRevision !== profile.revision
   const showReview =
     !pendingDeletion &&
-    (profile.reviewed_items.length > 0 || reviewRevision !== null)
+    (profile.reviewed_items.length > 0 ||
+      profile.documents.some((document) => document.status === 'ready') ||
+      reviewRevision !== null)
   const interpretationReady =
     pendingDocument === null &&
     pendingDeletion === null &&
@@ -1608,7 +1633,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                 document.id !== pendingDeletion?.id && (
                   <div>
                     <p className="muted">
-                      추출 미리보기이며 원문 전체가 아닐 수 있어요.
+                      분석에 사용한 원문 미리보기이며 전체가 아닐 수 있어요.
                     </p>
                     {document.extracted_preview ? (
                       <blockquote>{document.extracted_preview}</blockquote>
@@ -1681,6 +1706,10 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           {showReview && (
             <div className="stack">
               <h3>추출한 내용을 확인해 주세요</h3>
+              <p>
+                AI가 제안한 내용이에요. 원문과 대조해 수정한 뒤 자료별 확인을
+                선택하고 저장해 주세요. AI의 제안만으로는 확인되지 않아요.
+              </p>
               {reviewIsStale && (
                 <p role="alert">
                   자료가 변경됐어요. 작성한 내용을 확인한 뒤 편집 취소로 최신
@@ -1705,6 +1734,21 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                     </p>
                     {item.evidence_quote && (
                       <blockquote>{item.evidence_quote}</blockquote>
+                    )}
+                    {item.source_locator && (
+                      <p className="muted">원문 위치: {item.source_locator}</p>
+                    )}
+                    {item.origin === 'document' && item.suggested_state && (
+                      <p className="muted">
+                        AI 제안:{' '}
+                        {
+                          {
+                            have: '경험이 있어요',
+                            want_to_learn: '배우고 싶어요',
+                            unknown: '아직 모르겠어요',
+                          }[item.suggested_state]
+                        }
+                      </p>
                     )}
                     <label>
                       표시 내용
@@ -1738,6 +1782,41 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   </fieldset>
                 )
               })}
+              {profile.documents
+                .filter((document) => document.status === 'ready')
+                .map((document) => (
+                  <div className="stack" key={document.id}>
+                    {!profile.reviewed_items.some(
+                      (item) => item.document_id === document.id,
+                    ) && (
+                      <p>
+                        {document.display_name}: 분석 결과에서 제안된 항목이
+                        없어요. 원문 미리보기를 확인한 뒤 계속할 수 있어요.
+                      </p>
+                    )}
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={documentConfirmed(document)}
+                        disabled={busy || reviewIsStale || !!pendingDocument}
+                        onChange={(event) => {
+                          if (reviewRevision === null)
+                            setReviewRevision(profile.revision)
+                          setDocumentConfirmations((value) => ({
+                            ...value,
+                            [document.id]: event.target.checked,
+                          }))
+                        }}
+                      />
+                      {document.display_name} 원문과 분석 결과를 확인했어요
+                    </label>
+                    <p className="muted">
+                      {document.review_confirmed && reviewRevision === null
+                        ? '자료 확인이 저장됐어요.'
+                        : '확인을 선택한 뒤 확인 내용 저장을 눌러 주세요.'}
+                    </p>
+                  </div>
+                ))}
               <div className="buttons">
                 <button
                   disabled={busy || !!pendingDocument || reviewIsStale}
@@ -1749,6 +1828,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   disabled={busy || reviewRevision === null}
                   onClick={() => {
                     setReviewEdits({})
+                    setDocumentConfirmations({})
                     setReviewRevision(null)
                   }}
                 >

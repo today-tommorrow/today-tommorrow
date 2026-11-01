@@ -200,6 +200,9 @@ export type ReviewedItem = {
   document_id: string | null
   chunk_id: string | null
   evidence_quote: string | null
+  source_locator?: string | null
+  content_sha256?: string | null
+  suggested_state?: 'have' | 'want_to_learn' | 'unknown' | null
   origin: 'document' | 'user'
 }
 
@@ -244,6 +247,7 @@ export type ProfilePatch = { expected_revision: number; answers: Answers }
 export type ReviewPatch = {
   expected_revision: number
   items: Array<ReviewedItemEdit>
+  confirmed_document_ids: Array<string>
 }
 
 export type DocumentKind = 'resume' | 'job_description' | 'portfolio' | 'other'
@@ -258,6 +262,7 @@ export type Document = {
   mime_type: string | null
   size_bytes: number | null
   status: 'queued' | 'processing' | 'ready' | 'failed'
+  review_confirmed: boolean
   extracted_preview: string | null
   job_id: string | null
   error_code: string | null
