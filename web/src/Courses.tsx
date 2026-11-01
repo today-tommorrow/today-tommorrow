@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { request } from './api'
+import { useSavedCourses } from './useSavedCourses'
 import type {
   ConstraintCheck,
   CourseDetail,
@@ -140,14 +141,6 @@ function realRun(run: RecommendationRun) {
     }
   })
   return run
-}
-
-function savedList(value: { items: CourseSummary[] }) {
-  if (!value || !Array.isArray(value.items)) {
-    throw new Error('관심 교육 목록 응답 형식을 확인할 수 없습니다.')
-  }
-  value.items.forEach(realCourse)
-  return value
 }
 
 function comparison(value: { items: CourseDetail[] }) {
@@ -727,7 +720,7 @@ function ResultContent({ runId }: { runId: string }) {
 }
 
 export function SavedCourses() {
-  const remote = useRemote('/me/saved-courses', savedList)
+  const remote = useSavedCourses()
   const [detailId, setDetailId] = useState<string | null>(null)
   const [notice, setNotice] = useState('')
   return (
@@ -740,9 +733,19 @@ export function SavedCourses() {
         <article className="panel stack" key={course.id}>
           <h2>{course.name}</h2>
           <p>{course.provider_name ?? '교육기관 미확인'}</p>
+          {course.catalog_status === 'changed' && (
+            <p>저장 이후 교육 목록이 갱신되어 현재 정보를 표시합니다.</p>
+          )}
+          {course.catalog_status === 'unavailable' && (
+            <p>현재 제공되지 않음 · 저장 당시 정보를 표시합니다.</p>
+          )}
           <SourceLink url={course.detail_url} label="교육 원문 보기" />
           <div className="actions">
-            <button type="button" onClick={() => setDetailId(course.id)}>
+            <button
+              type="button"
+              disabled={course.catalog_status === 'unavailable'}
+              onClick={() => setDetailId(course.id)}
+            >
               교육 상세
             </button>
             <SaveCourse
@@ -752,12 +755,17 @@ export function SavedCourses() {
               onChange={(notice) => {
                 setNotice(notice)
                 setDetailId(null)
-                remote.retry()
+                remote.refresh()
               }}
             />
           </div>
         </article>
       ))}
+      {remote.data?.next_cursor && !remote.error && (
+        <button type="button" disabled={remote.loading} onClick={remote.more}>
+          관심 교육 더 보기
+        </button>
+      )}
       {detailId && (
         <div className="stack">
           <button type="button" onClick={() => setDetailId(null)}>

@@ -91,6 +91,17 @@ export type CoursePage = {
   catalog_version_id: string
 }
 
+export type SavedCourse = CourseSummary & {
+  saved_catalog_version_id: string
+  catalog_status: 'current' | 'changed' | 'unavailable'
+}
+
+export type SavedCoursePage = {
+  items: SavedCourse[]
+  next_cursor: string | null
+  catalog_version_id: string
+}
+
 export type Reason = {
   text: string
   answer_keys: Array<string>
