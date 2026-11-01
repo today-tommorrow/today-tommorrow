@@ -155,6 +155,7 @@ def public_job(job: Job) -> dict[str, Any]:
         "status": job.status,
         "phase": job.phase,
         "profile_id": str(job.profile_id),
+        "profile_revision": job.profile_revision,
         "result": result,
         "error": error,
         "created_at": job.created_at.isoformat(),

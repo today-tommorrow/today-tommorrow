@@ -260,6 +260,12 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       return null
     }
   })
+  const [recoveryState, setRecoveryState] = useState<
+    'loading' | 'ready' | 'error'
+  >(profile.status === 'submitted' ? 'loading' : 'ready')
+  const [recoveryAttempt, setRecoveryAttempt] = useState(0)
+  const pendingJobRef = useRef(pendingJob)
+  pendingJobRef.current = pendingJob
   const active = useRef<AbortController | null>(null)
   const keys = useRef(new Map<string, string>())
   const interpretationInput = useRef<{
@@ -309,6 +315,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   }
 
   function rememberJob(id: string | null) {
+    pendingJobRef.current = id
     setPendingJob(id)
     try {
       if (id) sessionStorage.setItem(jobStorageKey, id)
@@ -379,6 +386,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     id: string,
     signal: AbortSignal,
     pollAfterMs?: number,
+    expectedRevision?: number,
   ) {
     if (signal.aborted) return
     rememberJob(id)
@@ -390,6 +398,16 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         if (signal.aborted) return
         if (update.profile_id !== latest.current.id)
           throw new Error('현재 입력의 작업이 아니에요.')
+        if (
+          update.kind === 'recommendation' &&
+          update.profile_revision !== latest.current.revision
+        ) {
+          terminalFailure = true
+          throw new ApiError(
+            '입력이 바뀌어 이전 추천을 표시하지 않았어요.',
+            409,
+          )
+        }
         setJob(update)
         if (['failed', 'cancelled', 'superseded'].includes(update.status)) {
           terminalFailure = true
@@ -416,6 +434,15 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     await refresh(signal)
     if (signal.aborted) return
     if (result.kind === 'recommendation') {
+      if (
+        result.profile_revision !== latest.current.revision ||
+        (expectedRevision !== undefined &&
+          latest.current.revision !== expectedRevision)
+      ) {
+        rememberJob(null)
+        setNotice('입력이 바뀌어 이전 추천을 표시하지 않았어요.')
+        return
+      }
       if (!result.result?.recommendation_run_id)
         throw new Error(
           '완료한 추천 결과를 확인하지 못했어요. 작업 상태를 다시 확인해 주세요.',
@@ -500,6 +527,68 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       active.current?.abort()
     }
   }, [])
+
+  useEffect(() => {
+    if (profile.status !== 'submitted') {
+      setRecoveryState('ready')
+      return
+    }
+    const controller = new AbortController()
+    const revision = profile.revision
+    const profileId = profile.id
+    setRecoveryState('loading')
+    void request<{ profile_id: string; revision: number; job: Job | null }>(
+      `${path}/recommendation-job`,
+      { signal: controller.signal },
+    )
+      .then((value) => {
+        if (
+          controller.signal.aborted ||
+          latest.current.id !== profileId ||
+          latest.current.revision !== revision
+        )
+          return
+        if (
+          !value ||
+          !('job' in value) ||
+          value.profile_id !== profileId ||
+          value.revision !== revision ||
+          (value.job &&
+            (value.job.kind !== 'recommendation' ||
+              value.job.profile_id !== profileId ||
+              value.job.profile_revision !== revision))
+        ) {
+          throw new Error('추천 작업 응답이 현재 입력과 맞지 않아요.')
+        }
+        // Do not replace an active or locally remembered question job.
+        // Keep recovery blocked until the user can explicitly check again.
+        if (value.job && (pendingJobRef.current || active.current)) {
+          setRecoveryState('error')
+          return
+        }
+        setRecoveryState('ready')
+        if (value.job) {
+          void perform((signal) =>
+            finishJob(value.job!.id, signal, undefined, revision),
+          )
+        }
+      })
+      .catch((cause: unknown) => {
+        if (
+          !controller.signal.aborted &&
+          latest.current.id === profileId &&
+          latest.current.revision === revision
+        ) {
+          setRecoveryState('error')
+          setError(
+            cause instanceof Error
+              ? cause.message
+              : '추천 작업을 불러오지 못했어요.',
+          )
+        }
+      })
+    return () => controller.abort()
+  }, [profile.id, profile.revision, profile.status, recoveryAttempt])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -949,6 +1038,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     profile.unresolved_conflicts.length === 0 &&
     profile.documents.every((item) => item.status === 'ready') &&
     pendingJob === null &&
+    recoveryState === 'ready' &&
     reviewRevision === null &&
     pendingDocument === null &&
     pendingDeletion === null
@@ -1678,6 +1768,16 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             ))}
           </dl>
           <p>확인한 입력과 자료로 교육 추천을 시작합니다.</p>
+          {recoveryState === 'loading' && (
+            <p>기존 추천 작업을 확인하고 있어요.</p>
+          )}
+          {recoveryState === 'error' && (
+            <button
+              onClick={() => setRecoveryAttempt((attempt) => attempt + 1)}
+            >
+              추천 작업 다시 확인
+            </button>
+          )}
           <button
             className="primary"
             disabled={busy || !canSubmit}

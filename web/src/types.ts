@@ -325,6 +325,7 @@ export type Job = {
     | 'generating_question'
     | 'validating_question'
   profile_id: string
+  profile_revision?: number
   result: {
     document_id?: string | null
     interpretation_id?: string | null

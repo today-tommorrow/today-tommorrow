@@ -113,6 +113,26 @@ def submit(
     return recorded(request, 202, jobs.accepted(job))
 
 
+def current_job(db: Session, profile_id: UUID, user_id: UUID) -> dict:
+    profile = store.get_profile(db, profile_id, user_id)
+    job = db.scalar(
+        select(Job)
+        .where(
+            Job.profile_id == profile_id,
+            Job.user_id == user_id,
+            Job.kind == "recommendation",
+            Job.profile_revision == profile.revision,
+        )
+        .order_by(Job.created_at.desc(), Job.id.desc())
+        .limit(1)
+    )
+    return {
+        "profile_id": str(profile.id),
+        "revision": profile.revision,
+        "job": jobs.public_job(job) if job is not None else None,
+    }
+
+
 def get_result(db: Session, run_id: UUID, user_id: UUID) -> dict:
     row = db.scalar(
         select(RecommendationRun).where(

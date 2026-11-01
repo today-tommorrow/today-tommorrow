@@ -91,6 +91,10 @@ class AnonymousRecommendationTests(unittest.TestCase):
             self.assertEqual(
                 client.get(f"/api/recommendations/{uuid4()}").status_code, 401
             )
+            self.assertEqual(
+                client.get(f"/api/profiles/{uuid4()}/recommendation-job").status_code,
+                401,
+            )
 
     def test_invalid_job_kinds_are_rejected_before_sql(self):
         with Session() as db:
@@ -187,6 +191,45 @@ class RecommendationFlowTests(unittest.TestCase):
         )
         self.assertEqual(changed.status_code, 200)
         self.assertEqual(self.client.get(url).json(), public)
+
+    def test_current_recommendation_job_owner_revision_and_newest(self):
+        path = f"/api/profiles/{self.profile['id']}/recommendation-job"
+        self.assertEqual(
+            self.client.get(path).json(),
+            {
+                "profile_id": self.profile["id"],
+                "revision": self.profile["revision"],
+                "job": None,
+            },
+        )
+        other, _, _, _ = self.fixture.login()
+        self.assertEqual(other.get(path).status_code, 404)
+        first = self.submit().json()["job_id"]
+        with Session(self.engine) as db, db.begin():
+            row = db.get(Job, UUID(first))
+            row.status = "failed"
+            row.phase = "failed"
+            row.error_code = "recommendation_failed"
+        second = self.submit("second-recovery-job").json()["job_id"]
+        with Session(self.engine) as db, db.begin():
+            one, two = db.get(Job, UUID(first)), db.get(Job, UUID(second))
+            two.created_at = one.created_at
+        response = self.client.get(path)
+        self.assertEqual(response.headers["cache-control"], "no-store")
+        self.assertEqual(response.json()["job"]["id"], max(first, second))
+        self.assertEqual(
+            response.json()["job"]["profile_revision"], self.profile["revision"]
+        )
+        self.assertEqual(
+            self.client.get(f"/api/jobs/{second}").json()["profile_revision"],
+            self.profile["revision"],
+        )
+        changed = self.fixture.save(
+            self.profile, {**ANSWERS, "goal_text": "changed"}
+        ).json()
+        latest = self.client.get(path).json()
+        self.assertEqual(latest["revision"], changed["revision"])
+        self.assertIsNone(latest["job"])
 
     def test_original_accepted_replay_and_new_key_deduplicate(self):
         first = self.submit()
