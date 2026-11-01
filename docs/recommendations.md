@@ -21,6 +21,8 @@ Optional limits: `RECOMMENDATION_MODEL_TIMEOUT_SECONDS` (60), `RECOMMENDATION_EM
 
 Configuration validation and `capture_context()` do not call either model. They capture the active catalog manifest and model/configuration identity. The runner validates and retrieves that retained version even if an operator [activates a later batch](catalog-batches.md) before execution. It checks model/configuration identity and the returned catalog snapshot again; modified or unavailable historical snapshots fail explicitly. Public result retrieval continues returning the stored result independently of the active pointer.
 
+Model-stage source inputs contain only the reviewed source ID, text, answer key and learner state. Document and chunk identifiers, immutable quotations, locators and hashes remain in the frozen job and internal provenance for server-side validation and audit. This projection reduces repeated prompt size without dropping evidence from storage; it does not guarantee that every valid input fits the model context. The context guard still fails explicitly if a complete stage input is too large. The prompt identity changes when this projection changes.
+
 ## Processing and grounding
 
 The supported input has `document_decision=none` and no reviewed material items. Materials are rejected explicitly until their separate implementation is connected. Confirmed goal text, relevant selected wording and server-defined field/goal labels form the query; the model does not rewrite it. BGE-M3 uses the existing revision-pinned 512-token dense provider.

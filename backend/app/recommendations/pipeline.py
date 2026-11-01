@@ -211,6 +211,14 @@ def confirmed_sources(snapshot: JsonObject) -> tuple[list[JsonObject], str]:
     return sources, query
 
 
+def model_sources(sources: list[JsonObject]) -> list[JsonObject]:
+    """Send only decision-relevant text and IDs; keep source bindings server-side."""
+    return [
+        {key: source[key] for key in ("id", "text", "answer_key", "learner_state") if key in source}
+        for source in sources
+    ]
+
+
 def profile_needs(output: JsonObject, sources: list[JsonObject]) -> list[JsonObject]:
     exact_keys(output, {"needs"})
     source_map = {str(item["id"]): item for item in sources}
@@ -549,6 +557,7 @@ class RecommendationPipeline:
         except (KeyError, ValueError):
             raise RecommendationError("invalid_recommendation_input") from None
         sources, query = confirmed_sources(snapshot)
+        prompt_sources = model_sources(sources)
         answers = object_value(snapshot["answers"])
         stages: list[JsonObject] = []
 
@@ -578,7 +587,7 @@ class RecommendationPipeline:
         explanations: dict[str, list[JsonObject]] = {}
         excluded = dict(found.excluded_counts)
         if views:
-            needs = self._generate("profiling", {"sources": sources}, PROFILE_SCHEMA,
+            needs = self._generate("profiling", {"sources": prompt_sources}, PROFILE_SCHEMA,
                                    lambda output: profile_needs(output, sources), report_phase)
             stage("profiling", len(sources), len(needs))
             report_phase("mapping_needs")
@@ -587,7 +596,7 @@ class RecommendationPipeline:
             for offset in range(0, len(views), int(CONFIG["batch_size"])):
                 batch = views[offset:offset + int(CONFIG["batch_size"])]
                 assessed.extend(self._generate("assessing", {
-                    "sources": sources, "needs": needs,
+                    "sources": prompt_sources, "needs": needs,
                     "confirmed_experience": answers.get("experience"),
                     "self_description": answers.get("self_description"),
                     "constraints_text": answers.get("constraints_text"),
@@ -603,7 +612,7 @@ class RecommendationPipeline:
             for offset in range(0, len(selected), int(CONFIG["batch_size"])):
                 batch = selected[offset:offset + int(CONFIG["batch_size"])]
                 explanations.update(self._generate("explaining", {
-                    "sources": sources, "candidates": [explanation_prompt(row) for row in batch],
+                    "sources": prompt_sources, "candidates": [explanation_prompt(row) for row in batch],
                 }, EXPLANATION_SCHEMA, lambda output: explanation_items(output, batch, sources), report_phase))
             stage("explaining", len(selected), len(explanations), skipped=not selected)
         else:
