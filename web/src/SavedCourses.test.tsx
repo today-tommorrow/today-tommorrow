@@ -14,7 +14,7 @@ import { courseDetailFixture, savedCoursesFixture } from './Courses.fixtures'
 import { setCsrfToken } from './api'
 import type {
   AuthSession,
-  CoursePage,
+  SavedCoursePage,
   CourseSummary,
   RecommendationRun,
 } from './types'
@@ -36,9 +36,13 @@ const savePath = `/api/me/saved-courses/${course.id}`
 const savedPath = '/api/me/saved-courses'
 const savedNotice = `${course.name}의 관심 저장 요청을 완료했습니다.`
 const deletedNotice = `${course.name}의 관심 해제 요청을 완료했습니다.`
-function page(items: CourseSummary[] = [course]): CoursePage {
+function page(items: CourseSummary[] = [course]): SavedCoursePage {
   return {
-    items,
+    items: items.map((item) => ({
+      ...item,
+      saved_catalog_version_id: '00000000-0000-4000-8000-000000000004',
+      catalog_status: 'current',
+    })),
     next_cursor: null,
     catalog_version_id: '00000000-0000-4000-8000-000000000004',
   }

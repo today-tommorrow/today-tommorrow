@@ -3,7 +3,6 @@ import { courseDetailFixture } from './Courses.fixtures'
 import type {
   AuthSession,
   CourseDetail,
-  CoursePage,
   CourseSummary,
   Document,
   IntakeQuestion,
@@ -13,6 +12,7 @@ import type {
   OnboardingOptions,
   Profile,
   RecommendationRun,
+  SavedCoursePage,
 } from './types'
 
 // Test-only scripted HTTP producer. This is not an API implementation, an intake
@@ -593,8 +593,12 @@ export function createFlowFixture(faults: Faults = {}) {
         catalog_version_id: flowIds.catalog,
         items: flowCourses
           .filter((course) => saved.has(course.id))
-          .map(summary),
-      } satisfies CoursePage)
+          .map((course) => ({
+            ...summary(course),
+            saved_catalog_version_id: flowIds.catalog,
+            catalog_status: 'current',
+          })),
+      } satisfies SavedCoursePage)
     if (path.startsWith('/api/me/saved-courses/')) {
       if (remainingFaults.saveUnauthorized) {
         authenticated = false

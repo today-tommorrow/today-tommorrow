@@ -5,7 +5,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.pool import NullPool
 
 from app.db import include_migration_name, include_migration_object
-from app.recommendations.models import Base
+from app.recommendations import models as recommendation_models  # noqa: F401
+from app.saved_courses.models import Base
 
 migration_engine = create_engine(
     os.environ.get(

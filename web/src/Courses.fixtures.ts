@@ -1,6 +1,6 @@
 import type {
   CourseDetail,
-  CourseSummary,
+  SavedCoursePage,
   Error as ApiErrorBody,
 } from './types'
 
@@ -52,7 +52,9 @@ export const courseDetailFixture: CourseDetail = {
   missing_fields: ['tuition_krw', 'schedule'],
 }
 
-export const savedCoursesFixture: { items: CourseSummary[] } = {
+export const savedCoursesFixture: SavedCoursePage = {
+  next_cursor: null,
+  catalog_version_id: '00000000-0000-4000-8000-000000000004',
   items: [
     {
       id: courseDetailFixture.id,
@@ -64,11 +66,15 @@ export const savedCoursesFixture: { items: CourseSummary[] } = {
       evidence_level: courseDetailFixture.evidence_level,
       detail_url: courseDetailFixture.detail_url,
       is_demo: false,
+      saved_catalog_version_id: '00000000-0000-4000-8000-000000000004',
+      catalog_status: 'current',
     },
   ],
 }
 
-export const emptySavedCoursesFixture: { items: CourseSummary[] } = {
+export const emptySavedCoursesFixture: SavedCoursePage = {
+  next_cursor: null,
+  catalog_version_id: savedCoursesFixture.catalog_version_id,
   items: [],
 }
 
