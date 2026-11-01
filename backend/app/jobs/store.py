@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.jobs.models import Job
 
+JOB_KINDS = frozenset({"intake_question", "recommendation"})
 TERMINAL_STATUSES = frozenset({"succeeded", "failed", "superseded", "cancelled"})
 ERROR_CODES = frozenset(
     {
@@ -23,6 +24,7 @@ ERROR_CODES = frozenset(
         "model_timeout",
         "invalid_model_output",
         "question_generation_failed",
+        "recommendation_failed",
     }
 )
 
@@ -78,8 +80,11 @@ def enqueue(
     request_hash: str,
     input_json: dict[str, Any],
     now: datetime,
+    kind: str = "intake_question",
 ) -> Job:
     _time(now)
+    if kind not in JOB_KINDS:
+        raise ValueError("invalid job kind")
     if (
         not isinstance(idempotency_key, str)
         or not 1 <= len(idempotency_key) <= 128
@@ -94,7 +99,7 @@ def enqueue(
             profile_id=profile_id,
             user_id=user_id,
             profile_revision=profile_revision,
-            kind="intake_question",
+            kind=kind,
             idempotency_key=idempotency_key,
             request_hash=request_hash,
             input_json=deepcopy(input_json),
@@ -105,7 +110,7 @@ def enqueue(
     row = db.scalars(
         select(Job).where(
             Job.user_id == user_id,
-            Job.kind == "intake_question",
+            Job.kind == kind,
             Job.idempotency_key == idempotency_key,
         )
     ).one()
@@ -128,10 +133,13 @@ def accepted(job: Job) -> dict[str, Any]:
 def public_job(job: Job) -> dict[str, Any]:
     result = None
     if job.status == "succeeded" and job.result_json:
-        value = job.result_json.get("question_id")
+        key = (
+            "question_id" if job.kind == "intake_question" else "recommendation_run_id"
+        )
+        value = job.result_json.get(key)
         if isinstance(value, str):
             try:
-                result = {"question_id": str(UUID(value))}
+                result = {key: str(UUID(value))}
             except ValueError:
                 pass
     error = None
@@ -151,7 +159,27 @@ def public_job(job: Job) -> dict[str, Any]:
         "error": error,
         "created_at": job.created_at.isoformat(),
         "finished_at": job.finished_at.isoformat() if job.finished_at else None,
-        "completed_stages": ["generating_question"]
+        "completed_stages": (
+            ["generating_question"]
+            if job.kind == "intake_question"
+            else [
+                stage
+                for stage in (job.result_json or {}).get("completed_stages", [])
+                if stage
+                in {
+                    "freezing",
+                    "profiling",
+                    "mapping_needs",
+                    "retrieving",
+                    "checking_constraints",
+                    "assessing",
+                    "ranking",
+                    "explaining",
+                    "validating",
+                    "persisting",
+                }
+            ]
+        )
         if job.status == "succeeded"
         else [],
     }
@@ -164,8 +192,11 @@ def claim(
     lease_seconds: int,
     max_attempts: int = 3,
     clock: Callable[[], datetime] | None = None,
+    kind: str = "intake_question",
 ) -> Claim | None:
     _lease(now, lease_seconds)
+    if kind not in JOB_KINDS:
+        raise ValueError("invalid job kind")
     if type(max_attempts) is not int or max_attempts < 1:
         raise ValueError("positive integer attempt limit required")
     # Claims and renewals share one transaction lock, even without a job row.
@@ -187,6 +218,7 @@ def claim(
         row = db.scalar(
             select(Job)
             .where(
+                Job.kind == kind,
                 or_(
                     Job.status == "queued",
                     and_(
@@ -210,7 +242,7 @@ def claim(
             db.flush()
             continue
         row.status = "running"
-        row.phase = "generating_question"
+        row.phase = "generating_question" if kind == "intake_question" else "freezing"
         row.started_at = row.started_at or now
         row.lease_expires_at = expires_at
         token = uuid4()

@@ -19,6 +19,9 @@ from app.intake.routes import ProfileError, profile_error_handler
 from app.intake.routes import router as intake_router
 from app.jobs.routes import JobHTTPError, job_error_handler
 from app.jobs.routes import router as jobs_router
+from app.recommendations.routes import recommendation_error_handler
+from app.recommendations.routes import router as recommendation_router
+from app.recommendations.service import RecommendationServiceError
 
 app = FastAPI(title="Today Tommorrow API")
 app.add_exception_handler(AuthError, auth_error_handler)
@@ -31,6 +34,8 @@ app.add_exception_handler(JobHTTPError, job_error_handler)
 app.include_router(jobs_router)
 app.add_exception_handler(CourseError, course_error_handler)
 app.include_router(course_router)
+app.add_exception_handler(RecommendationServiceError, recommendation_error_handler)
+app.include_router(recommendation_router)
 
 
 class HealthResponse(BaseModel):

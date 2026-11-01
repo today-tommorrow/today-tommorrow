@@ -638,7 +638,7 @@ function ResultContent({ runId }: { runId: string }) {
         <>
           <section className="panel">
             <h2>{resultNames[run.result_state]}</h2>
-            <p>교육 정보 기준: {run.as_of}</p>
+            <p>추천 기준일: {run.as_of}</p>
             <p>추천 생성: {run.created_at}</p>
             {run.notices.map((notice, index) => (
               <p key={index}>{notice}</p>
