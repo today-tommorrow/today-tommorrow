@@ -83,6 +83,21 @@ def vector_array(stored):
     return np.asarray(stored.to_numpy() if hasattr(stored, "to_numpy") else stored, dtype=np.float32)
 
 
+def initialize_snapshot(conn, dataset):
+    """Backfill the original package once; setup never resets an active version."""
+    conn.execute("""INSERT INTO work24_bge.snapshot_course
+        SELECT %s,course_id,tme,metadata,%s FROM work24_bge.course
+        ON CONFLICT DO NOTHING""", (dataset, dataset))
+    fields = ",".join(UNIT_FIELDS)
+    conn.execute(f"""INSERT INTO work24_bge.snapshot_unit ({fields},source_dataset_id)
+        SELECT {fields},dataset_id FROM work24_bge.course_unit WHERE dataset_id=%s
+        ON CONFLICT DO NOTHING""", (dataset,))
+    inserted = conn.execute("""INSERT INTO work24_bge.active_catalog(dataset_id)
+        VALUES(%s) ON CONFLICT DO NOTHING RETURNING dataset_id""", (dataset,)).fetchone()
+    if inserted:
+        conn.execute("INSERT INTO work24_bge.catalog_activation(dataset_id) VALUES(%s)", (dataset,))
+
+
 def load_catalog(conn, artifacts):
     manifest, courses, units, vectors, _query = artifacts
     profile, dataset = manifest["embedding_profile_id"], manifest["dataset_id"]
@@ -112,7 +127,8 @@ def load_catalog(conn, artifacts):
     stored_config = conn.execute("SELECT config FROM work24_bge.embedding_profile WHERE profile_id=%s", (profile,)).fetchone()[0]
     require(stored_config == manifest["embedding_config"], "stored_profile_mismatch")
     conn.execute("""INSERT INTO work24_bge.dataset_snapshot(dataset_id,profile_id,manifest) VALUES(%s,%s,%s)
-        ON CONFLICT(dataset_id) DO UPDATE SET manifest=excluded.manifest""", (dataset, profile, Jsonb(manifest)))
+        ON CONFLICT(dataset_id) DO NOTHING""", (dataset, profile, Jsonb(manifest)))
+    require(conn.execute("SELECT manifest FROM work24_bge.dataset_snapshot WHERE dataset_id=%s", (dataset,)).fetchone()[0] == manifest, "stored_manifest_mismatch")
     conn.execute("""INSERT INTO work24_bge.course SELECT * FROM stage_course
         ON CONFLICT(course_id,tme) DO UPDATE SET metadata=excluded.metadata""")
     updates = ",".join(f"{field}=excluded.{field}" for field in UNIT_FIELDS if field != "unit_key")
@@ -121,6 +137,7 @@ def load_catalog(conn, artifacts):
     first = conn.execute("SELECT count(*) FROM work24_bge.course_unit").fetchone()[0]
     conn.execute(upsert)
     require(first == conn.execute("SELECT count(*) FROM work24_bge.course_unit").fetchone()[0] == 6099, "repeat_upsert_count_mismatch")
+    initialize_snapshot(conn, dataset)
 
 
 def ranking_comparison(local_scores, remote_rows, top_k=10, tolerance=1e-5):

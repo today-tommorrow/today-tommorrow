@@ -67,8 +67,21 @@ class CourseRepository:
                         or manifest.get("embedding_config") != config
                         or canonical_hash(manifest.get("input_files")) != self.pin.dataset_id):
                     raise CourseError(503, "catalog_changed")
+                active = connection.execute(text("""SELECT d.dataset_id,d.profile_id,d.manifest
+                    FROM work24_bge.active_catalog a JOIN work24_bge.dataset_snapshot d
+                    ON d.dataset_id=a.dataset_id WHERE a.singleton""")).first()
+                if active is None:
+                    raise CourseError(503, "catalog_unavailable")
+                dataset, profile, manifest = active
+                manifest = source_object(manifest)
+                if (profile != self.pin.profile_id or manifest.get("embedding_config") != config
+                        or manifest.get("embedding_profile_id") != profile
+                        or manifest.get("dataset_id") != dataset
+                        or canonical_hash(manifest.get("input_files")) != dataset):
+                    raise CourseError(503, "catalog_changed")
+                params = {"profile": profile, "dataset": dataset}
                 source_ids = connection.execute(text("""
-                    SELECT DISTINCT course_id FROM work24_bge.course_unit
+                    SELECT DISTINCT course_id FROM work24_bge.snapshot_unit
                     WHERE active AND profile_id=:profile AND dataset_id=:dataset
                 """), params).scalars().all()
                 mapping = {course_id(value): value for value in source_ids}
@@ -76,15 +89,15 @@ class CourseRepository:
                     raise CourseError(404, "course_not_found")
                 params["ids"] = [mapping[identifier] for identifier in identifiers]
                 courses = connection.execute(text("""
-                    SELECT c.course_id,c.tme,c.metadata FROM work24_bge.course c
-                    WHERE c.course_id IN :ids AND EXISTS (
-                        SELECT 1 FROM work24_bge.course_unit u WHERE u.course_id=c.course_id AND u.tme=c.tme
+                    SELECT c.course_id,c.tme,c.metadata FROM work24_bge.snapshot_course c
+                    WHERE c.dataset_id=:dataset AND c.course_id IN :ids AND EXISTS (
+                        SELECT 1 FROM work24_bge.snapshot_unit u WHERE u.course_id=c.course_id AND u.tme=c.tme
                         AND u.active AND u.profile_id=:profile AND u.dataset_id=:dataset
                     ) ORDER BY c.course_id,c.tme
                 """).bindparams(bindparam("ids", expanding=True)), params).mappings().all()
                 units = connection.execute(text("""
                     SELECT course_id,tme,unit_key,embed_text,is_inferred,is_noise,source
-                    FROM work24_bge.course_unit WHERE course_id IN :ids
+                    FROM work24_bge.snapshot_unit WHERE course_id IN :ids
                     AND active AND profile_id=:profile AND dataset_id=:dataset
                     ORDER BY course_id,tme,unit_key
                 """).bindparams(bindparam("ids", expanding=True)), params).mappings().all()
@@ -96,7 +109,7 @@ class CourseRepository:
                     grouped_units.setdefault(record["course_id"], []).append(dict(record))
                 if any(source not in grouped_courses for source in params["ids"]):
                     raise CourseError(503, "catalog_invalid")
-                return [present_course(source, grouped_courses[source], grouped_units[source], self.pin.dataset_id)
+                return [present_course(source, grouped_courses[source], grouped_units[source], dataset)
                         for source in params["ids"]]
         except SQLAlchemyError:
             raise CourseError(503, "catalog_unavailable") from None
