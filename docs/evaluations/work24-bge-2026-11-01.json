@@ -13,5 +13,16 @@
   "unjudged_cases": 7,
   "metrics": null,
   "search_outcomes": null,
-  "verification": "GPU-free evaluator tests use synthetic responses and do not measure search quality."
+  "verification": "GPU-free evaluator tests use synthetic responses and do not measure search quality.",
+  "isolated_preflight": {
+    "postgresql": "16.14",
+    "pgvector": "0.6.0",
+    "courses": 406,
+    "units": 6099,
+    "vectors_bit_preserved": 6099,
+    "read_only_role_select": true,
+    "read_only_role_insert": false,
+    "snapshot_prepare": "passed",
+    "stored_vector_oracle": "passed; not a live BGE relevance result"
+  }
 }
