@@ -13,6 +13,7 @@ from test_file_documents import FileDocumentsTests
 
 from app.documents.models import Document, DocumentChunk
 from app.intake.models import IntakeProfile
+from app.intake.question_models import IntakeQuestion, IntakeRequest
 from app.jobs.models import Job
 from app.recommendations.models import RecommendationRun
 
@@ -171,6 +172,7 @@ class DocumentLifecycleTests(FileDocumentsTests):
                     "answers": {"goal": "keep"},
                     "sources": [{"id": "synthetic-item", "text": "historic excerpt"}],
                     "query": "contains historic excerpt here",
+                    "unrelated_text": "서울",
                 },
                 result_json={"quote": "synthetic-secret-quote"},
                 created_at=datetime.now(UTC),
@@ -186,11 +188,108 @@ class DocumentLifecycleTests(FileDocumentsTests):
                 profile_revision=row.revision,
                 idempotency_key="quote-only",
                 request_hash="hash",
-                input_json={"context": {"confirmed_answers": {"goal": "keep"}}},
+                input_json={
+                    "source_item_id": "synthetic-item",
+                    "context": {"confirmed_answers": {"goal": "keep"}},
+                },
                 result_json={"explanation": "prefix historic excerpt suffix"},
                 created_at=datetime.now(UTC),
             )
             db.add(quote_job)
+            unrelated_input = {"query": "sample", "text": "거주지는 서울입니다"}
+            unrelated_result = {"text": "서울 and sample"}
+            unrelated = Job(
+                id=uuid4(),
+                profile_id=row.id,
+                user_id=row.user_id,
+                kind="intake_question",
+                status="succeeded",
+                phase="succeeded",
+                profile_revision=row.revision,
+                idempotency_key="unrelated",
+                request_hash="unrelated",
+                input_json=unrelated_input,
+                result_json=unrelated_result,
+                created_at=datetime.now(UTC),
+            )
+            short_job = Job(
+                id=uuid4(),
+                profile_id=row.id,
+                user_id=row.user_id,
+                kind="intake_question",
+                status="succeeded",
+                phase="succeeded",
+                profile_revision=row.revision,
+                idempotency_key="short",
+                request_hash="short",
+                input_json={
+                    "sources": [
+                        {"source_item_ids": ["synthetic-item"], "quote": "서울"}
+                    ],
+                    "query": "거주지는 서울입니다",
+                    "answers": {"text": "서울"},
+                },
+                result_json={"explanation": "거주지는 서울입니다"},
+                created_at=datetime.now(UTC),
+            )
+            db.add_all([unrelated, short_job])
+            db.flush()
+            question = IntakeQuestion(
+                id=uuid4(),
+                profile_id=row.id,
+                user_id=row.user_id,
+                job_id=quote_job.id,
+                base_revision=row.revision,
+                context_hash="linked-question",
+                source_hashes_json={},
+                target_slot="entry_intent",
+                question_signature="q",
+                status="ready",
+                origin="fallback",
+                schema_version="1",
+                model_id=None,
+                prompt_version="1",
+                policy_version="1",
+                draft_json={"text": "historic excerpt"},
+                public_question_json={"text": "historic excerpt"},
+                option_bindings_json={},
+                validation_json={},
+                created_at=datetime.now(UTC),
+            )
+            request = IntakeRequest(
+                user_id=row.user_id,
+                profile_id=row.id,
+                operation="generate_question",
+                idempotency_key="linked-replay",
+                request_hash="hash",
+                status_code=202,
+                response_json={"job_id": str(quote_job.id)},
+                created_at=datetime.now(UTC),
+            )
+            db.add_all([question, request])
+            question_id = question.id
+            downstream = Job(
+                id=uuid4(),
+                profile_id=row.id,
+                user_id=row.user_id,
+                kind="recommendation",
+                status="succeeded",
+                phase="succeeded",
+                profile_revision=row.revision,
+                idempotency_key="downstream",
+                request_hash="downstream",
+                input_json={
+                    "selection_summaries": [
+                        {"question_id": str(question.id), "label": "서울"}
+                    ],
+                    "query": "거주지는 서울입니다",
+                },
+                result_json={"text": "private output"},
+                created_at=datetime.now(UTC),
+            )
+            db.add(downstream)
+            downstream_id = downstream.id
+            unrelated_id, short_id = unrelated.id, short_job.id
             db.flush()
             run = RecommendationRun(
                 id=uuid4(),
@@ -198,9 +297,9 @@ class DocumentLifecycleTests(FileDocumentsTests):
                 profile_id=row.id,
                 user_id=row.user_id,
                 profile_revision=row.revision,
-                input_json={"reviewed_items": [item], "answers": {"goal": "keep"}},
+                input_json={"answers": {"goal": "keep"}},
                 public_json=public,
-                provenance_json={"source": item},
+                provenance_json={},
                 created_at=datetime.now(UTC),
             )
             db.add(run)
@@ -214,6 +313,20 @@ class DocumentLifecycleTests(FileDocumentsTests):
             row = db.get(IntakeProfile, UUID(profile["id"]))
             job, run = db.get(Job, job_id), db.get(RecommendationRun, run_id)
             self.assertIsNone(db.get(Job, quote_job_id).result_json)
+            self.assertEqual(db.get(IntakeQuestion, question_id).status, "stale")
+            self.assertIsNone(db.get(Job, downstream_id).result_json)
+            self.assertNotIn("query", db.get(Job, downstream_id).input_json)
+            replay = db.get(
+                IntakeRequest, (row.user_id, "generate_question", "linked-replay")
+            )
+            self.assertEqual(replay.response_json, {"source_deleted": True})
+            self.assertIsNone(db.get(Job, short_id).result_json)
+            self.assertNotIn("query", db.get(Job, short_id).input_json)
+            self.assertEqual(
+                db.get(Job, short_id).input_json["answers"], {"text": "서울"}
+            )
+            self.assertEqual(db.get(Job, unrelated_id).input_json, unrelated_input)
+            self.assertEqual(db.get(Job, unrelated_id).result_json, unrelated_result)
             for data in (
                 row.reviewed_items_json,
                 job.input_json,
@@ -227,6 +340,7 @@ class DocumentLifecycleTests(FileDocumentsTests):
                 self.assertNotIn("historic excerpt", str(data))
             self.assertEqual(row.reviewed_items_json[0]["label"], "keep")
             self.assertEqual(run.input_json["answers"]["goal"], "keep")
+            self.assertEqual(job.input_json["unrelated_text"], "서울")
             RunnerResult.model_validate(run.public_json)
             self.assertEqual(run.public_json["items"][0]["evidence"], catalog_evidence)
             self.assertNotIn(
@@ -407,6 +521,52 @@ class DocumentLifecycleTests(FileDocumentsTests):
         second = self.upload(profile, b"a").json()
         with Session(self.engine) as db, db.begin():
             row = db.get(IntakeProfile, UUID(profile["id"]))
+            unrelated = Job(
+                id=uuid4(),
+                profile_id=row.id,
+                user_id=row.user_id,
+                kind="intake_question",
+                status="succeeded",
+                phase="succeeded",
+                profile_revision=row.revision,
+                idempotency_key="unrelated-a",
+                request_hash="unrelated-a",
+                input_json={"query": "sample"},
+                result_json={"text": "sample"},
+                created_at=datetime.now(UTC),
+            )
+            db.add(unrelated)
+            unrelated_id = unrelated.id
+            mixed = Job(
+                id=uuid4(),
+                profile_id=row.id,
+                user_id=row.user_id,
+                kind="intake_question",
+                status="succeeded",
+                phase="succeeded",
+                profile_revision=row.revision,
+                idempotency_key="mixed-a",
+                request_hash="mixed-a",
+                input_json={
+                    "reviewed_items": [
+                        {
+                            "id": "0",
+                            "document_id": first["document"]["id"],
+                            "evidence_quote": "a",
+                        },
+                        {
+                            "id": "1",
+                            "document_id": second["document"]["id"],
+                            "label": "sample",
+                            "evidence_quote": "a",
+                        },
+                    ]
+                },
+                result_json={"text": "a"},
+                created_at=datetime.now(UTC),
+            )
+            db.add(mixed)
+            mixed_id = mixed.id
             row.reviewed_items_json = [
                 {
                     "id": str(i),
@@ -425,6 +585,21 @@ class DocumentLifecycleTests(FileDocumentsTests):
         )
         self.assertEqual(response.status_code, 204)
         current = self.client.get("/api/profiles/" + profile["id"]).json()
+        with Session(self.engine) as db:
+            self.assertEqual(db.get(Job, unrelated_id).input_json, {"query": "sample"})
+            self.assertEqual(db.get(Job, unrelated_id).result_json, {"text": "sample"})
+            self.assertEqual(
+                db.get(Job, mixed_id).input_json["reviewed_items"],
+                [
+                    {
+                        "id": "1",
+                        "document_id": second["document"]["id"],
+                        "label": "sample",
+                        "evidence_quote": "a",
+                    }
+                ],
+            )
+            self.assertIsNone(db.get(Job, mixed_id).result_json)
         self.assertEqual([item["id"] for item in current["reviewed_items"]], ["1"])
         self.assertEqual(
             self.client.get("/api/documents/" + second["document"]["id"]).status_code,

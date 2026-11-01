@@ -26,28 +26,52 @@ def contains(value, markers):
     return False
 
 
-def contains_quote(value, quotes):
-    if isinstance(value, str):
-        return any(
-            quote and (value == quote or (len(quote) > 3 and quote in value))
-            for quote in quotes
-        )
+def references(value, identifiers):
+    """Match source or persisted-record identifiers, excluding direct answers."""
     if isinstance(value, dict):
-        return any(contains_quote(v, quotes) for v in value.values())
-    if isinstance(value, (list, tuple)):
-        return any(contains_quote(v, quotes) for v in value)
+        for key, item in value.items():
+            if key in {"answers", "confirmed_answers"}:
+                continue
+            if key in {
+                "id",
+                "document_id",
+                "chunk_id",
+                "source_item_id",
+                "source_item_ids",
+                "job_id",
+                "question_id",
+                "active_question_id",
+                "run_id",
+                "recommendation_run_id",
+            } and contains(item, identifiers):
+                return True
+            if references(item, identifiers):
+                return True
+    elif isinstance(value, (list, tuple)):
+        return any(references(item, identifiers) for item in value)
     return False
 
 
 def linked_quotes(value, identifiers):
     quotes = set()
     if isinstance(value, dict):
-        if any(isinstance(v, str) and v in identifiers for v in value.values()):
+        if references(
+            {
+                k: v
+                for k, v in value.items()
+                if not isinstance(v, dict)
+                and (
+                    not isinstance(v, list) or all(isinstance(item, str) for item in v)
+                )
+            },
+            identifiers,
+        ):
             for key in ("quote", "evidence_quote", "text_content", "text", "label"):
                 if isinstance(value.get(key), str):
                     quotes.add(value[key])
-        for item in value.values():
-            quotes.update(linked_quotes(item, identifiers))
+        for key, item in value.items():
+            if key not in {"answers", "confirmed_answers"}:
+                quotes.update(linked_quotes(item, identifiers))
     elif isinstance(value, list):
         for item in value:
             quotes.update(linked_quotes(item, identifiers))
@@ -66,6 +90,13 @@ def scrub(value, identifiers, quotes):
             if (clean := scrub(item, identifiers, quotes)) is not None
         ]
     if isinstance(value, dict):
+        source_ids = [
+            value[key]
+            for key in ("document_id", "chunk_id", "source_item_id")
+            if isinstance(value.get(key), str) and value[key]
+        ]
+        if source_ids and not references(value, identifiers):
+            return deepcopy(value)
         if any(
             isinstance(v, str) and v in identifiers
             for k, v in value.items()
@@ -125,66 +156,101 @@ def redact_document(db, profile, row):
         db.scalars(select(DocumentChunk).where(DocumentChunk.document_id == row.id))
     )
     document_ids = {str(row.id), *(str(chunk.id) for chunk in chunks)}
-    hashes = {row.content_sha256, *(chunk.content_sha256 for chunk in chunks)}
     markers = set(document_ids)
     affected = [
-        item for item in profile.reviewed_items_json if contains(item, document_ids)
+        item for item in profile.reviewed_items_json if references(item, document_ids)
     ]
-    markers.update(str(item.get("id", "")) for item in affected)
+    markers.update(str(item["id"]) for item in affected if item.get("id"))
     quotes = {
-        str(item.get(key, ""))
+        item[key]
         for item in affected
         for key in ("evidence_quote", "label")
+        if isinstance(item.get(key), str) and item[key]
     }
     profile.reviewed_items_json = [
         item for item in profile.reviewed_items_json if item not in affected
     ]
-    # Collect historical quotes before modifying any snapshot so later rows cannot
-    # leave an earlier copied excerpt behind.
-    snapshots = []
-    for question in db.scalars(
-        select(IntakeQuestion).where(IntakeQuestion.profile_id == profile.id)
-    ):
-        snapshots.extend(
-            [
-                question.source_hashes_json,
-                question.draft_json,
-                question.public_question_json,
-                question.option_bindings_json,
-                question.validation_json,
-            ]
+    questions = list(
+        db.scalars(
+            select(IntakeQuestion)
+            .where(IntakeQuestion.profile_id == profile.id)
+            .order_by(IntakeQuestion.id)
+            .with_for_update()
         )
-    for job in db.scalars(select(Job).where(Job.profile_id == profile.id)):
-        snapshots.extend([job.input_json, job.result_json])
-    for run in db.scalars(
-        select(RecommendationRun).where(RecommendationRun.profile_id == profile.id)
-    ):
-        snapshots.extend([run.input_json, run.public_json, run.provenance_json])
-    for request in db.scalars(
-        select(IntakeRequest).where(IntakeRequest.profile_id == profile.id)
-    ):
-        snapshots.append(request.response_json)
-    for snapshot in snapshots:
-        quotes.update(linked_quotes(snapshot, markers))
-    quotes.discard("")
-    for question in db.scalars(
-        select(IntakeQuestion)
-        .where(IntakeQuestion.profile_id == profile.id)
-        .order_by(IntakeQuestion.id)
-        .with_for_update()
-    ):
-        fields = (
-            question.source_hashes_json,
-            question.draft_json,
-            question.public_question_json,
-            question.option_bindings_json,
-            question.validation_json,
+    )
+    jobs = list(
+        db.scalars(
+            select(Job)
+            .where(Job.profile_id == profile.id)
+            .order_by(Job.id)
+            .with_for_update()
         )
-        if (
-            contains(question.source_hashes_json, hashes)
-            or contains(fields_as_list(fields), markers)
-            or contains_quote(fields_as_list(fields), quotes)
-        ):
+    )
+    runs = list(
+        db.scalars(
+            select(RecommendationRun)
+            .where(RecommendationRun.profile_id == profile.id)
+            .order_by(RecommendationRun.id)
+            .with_for_update()
+        )
+    )
+    requests = list(
+        db.scalars(
+            select(IntakeRequest)
+            .where(IntakeRequest.profile_id == profile.id)
+            .order_by(IntakeRequest.operation, IntakeRequest.idempotency_key)
+            .with_for_update()
+        )
+    )
+
+    def question_values(q):
+        return [
+            q.source_hashes_json,
+            q.draft_json,
+            q.public_question_json,
+            q.option_bindings_json,
+            q.validation_json,
+        ]
+
+    def run_values(r):
+        return [r.input_json, r.public_json, r.provenance_json]
+
+    linked_jobs = set()
+    while True:
+        record_ids = (
+            {str(job_id) for job_id in linked_jobs}
+            | {str(q.id) for q in questions if q.job_id in linked_jobs}
+            | {str(r.id) for r in runs if r.job_id in linked_jobs}
+        )
+        lineage = markers | record_ids
+        found = {
+            job.id
+            for job in jobs
+            if references([job.input_json, job.result_json], lineage)
+        }
+        found.update(
+            q.job_id for q in questions if references(question_values(q), lineage)
+        )
+        found.update(r.job_id for r in runs if references(run_values(r), lineage))
+        if found <= linked_jobs:
+            break
+        linked_jobs.update(found)
+    job_quotes = {job_id: set(quotes) for job_id in linked_jobs}
+    for job in jobs:
+        if job.id in linked_jobs:
+            job_quotes[job.id].update(
+                linked_quotes([job.input_json, job.result_json], lineage)
+            )
+    for question in questions:
+        if question.job_id in linked_jobs:
+            job_quotes[question.job_id].update(
+                linked_quotes(question_values(question), lineage)
+            )
+    for run in runs:
+        if run.job_id in linked_jobs:
+            job_quotes[run.job_id].update(linked_quotes(run_values(run), lineage))
+    for question in questions:
+        if question.job_id in linked_jobs:
             question.source_hashes_json = {}
             question.draft_json = {}
             question.public_question_json = {"id": str(question.id), "status": "stale"}
@@ -198,55 +264,39 @@ def redact_document(db, profile, row):
             )
             if answer and contains(answer.applied_patch_json, markers):
                 answer.applied_patch_json = {}
-    for job in db.scalars(
-        select(Job)
-        .where(Job.profile_id == profile.id)
-        .order_by(Job.id)
-        .with_for_update()
-    ):
-        linked = contains([job.input_json, job.result_json], markers)
-        clean_input = scrub(job.input_json, markers, quotes) or {}
+    for job in jobs:
+        if job.id not in linked_jobs:
+            continue
+        clean_input = scrub(job.input_json, lineage, job_quotes[job.id]) or {}
         for key in ("answers", "confirmed_answers"):
             if key in job.input_json:
                 clean_input[key] = job.input_json[key]
         job.input_json = clean_input
-        if linked or contains_quote(job.result_json, quotes):
-            job.result_json = None
-    for run in db.scalars(
-        select(RecommendationRun)
-        .where(RecommendationRun.profile_id == profile.id)
-        .order_by(RecommendationRun.id)
-        .with_for_update()
-    ):
-        values = [run.input_json, run.public_json, run.provenance_json]
-        affected_run = contains(values, markers) or contains_quote(values, quotes)
-        clean_input = scrub(run.input_json, markers, quotes) or {}
+        job.result_json = None
+    for run in runs:
+        if run.job_id not in linked_jobs:
+            continue
+        clean_input = scrub(run.input_json, lineage, job_quotes[run.job_id]) or {}
         for key in ("answers", "confirmed_answers"):
             if key in run.input_json:
                 clean_input[key] = run.input_json[key]
         run.input_json = clean_input
-        run.provenance_json = scrub(run.provenance_json, markers, quotes) or {}
+        run.provenance_json = (
+            scrub(run.provenance_json, lineage, job_quotes[run.job_id]) or {}
+        )
         result = deepcopy(run.public_json)
-        if affected_run:
-            result["needs"] = []
-            result["notices"] = []
-            run.provenance_json = {}
-            for item in result.get("items", []):
-                for reason in item.get("reasons", []):
-                    reason["text"] = (
-                        "삭제된 자료를 반영한 설명입니다. 다시 추천을 생성해주세요."
-                    )
-            result.setdefault("notices", []).append(
-                "자료가 삭제되어 결과를 다시 생성해야 합니다."
-            )
+        result["needs"] = []
+        result["notices"] = []
+        run.provenance_json = {}
+        for item in result.get("items", []):
+            for reason in item.get("reasons", []):
+                reason["text"] = (
+                    "삭제된 자료를 반영한 설명입니다. 다시 추천을 생성해주세요."
+                )
+        result.setdefault("notices", []).append(
+            "자료가 삭제되어 결과를 다시 생성해야 합니다."
+        )
         run.public_json = result
-    for request in db.scalars(
-        select(IntakeRequest)
-        .where(IntakeRequest.profile_id == profile.id)
-        .order_by(IntakeRequest.operation, IntakeRequest.idempotency_key)
-        .with_for_update()
-    ):
-        if contains(request.response_json, markers) or contains_quote(
-            request.response_json, quotes
-        ):
+    for request in requests:
+        if references(request.response_json, markers | record_ids):
             request.response_json = {"source_deleted": True}
