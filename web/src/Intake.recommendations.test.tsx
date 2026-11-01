@@ -290,6 +290,47 @@ describe('서버 추천 작업 복구', () => {
       await screen.findByRole('button', { name: '추천 작업 다시 확인' }),
     )
     await waitFor(() => expect(submitButton().disabled).toBe(false))
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
+  it('복구 성공은 조회 오류만 지우고 다른 작업의 오류는 보존한다', async () => {
+    let reads = 0
+    const fetch = vi.fn(async (url: string) => {
+      const path = new URL(url).pathname
+      if (path === '/api/onboarding/options') return Response.json(options)
+      if (path === `/api/profiles/${profile.id}`)
+        return Response.json({}, { status: 403 })
+      if (path.endsWith('/recommendation-job'))
+        return ++reads === 1
+          ? Response.json({}, { status: 503 })
+          : Response.json({
+              profile_id: profile.id,
+              revision: profile.revision,
+              job: null,
+            })
+      throw new Error(`Unexpected path: ${path}`)
+    })
+    vi.stubGlobal('fetch', fetch)
+    render(
+      <Harness onRun={vi.fn()} initial={{ ...profile, status: 'submitted' }} />,
+    )
+    const retry = await screen.findByRole('button', {
+      name: '추천 작업 다시 확인',
+    })
+    expect(submitButton().disabled).toBe(true)
+    fireEvent.click(screen.getByRole('button', { name: '최신 입력 확인' }))
+    const otherError =
+      '요청 권한을 확인할 수 없습니다. 로그인 상태를 다시 확인해주세요.'
+    await screen.findByText(otherError)
+    fireEvent.click(retry)
+    await waitFor(() => expect(submitButton().disabled).toBe(false))
+    expect(
+      screen.queryByText(
+        '현재 서비스를 사용할 수 없습니다. 잠시 후 다시 시도해주세요.',
+      ),
+    ).toBeNull()
+    expect(screen.getByRole('alert').textContent).toBe(otherError)
+    expect(reads).toBe(2)
   })
 })
 
