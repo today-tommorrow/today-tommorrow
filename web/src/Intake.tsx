@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ApiError, request, waitForJob } from './api'
 import type {
   Answers,
@@ -21,6 +21,35 @@ type Props = {
 }
 
 type ReviewEdit = { label: string; state: ReviewedItem['state'] }
+
+function httpUrl(value: string | null) {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  if (!/^https?:\/\//i.test(trimmed)) return null
+  try {
+    const url = new URL(trimmed)
+    return ['http:', 'https:'].includes(url.protocol) &&
+      !url.username &&
+      !url.password
+      ? url.href
+      : null
+  } catch {
+    return null
+  }
+}
+
+function DocumentSource({ url }: { url: string | null }) {
+  const href = httpUrl(url)
+  return href ? (
+    <p>
+      <a href={href} target="_blank" rel="noopener noreferrer">
+        자료 원문 보기
+      </a>
+    </p>
+  ) : (
+    <p>자료 원문 주소를 확인할 수 없어요.</p>
+  )
+}
 
 function interpretationMatches(
   value: Interpretation,
@@ -203,6 +232,10 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const [text, setText] = useState('')
   const [documentText, setDocumentText] = useState('')
   const [documentUrl, setDocumentUrl] = useState('')
+  const [linkFallback, setLinkFallback] = useState(false)
+  const linkHintId = useId()
+  const fileInput = useRef<HTMLInputElement>(null)
+  const documentTextInput = useRef<HTMLTextAreaElement>(null)
   const [kind, setKind] = useState<DocumentKind>('resume')
   const [file, setFile] = useState<File | null>(null)
   const [fileInputKey, setFileInputKey] = useState(0)
@@ -650,10 +683,15 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     const expectedRevision = latest.current.revision
     const submittedText = documentText
     const submittedUrl = documentUrl
+    const url = source === 'links' ? httpUrl(documentUrl) : null
+    if (source === 'links' && !url)
+      throw new Error(
+        '아이디·비밀번호가 없는 올바른 http 또는 https 주소를 입력해 주세요.',
+      )
     let body: unknown = {
       expected_revision: expectedRevision,
       kind,
-      ...(source === 'links' ? { url: documentUrl } : { text: documentText }),
+      ...(source === 'links' ? { url } : { text: documentText }),
     }
     if (source === 'files') {
       if (!file) throw new Error('파일을 선택해 주세요.')
@@ -673,12 +711,13 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       form.set('file', file)
       body = form
     }
-    if (source === 'links' && !/^https?:\/\//i.test(documentUrl))
-      throw new Error('http 또는 https 주소를 입력해 주세요.')
     const accepted = await request<DocumentAccepted>(
       `${path}/documents/${source}`,
       { method: 'POST', body, signal },
-    )
+    ).catch((cause: unknown) => {
+      if (source === 'links' && !signal.aborted) setLinkFallback(true)
+      throw cause
+    })
     if (signal.aborted) return
     const document = accepted?.document
     if (
@@ -699,6 +738,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
         '자료 등록 응답을 확인할 수 없어요. 최신 입력을 확인한 뒤 다시 시도해 주세요.',
       )
     setPendingDocument(accepted)
+    setLinkFallback(false)
     if (document.job_id) rememberJob(document.job_id)
     if (source === 'texts')
       setDocumentText((current) => (current === submittedText ? '' : current))
@@ -805,7 +845,14 @@ export function Intake({ profile, onProfile, onRun }: Props) {
       'review',
     ].includes(profile.intake_state.next_action) ||
     profile.documents.length > 0 ||
-    pendingDocument !== null
+    pendingDocument !== null ||
+    linkFallback
+  const showLinkFallback =
+    linkFallback ||
+    profile.documents.some(
+      (document) =>
+        document.source_type === 'url' && document.status === 'failed',
+    )
   const interpretationReady =
     interpretation?.profile_id === profile.id &&
     interpretation.status === 'ready' &&
@@ -1172,6 +1219,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               파일
               <input
                 key={fileInputKey}
+                ref={fileInput}
                 type="file"
                 accept={options?.allowed_file_extensions
                   .map((value) => (value.startsWith('.') ? value : `.${value}`))
@@ -1191,10 +1239,15 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               공개 자료 주소
               <input
                 type="url"
+                aria-describedby={linkHintId}
                 value={documentUrl}
                 onChange={(event) => setDocumentUrl(event.target.value)}
               />
             </label>
+            <p id={linkHintId} className="muted">
+              로그인 없이 볼 수 있는 http 또는 https 주소를 입력해 주세요.
+              링크를 읽지 못하면 파일이나 텍스트로 대신 등록할 수 있어요.
+            </p>
             <button
               disabled={!documentUrl.trim() || !!pendingDocument}
               onClick={() =>
@@ -1206,6 +1259,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
             <label>
               자료 내용
               <textarea
+                ref={documentTextInput}
                 value={documentText}
                 onChange={(event) => setDocumentText(event.target.value)}
               />
@@ -1219,6 +1273,28 @@ export function Intake({ profile, onProfile, onRun }: Props) {
               텍스트 등록
             </button>
           </fieldset>
+          {showLinkFallback && (
+            <section className="stack" aria-label="링크 대체 입력">
+              <h3>링크 대신 자료 등록</h3>
+              <p>
+                작성한 내용을 유지한 채 파일이나 텍스트로 대신 등록할 수 있어요.
+              </p>
+              <div className="buttons">
+                <button
+                  disabled={busy || !options}
+                  onClick={() => documentTextInput.current?.focus()}
+                >
+                  텍스트 입력으로 이동
+                </button>
+                <button
+                  disabled={busy || !options}
+                  onClick={() => fileInput.current?.focus()}
+                >
+                  파일 선택으로 이동
+                </button>
+              </div>
+            </section>
+          )}
           {pendingDocument && (
             <div className="stack">
               <p role="status">
@@ -1240,6 +1316,9 @@ export function Intake({ profile, onProfile, onRun }: Props) {
           {profile.documents.map((document) => (
             <article className="document-card stack" key={document.id}>
               <h3>{document.display_name}</h3>
+              {document.source_type === 'url' && (
+                <DocumentSource url={document.source_url} />
+              )}
               <p>
                 {
                   {
@@ -1250,10 +1329,13 @@ export function Intake({ profile, onProfile, onRun }: Props) {
                   }[document.status]
                 }
               </p>
-              {document.error_code && (
+              {(document.error_code || document.status === 'failed') && (
                 <p role="alert">
-                  자료를 읽지 못했어요 ({document.error_code}). 파일이나
-                  텍스트로 다시 등록할 수 있어요.
+                  {document.source_type === 'url'
+                    ? '링크 본문을 읽지 못했어요'
+                    : '자료를 읽지 못했어요'}
+                  {document.error_code ? ` (${document.error_code})` : ''}.
+                  파일이나 텍스트로 다시 등록할 수 있어요.
                 </p>
               )}
               {document.status === 'ready' && (
