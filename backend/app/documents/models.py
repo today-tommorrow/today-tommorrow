@@ -6,6 +6,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKeyConstraint,
     Integer,
+    LargeBinary,
     Text,
     UniqueConstraint,
     text,
@@ -36,6 +37,18 @@ class Document(Base):
     profile_id: Mapped[UUID] = mapped_column(nullable=False, index=True)
     user_id: Mapped[UUID] = mapped_column(nullable=False)
     kind: Mapped[str] = mapped_column(Text, nullable=False)
+    source_type: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default="text"
+    )
+    display_name: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default="직접 입력한 텍스트"
+    )
+    mime_type: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default="text/plain"
+    )
+    status: Mapped[str] = mapped_column(Text, nullable=False, server_default="queued")
+    error_code: Mapped[str | None] = mapped_column(Text)
+    raw_content: Mapped[bytes | None] = mapped_column(LargeBinary, deferred=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     content_sha256: Mapped[str] = mapped_column(Text, nullable=False)
     size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)

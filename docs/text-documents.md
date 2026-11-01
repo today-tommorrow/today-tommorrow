@@ -6,7 +6,7 @@ A successful 202 response contains `document` and the new `profile_revision`. `G
 
 An optional `Idempotency-Key` (1–128 printable ASCII characters) replays the accepted response for identical requests; reuse with different input returns 409. Without a key, profile, revision, kind and content digest form a deterministic identity. Registration, revision change, question invalidation and replay record commit together. Registration sets `document_decision` to `provided`; PATCH cannot set it to `none` while documents exist. Profiles with documents do not receive a review token.
 
-Text is stored for later processing. The public state is `queued` with `job_id: null`; no worker is running and semantic analysis is not yet available. File upload, URL extraction, deletion, retry, and model inference are outside this slice. The shared course catalog is unchanged.
+Text is stored for later processing. The public state is `queued` with `job_id: null`; no worker is running and semantic analysis is not yet available. File upload is described in [file-documents.md](file-documents.md). URL extraction, deletion, retry, and model inference remain outside this slice. The shared course catalog is unchanged.
 
 ## Reproduce and verify
 

@@ -10,6 +10,9 @@ dependencies = [
   "psycopg[binary]>=3.2,<4",
   "alembic>=1.15,<2",
   "google-auth[requests]>=2.62,<3",
+  "pypdf>=6.21.4,<7",
+  "psutil>=7.2.2,<8",
+  "python-multipart>=0.0.33,<1",
 ]
 
 [dependency-groups]
