@@ -80,15 +80,32 @@ def merge_values(previous: dict, incoming: dict) -> tuple[dict, list[str]]:
     return merged, conflicts
 
 
-def has_adapter_history(history: object) -> bool:
-    return (isinstance(history, dict)
+def has_adapter_history(history: object, key: tuple[str, str]) -> bool:
+    """Recognize stored adapter values before they can authorize supplementation."""
+    if not (isinstance(history, dict)
             and isinstance(history.get("values"), dict)
-            and isinstance(history.get("raw_json"), list)
+            and isinstance(history.get("raw_json"), list) and bool(history["raw_json"])
             and all(isinstance(raw, dict) for raw in history["raw_json"])
             and isinstance(history.get("field_provenance"), dict)
             and all(isinstance(source, dict) for source in history["field_provenance"].values())
             and isinstance(history.get("sources"), list) and bool(history["sources"])
-            and all(isinstance(source, dict) for source in history["sources"]))
+            and all(isinstance(source, dict) for source in history["sources"])):
+        return False
+    values, sources = history["values"], history["sources"]
+    if not set(FIELDS + IDENTITIES) <= values.keys():
+        return False
+    try:
+        validate_record(values)
+        if source_key(values) != key:
+            return False
+        for source in sources:
+            if source != provenance(source.get("source_hash"), source.get("collected_at")):
+                return False
+        observed = {field for field in FIELDS + IDENTITIES if values[field] is not None}
+        return (set(history["field_provenance"]) == observed
+                and all(source in sources for source in history["field_provenance"].values()))
+    except (ValueError, TypeError, OverflowError):
+        return False
 
 
 def course_metadata(values: dict, raw: list[dict], field_sources: dict, sources: list[dict]) -> dict:
@@ -160,7 +177,7 @@ def normalize(payload: dict, *, source_hash: str | None, collected_at: str | Non
         raw_history, sources, field_sources = [], [], {}
         if old:
             history = old.get("work24")
-            if not has_adapter_history(history):
+            if not has_adapter_history(history, key):
                 isolated.append({"offering_key": list(key), "reason": "legacy_parent_requires_mapping", "raw_json": rows})
                 continue
             values, differences = merge_values(history["values"], values)

@@ -123,6 +123,50 @@ class Work24RecordsTests(unittest.TestCase):
                 self.assertEqual(result["report"]["quarantined"][0]["reason"], "legacy_parent_requires_mapping")
                 self.assertEqual(result["parent_records"], [{"offering_key": ["new", "01"], "metadata_sha256": None}])
 
+    def test_invalid_parent_history_contract_quarantines_only_its_offering(self) -> None:
+        adapter = normalized([record("legacy")])["courses"][0]["work24"]
+        histories = [("empty_containers", {"values": {}, "raw_json": [], "field_provenance": {}, "sources": [{}]})]
+        for field, value in (("course_name", ""), ("course_id", "different"), ("start_date", "invalid")):
+            history = copy.deepcopy(adapter)
+            history["values"][field] = value
+            histories.append((f"invalid_value_{field}", history))
+        history = copy.deepcopy(adapter)
+        history["values"].update(tme="01", cohort="02")
+        histories.append(("conflicting_cohort", history))
+        history = copy.deepcopy(adapter)
+        del history["values"]["region"]
+        histories.append(("missing_value", history))
+        for field, value in (("raw_json", []), ("sources", [{}]),
+                             ("sources", [{"source_hash": "invalid", "collected_at": None}]),
+                             ("sources", [{"source_hash": None, "collected_at": "invalid"}]),
+                             ("field_provenance", {}),
+                             ("field_provenance", {**adapter["field_provenance"], "course_name": {
+                                 "source_hash": "2" * 64, "collected_at": None}})):
+            history = copy.deepcopy(adapter)
+            history[field] = value
+            histories.append((f"invalid_{field}", history))
+        for label, history in histories:
+            with self.subTest(history=label):
+                previous = {"dataset_id": "1" * 64, "courses": [{"course_id": "legacy", "tme": "01", "work24": history}]}
+                result = normalized([record("legacy", tme="01", cohort=None), record("new")],
+                                    parent="1" * 64, previous=previous)
+                self.assertEqual([course["course_id"] for course in result["courses"]], ["new"])
+                self.assertEqual(result["report"]["quarantined"][0]["reason"], "legacy_parent_requires_mapping")
+                self.assertEqual(result["parent_records"], [{"offering_key": ["new", "01"], "metadata_sha256": None}])
+
+    def test_parent_history_allows_repeated_observations_with_unknown_provenance(self) -> None:
+        first = normalize({"records": [record(), record(source_excel_row=42)]},
+                          source_hash=None, collected_at=None, parent_dataset_id="0" * 64)
+        result = normalize({"records": [record(region="Seoul")]}, source_hash=None, collected_at=None,
+                           parent_dataset_id="1" * 64,
+                           previous={"dataset_id": "1" * 64, "courses": first["courses"]})
+        self.assertEqual(result["report"]["quarantined"], [])
+        course = result["courses"][0]
+        self.assertEqual((course["region"], course["training_fee"], course["displayed_self_pay"]), ("Seoul", 0, "N/A"))
+        self.assertEqual(len(course["work24"]["raw_json"]), 3)
+        self.assertEqual(course["work24"]["sources"], [{"source_hash": None, "collected_at": None}])
+        self.assertEqual(course["work24"]["field_provenance"]["tuition_krw"], first["courses"][0]["work24"]["field_provenance"]["tuition_krw"])
+
     def test_package_reorders_vectors_by_key_and_excludes_quarantined_coverage(self) -> None:
         source = normalized([record("synthetic-B"), record("synthetic-A", curriculum=["First", "Second"])])
         result = normalized([record("synthetic-B"), record(), record(region="conflict")])
