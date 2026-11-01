@@ -53,11 +53,15 @@ def search(courses: list[dict[str, object]], units: list[dict[str, object]], *, 
 
 class CatalogContractTests(unittest.TestCase):
     def test_course_grouping_precedes_final_limit(self):
+        identifiers = [f"course-{index:02}" for index in range(39)]
         rows = [unit("many", 0.99, key=f"u{i:03}") for i in range(150)]
-        rows += [unit("second", 0.8), unit("third", 0.7)]
-        result = search([course("many"), course("second"), course("third")], rows, limit=3)
-        self.assertEqual([c.source_course_id for c in result.candidates], ["many", "second", "third"])
-        self.assertEqual(result.eligible_courses, 3)
+        rows += [unit(identifier, 0.8) for identifier in identifiers]
+        courses = [course("many"), *(course(identifier) for identifier in identifiers)]
+        for limit in (1, 30, 40, 100):
+            with self.subTest(limit=limit):
+                result = search(courses, rows, limit=limit)
+                self.assertEqual([c.source_course_id for c in result.candidates], ["many", *identifiers][:limit])
+                self.assertEqual(result.eligible_courses, 40)
 
     def test_multiple_offerings_are_filtered_before_course_winner(self):
         result = search([course("same", "1", mode="서울 집체"), course("same", "2")],
@@ -214,6 +218,66 @@ class CatalogDatabaseTests(unittest.TestCase):
             self.assertAlmostEqual(candidate.similarity, 1-row.distance, places=6)
             self.assertLessEqual(len(candidate.evidence), 2)
         self.assertFalse(result.approximate)
+
+    def test_full_catalog_limits_do_not_starve_other_courses_or_include_inactive_units(self):
+        admin = local_engine("CATALOG_DATABASE_URL", "today_bootstrap")
+        self.addCleanup(admin.dispose)
+        inputs = {"synthetic-full-catalog-regression": {"sha256": "e" * 64}}
+        dataset = canonical_hash(inputs)
+        with admin.connect() as connection:
+            config = connection.execute(text("SELECT config FROM work24_bge.embedding_profile WHERE profile_id=:profile"),
+                                        {"profile": self.profile}).scalar_one()
+        manifest = {"embedding_config": config, "embedding_profile_id": self.profile,
+                    "dataset_id": dataset, "input_files": inputs, "created_on": AS_OF.isoformat()}
+
+        def remove_fixture():
+            with admin.begin() as connection:
+                for table in ("snapshot_unit", "snapshot_course", "dataset_snapshot"):
+                    connection.execute(text(f"DELETE FROM work24_bge.{table} WHERE dataset_id=:dataset"), {"dataset": dataset})
+
+        self.addCleanup(remove_fixture)
+        identifiers = ["many", *(f"course-{index:02}" for index in range(39))]
+        orthogonal = (0.0, 1.0) + (0.0,) * 1022
+        rows = [("many", index, VECTOR, True) for index in range(150)]
+        rows += [(identifier, 0, orthogonal, True) for identifier in identifiers[1:]]
+        rows += [("course-38", 1, VECTOR, False), ("inactive-only", 0, VECTOR, False)]
+        with admin.begin() as connection:
+            connection.execute(text("""INSERT INTO work24_bge.dataset_snapshot(dataset_id,profile_id,manifest)
+                VALUES(:dataset,:profile,CAST(:manifest AS jsonb))"""),
+                {"dataset": dataset, "profile": self.profile, "manifest": json.dumps(manifest)})
+            connection.execute(text("""INSERT INTO work24_bge.snapshot_course
+                (dataset_id,course_id,tme,metadata,source_dataset_id)
+                VALUES(:dataset,:course,'1',CAST(:metadata AS jsonb),:dataset)"""),
+                [{"dataset": dataset, "course": identifier, "metadata": json.dumps(course(identifier)["metadata"])}
+                 for identifier in [*identifiers, "inactive-only"]])
+            connection.execute(text("""INSERT INTO work24_bge.snapshot_unit
+                (unit_key,course_id,tme,vector_row,unit_type,ncs_unit_code,unit_name,embed_text,
+                 text_sha256,is_noise,is_inferred,provenance,embedding,profile_id,dataset_id,active,source_dataset_id)
+                VALUES(:key,:course,'1',:index,'content_item','','synthetic unit','synthetic competency',
+                       :sha,false,false,'[]',CAST(:vector AS vector),:profile,:dataset,:active,:dataset)"""),
+                [{"key": canonical_hash([identifier, index]), "course": identifier, "index": index,
+                  "sha": "d" * 64, "vector": json.dumps(vector), "profile": self.profile,
+                  "dataset": dataset, "active": active} for identifier, index, vector, active in rows])
+        snapshot = replace(self.repository.prepare(), dataset_id=dataset, manifest_sha256=canonical_hash(manifest))
+        repository = CatalogRepository(self.engine, profile_id=self.profile, dataset_id=dataset)
+        for limit, evidence_limit in ((1, 1), (30, 1), (40, 10), (100, 10)):
+            with self.subTest(limit=limit, evidence_limit=evidence_limit):
+                result = repository.search(VECTOR, snapshot, as_of=AS_OF, limit=limit, evidence_limit=evidence_limit)
+                self.assertEqual([candidate.source_course_id for candidate in result.candidates], identifiers[:limit])
+                self.assertEqual((result.active_offerings, result.eligible_courses), (40, 40))
+                self.assertEqual(len(result.candidates[0].evidence), evidence_limit)
+                self.assertAlmostEqual(result.candidates[0].similarity, 1.0)
+                for candidate in result.candidates[1:]:
+                    self.assertEqual(len(candidate.evidence), 1)
+                    self.assertAlmostEqual(candidate.similarity, 0.0)
+                self.assertFalse(result.approximate)
+
+    def test_result_and_evidence_limits_reject_out_of_range_values(self):
+        snapshot = self.repository.prepare()
+        for options in ({"limit": 0}, {"limit": 101}, {"limit": True},
+                        {"evidence_limit": 0}, {"evidence_limit": 11}, {"evidence_limit": True}):
+            with self.subTest(options=options), self.assertRaisesRegex(CatalogError, "invalid_search_limit"):
+                self.repository.search(VECTOR, snapshot, as_of=AS_OF, **options)
 
     def test_identity_snapshot_and_vector_failures_are_explicit(self):
         snapshot = self.repository.prepare()

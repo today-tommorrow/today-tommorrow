@@ -1,0 +1,1033 @@
+{
+  "schema_version": 1,
+  "artifact_type": "offline_relevance_diagnostics",
+  "scope": "Post-hoc diagnostics only; not a new live benchmark or replacement gold fixture. Unjudged pairs are not negatives. No corpus precision or expected-empty claim. Source hashes and excerpts are reviewer assertions: source bytes, factual relevance and redistribution permission are not verified by this tool.",
+  "binding": {
+    "result_sha256": "109da31886fd783ac61ee2c0ccd31da8902dfe3427dbafbe4bda105b2d52bc5d",
+    "evaluation_dataset": {
+      "id": "work24-search-evaluation",
+      "version": "1.0.0",
+      "sha256": "597133d3c63833e7d7ab1d2e73648c0f7b2984db63726bed0f7c051ebae25ca5"
+    },
+    "snapshot": {
+      "profile_id": "770be6a5f97f6ed60075c24f64e8d8ea91786a86e7ba22e5fe8df1e6c5477a90",
+      "dataset_id": "7c1a3046ed398ab05cf15b800eb07bd936c8665d3803293d44f46ab73f8f9b80",
+      "revision": "5617a9f61b028005a4858fdac845db406aefb181",
+      "manifest_sha256": "f4a79774ae2a470d7a9b80626cece532ad821900923069ba6875c9c9816cd88c",
+      "snapshot_created_on": "2026-11-01"
+    }
+  },
+  "packet_sha256": "58fc4c2f09895cac688e028e50254eabc92cd2f550721ebe4bffae1eb44e811f",
+  "submission_sha256": "c8184a1e7fe072baea0ff34deadbf308b1a173f156744103e2a412a8b8c98ee0",
+  "summary": {
+    "returned_pairs": 600,
+    "judged_pairs": 28,
+    "relevant_pairs": 13,
+    "explicit_negative_hits": 15,
+    "unjudged_pairs": 572,
+    "judgment_coverage": 0.04666666666666667,
+    "successful_cases": 20,
+    "failed_cases": 0
+  },
+  "at_k": {
+    "1": {
+      "returned_pairs": 20,
+      "judged_pairs": 15,
+      "relevant_pairs": 12,
+      "explicit_negative_hits": 3,
+      "unjudged_pairs": 5,
+      "judgment_coverage": 0.75
+    },
+    "5": {
+      "returned_pairs": 100,
+      "judged_pairs": 28,
+      "relevant_pairs": 13,
+      "explicit_negative_hits": 15,
+      "unjudged_pairs": 72,
+      "judgment_coverage": 0.28
+    },
+    "10": {
+      "returned_pairs": 200,
+      "judged_pairs": 28,
+      "relevant_pairs": 13,
+      "explicit_negative_hits": 15,
+      "unjudged_pairs": 172,
+      "judgment_coverage": 0.14
+    },
+    "30": {
+      "returned_pairs": 600,
+      "judged_pairs": 28,
+      "relevant_pairs": 13,
+      "explicit_negative_hits": 15,
+      "unjudged_pairs": 572,
+      "judgment_coverage": 0.04666666666666667
+    }
+  },
+  "cases": [
+    {
+      "case_id": "exact-title-network",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "exact-title-semiconductor",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "exact-title-automation",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 2,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 1,
+      "unjudged_pairs": 28,
+      "judgment_coverage": 0.06666666666666667,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "AIG20250000506847"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 3,
+          "judgment_coverage": 0.4
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 8,
+          "judgment_coverage": 0.2
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 28,
+          "judgment_coverage": 0.06666666666666667
+        }
+      }
+    },
+    {
+      "case_id": "exact-title-tax",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 3,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 2,
+      "unjudged_pairs": 27,
+      "judgment_coverage": 0.1,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "ABA20263001464669",
+        "ABA20263001480712"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 3,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 2,
+          "unjudged_pairs": 2,
+          "judgment_coverage": 0.6
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 3,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 2,
+          "unjudged_pairs": 7,
+          "judgment_coverage": 0.3
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 3,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 2,
+          "unjudged_pairs": 27,
+          "judgment_coverage": 0.1
+        }
+      }
+    },
+    {
+      "case_id": "exact-title-labor",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 3,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 2,
+      "unjudged_pairs": 27,
+      "judgment_coverage": 0.1,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "ABA20263001218989",
+        "ACG20263001351063"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 3,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 2,
+          "unjudged_pairs": 2,
+          "judgment_coverage": 0.6
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 3,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 2,
+          "unjudged_pairs": 7,
+          "judgment_coverage": 0.3
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 3,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 2,
+          "unjudged_pairs": 27,
+          "judgment_coverage": 0.1
+        }
+      }
+    },
+    {
+      "case_id": "exact-title-safety",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 2,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 1,
+      "unjudged_pairs": 28,
+      "judgment_coverage": 0.06666666666666667,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "ACG20263001251433"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 3,
+          "judgment_coverage": 0.4
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 8,
+          "judgment_coverage": 0.2
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 28,
+          "judgment_coverage": 0.06666666666666667
+        }
+      }
+    },
+    {
+      "case_id": "exact-title-security",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "korean-network-paraphrase",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 1,
+          "judgment_coverage": 0.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "korean-semiconductor-paraphrase",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "korean-labor-paraphrase",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 2,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 1,
+      "unjudged_pairs": 28,
+      "judgment_coverage": 0.06666666666666667,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "AIG20250000511160"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 3,
+          "judgment_coverage": 0.4
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 8,
+          "judgment_coverage": 0.2
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 28,
+          "judgment_coverage": 0.06666666666666667
+        }
+      }
+    },
+    {
+      "case_id": "mixed-network-terms",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "mixed-semiconductor-terms",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "mixed-automation-terms",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 2,
+      "relevant_pairs": 1,
+      "explicit_negative_hits": 1,
+      "unjudged_pairs": 28,
+      "judgment_coverage": 0.06666666666666667,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "AIG20260000545060"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 3,
+          "judgment_coverage": 0.4
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 8,
+          "judgment_coverage": 0.2
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 2,
+          "relevant_pairs": 1,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 28,
+          "judgment_coverage": 0.06666666666666667
+        }
+      }
+    },
+    {
+      "case_id": "broad-career-goal",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 0,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 30,
+      "judgment_coverage": 0.0,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 1,
+          "judgment_coverage": 0.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 5,
+          "judgment_coverage": 0.0
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 10,
+          "judgment_coverage": 0.0
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 30,
+          "judgment_coverage": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "broad-digital-goal",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 0,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 30,
+      "judgment_coverage": 0.0,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 1,
+          "judgment_coverage": 0.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 5,
+          "judgment_coverage": 0.0
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 10,
+          "judgment_coverage": 0.0
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 30,
+          "judgment_coverage": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "similar-but-unreviewed-tax",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 1,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 1,
+      "unjudged_pairs": 29,
+      "judgment_coverage": 0.03333333333333333,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "ACG20253001149370"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 1,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 4,
+          "judgment_coverage": 0.2
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 1,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 9,
+          "judgment_coverage": 0.1
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 1,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 29,
+          "judgment_coverage": 0.03333333333333333
+        }
+      }
+    },
+    {
+      "case_id": "similar-but-unreviewed-security",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 0,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 30,
+      "judgment_coverage": 0.0,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 1,
+          "judgment_coverage": 0.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 5,
+          "judgment_coverage": 0.0
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 10,
+          "judgment_coverage": 0.0
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 30,
+          "judgment_coverage": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-astronomy",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 3,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 3,
+      "unjudged_pairs": 27,
+      "judgment_coverage": 0.1,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "AIG20250000501486",
+        "AIG20250000539889",
+        "AIG20250000543113"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 3,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 3,
+          "unjudged_pairs": 2,
+          "judgment_coverage": 0.6
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 3,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 3,
+          "unjudged_pairs": 7,
+          "judgment_coverage": 0.3
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 3,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 3,
+          "unjudged_pairs": 27,
+          "judgment_coverage": 0.1
+        }
+      }
+    },
+    {
+      "case_id": "empty-result-candidate-preservation",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 3,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 3,
+      "unjudged_pairs": 27,
+      "judgment_coverage": 0.1,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [
+        "ACG20253001149370",
+        "ACG20263001324611",
+        "AIG20250000519976"
+      ],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 1,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 1,
+          "unjudged_pairs": 0,
+          "judgment_coverage": 1.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 3,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 3,
+          "unjudged_pairs": 2,
+          "judgment_coverage": 0.6
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 3,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 3,
+          "unjudged_pairs": 7,
+          "judgment_coverage": 0.3
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 3,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 3,
+          "unjudged_pairs": 27,
+          "judgment_coverage": 0.1
+        }
+      }
+    },
+    {
+      "case_id": "unknown-personal-cost-and-timetable",
+      "status": "ok",
+      "returned_pairs": 30,
+      "judged_pairs": 0,
+      "relevant_pairs": 0,
+      "explicit_negative_hits": 0,
+      "unjudged_pairs": 30,
+      "judgment_coverage": 0.0,
+      "returned_rows": 30,
+      "duplicate_rows": 0,
+      "explicit_negative_course_ids": [],
+      "at_k": {
+        "1": {
+          "returned_pairs": 1,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 1,
+          "judgment_coverage": 0.0
+        },
+        "5": {
+          "returned_pairs": 5,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 5,
+          "judgment_coverage": 0.0
+        },
+        "10": {
+          "returned_pairs": 10,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 10,
+          "judgment_coverage": 0.0
+        },
+        "30": {
+          "returned_pairs": 30,
+          "judged_pairs": 0,
+          "relevant_pairs": 0,
+          "explicit_negative_hits": 0,
+          "unjudged_pairs": 30,
+          "judgment_coverage": 0.0
+        }
+      }
+    }
+  ],
+  "adjudication_sha256": "20e035dc13e207cd6428523ab3588c930ba5e50592d16f81045909c897b11d0f"
+}
