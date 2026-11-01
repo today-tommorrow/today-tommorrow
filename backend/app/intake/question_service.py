@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.ai.gemma import PROMPT_VERSION
 from app.ai.questions import QuestionDraft, validate_question
 from app.intake import store
-from app.intake.policy import evaluate
+from app.intake.policy import evaluate, has_answer
 from app.intake.question_config import QuestionSettings
 from app.intake.question_models import IntakeAnswer, IntakeQuestion, IntakeRequest
 from app.intake.schemas import Answers
@@ -94,9 +94,7 @@ def generation_context(db: Session, profile) -> dict:
     confirmed = {
         key: value
         for key, value in profile.answers_json.items()
-        if value is not None
-        and value != ""
-        and key not in profile.unresolved_conflicts_json
+        if has_answer(value) and key not in profile.unresolved_conflicts_json
     }
     unknown = [
         key

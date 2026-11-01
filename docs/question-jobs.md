@@ -68,4 +68,6 @@ uv run --env-file ../.env --locked python -m app.intake.worker
 
 Worker는 현재 `intake_question` 종류만 처리한다. claim·heartbeat·완료 저장은 짧은 DB transaction으로 처리하고, 블로킹 모델 호출 동안 DB transaction은 열어 두지 않는다. DB lease와 fencing token은 오래된 Worker가 결과를 덮어쓰지 못하게 한다. 실제 물리 GPU 중단·동시성·다른 job 종류와의 스케줄 공정성은 아직 검증하지 않았다. 이번 기능은 추천, 자료 업로드·해석, `review_token`과 추천 제출을 구현하지 않는다. 실제 GPU 실행도 미검증이다.
 
+공백·탭·유니코드 공백만 있는 텍스트는 초안에 보존하지만 미응답으로 다룬다. 진행 정책과 생성 문맥은 같은 답변 판정 기준을 사용하며, 이런 값은 확정 답변에 넣지 않아 해당 필수 슬롯의 질문을 생성하고 선택할 수 있다.
+
 모델 선택지와 서버 미정 선택지 모두 실제 `Answers` 스키마로 저장 전에 검사한다. 생성 단계의 검증만 통과하고 사용자가 고를 수 없는 선택지를 공개하지 않는다.

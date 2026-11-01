@@ -387,6 +387,94 @@ class QuestionFlowTests(unittest.TestCase):
         self.assertNotIn("synthetic-private", job.text)
         self.assertIsNone(job.json()["result"])
 
+    def test_whitespace_only_required_text_can_be_generated_and_answered(self):
+        class TextProvider(QuestionProvider):
+            def generate(self, context, *, cancelled=None):
+                self.context = context
+                target = context["eligible_slots"][0]
+                return validate_question(
+                    json.dumps(
+                        {
+                            "schema_version": "1.0",
+                            "target_slot": target,
+                            "acknowledgement": "필요한 내용을 골라주세요.",
+                            "question": "어떤 내용으로 답하시겠어요?",
+                            "helper_text": "가까운 것을 선택해주세요.",
+                            "selection_mode": "single",
+                            "options": [
+                                {
+                                    "key": "first",
+                                    "label": "첫 번째 응답",
+                                    "description": "첫 번째 합성 응답",
+                                    "answer_patch": {target: "첫 번째 합성 응답"},
+                                },
+                                {
+                                    "key": "second",
+                                    "label": "두 번째 응답",
+                                    "description": "두 번째 합성 응답",
+                                    "answer_patch": {target: "두 번째 합성 응답"},
+                                },
+                            ],
+                        }
+                    ),
+                    eligible_slots=set(context["eligible_slots"]),
+                    companion_slots={},
+                    confirmed_slots=set(context["confirmed_answers"]),
+                    resolved_unknown_slots=set(context["resolved_unknown_slots"]),
+                )
+
+        base = {
+            "entry_intent": "explore",
+            "field_code": "ai_data",
+            "experience": "beginner",
+            "learning_goal": "foundation",
+            "availability": "unknown",
+            "delivery_mode": "online",
+            "budget_status": "no_limit",
+            "start_timing": "browse",
+            "document_decision": "none",
+        }
+        for target, changes in (
+            ("custom_field", {"field_code": "other", "custom_field": "\t "}),
+            ("goal_text", {"entry_intent": "goal_known", "goal_text": " \n "}),
+            (
+                "commute_region",
+                {"delivery_mode": "offline", "commute_region": "\u3000"},
+            ),
+        ):
+            with self.subTest(target=target):
+                self.profile = self.fixture.create()
+                response = self.fixture.save(self.profile, {**base, **changes})
+                self.assertEqual(response.status_code, 200, response.text)
+                self.assertEqual(response.json()["answers"][target], changes[target])
+                self.assertEqual(
+                    response.json()["intake_state"]["eligible_slots"], [target]
+                )
+                accepted = self.request(key="whitespace-" + target, expected=1)
+                self.assertEqual(accepted.status_code, 202, accepted.text)
+                provider = TextProvider()
+                self.assertTrue(self.run_worker(provider))
+                self.assertNotIn(target, provider.context["confirmed_answers"])
+                job = self.client.get("/api/jobs/" + accepted.json()["job_id"]).json()
+                self.assertEqual(job["status"], "succeeded", job)
+                question = self.client.get(
+                    "/api/questions/" + job["result"]["question_id"]
+                ).json()
+                answered = self.answer(
+                    question,
+                    question["options"][0]["id"],
+                    key="whitespace-answer-" + target,
+                    expected=1,
+                )
+                self.assertEqual(answered.status_code, 200, answered.text)
+                saved = answered.json()
+                self.assertEqual(saved["revision"], 2)
+                self.assertEqual(saved["answers"][target], "첫 번째 합성 응답")
+                self.assertEqual(saved["intake_state"]["next_action"], "review")
+                self.assertEqual(
+                    self.client.get("/api/profiles/" + self.profile["id"]).json(), saved
+                )
+
     def test_provider_configuration_is_required_without_test_fallback(self):
         with patch.dict(
             os.environ, {"QUESTION_MODEL_BASE_URL": "", "QUESTION_MODEL_ID": ""}
