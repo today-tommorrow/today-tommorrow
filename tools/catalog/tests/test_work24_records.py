@@ -81,6 +81,18 @@ class Work24RecordsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "previous_parent_mismatch"):
             normalized([record()], previous={"dataset_id": "1" * 64, "courses": []})
 
+    def test_oversized_json_numbers_quarantine_only_their_offering(self) -> None:
+        for field in ("training_hours", "tuition_krw", "listed_self_pay_krw"):
+            for digits in ("1" + "0" * 400, "-1" + "0" * 400):
+                with self.subTest(field=field, negative=digits.startswith("-")):
+                    rows = json.loads(json.dumps([record(**{field: int(digits)}), record("valid")]))
+                    result = normalized(rows)
+                    self.assertEqual([course["course_id"] for course in result["courses"]], ["valid"])
+                    quarantined = result["report"]["quarantined"]
+                    self.assertTrue(any(row["reason"] == "invalid_record_number" for row in quarantined))
+                    self.assertTrue(all(row["offering_key"] == ["synthetic-A", "01"] for row in quarantined))
+                    self.assertEqual(result["parent_records"], [{"offering_key": ["valid", "01"], "metadata_sha256": None}])
+
     def test_legacy_parent_is_preserved_as_guard_but_cannot_be_supplemented(self) -> None:
         legacy = {"course_id": "legacy", "tme": "01", "course_name": "Legacy", "training_fee": 123}
         result = normalized([record("legacy"), record("new")], parent="1" * 64,

@@ -45,6 +45,13 @@ def source_key(record: dict) -> tuple[str, str] | None:
     return (record["course_id"], occurrence) if record.get("course_id") and occurrence else None
 
 
+def finite_nonnegative_number(value: object) -> bool:
+    try:
+        return type(value) in (int, float) and math.isfinite(value) and value >= 0
+    except OverflowError:
+        return False
+
+
 def validate_record(record: dict) -> None:
     require(isinstance(record.get("course_name"), str) and bool(record["course_name"].strip()), "invalid_course_name")
     for field in ("provider_name", "region", "eligibility", "url"):
@@ -56,8 +63,7 @@ def validate_record(record: dict) -> None:
             date.fromisoformat(value)
     for field in ("training_hours", "tuition_krw", "listed_self_pay_krw"):
         value = record.get(field)
-        require(value is None or value in NA or type(value) in (int, float)
-                and math.isfinite(value) and value >= 0, "invalid_record_number")
+        require(value is None or value in NA or finite_nonnegative_number(value), "invalid_record_number")
         if field != "training_hours" and type(value) in (int, float):
             require(int(value) == value, "invalid_record_number")
     curriculum = record.get("curriculum")
