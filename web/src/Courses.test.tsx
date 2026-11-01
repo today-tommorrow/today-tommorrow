@@ -27,8 +27,59 @@ function respond(body: unknown, status = 200) {
 
 // These HTTP boundary samples test UI contracts, not live API/DB/model E2E.
 describe('교육 조회의 공통 계약 샘플', () => {
+  it('추정 보완 근거만 표시하고 일반 미확인 근거와 구분한다', async () => {
+    respond({
+      ...courseDetailFixture,
+      evidence: ['inferred_units.synthetic', 'units.synthetic'].map(
+        (field_path, index) => ({
+          ...courseDetailFixture.evidence[0],
+          id: `synthetic-${index}`,
+          field_path,
+          quote: index === 0 ? '추정으로 보완한 내용' : '일반 미확인 내용',
+          verification_state: 'unknown',
+          checked_at: null,
+        }),
+      ),
+    })
+    render(<CourseDetails courseId={courseDetailFixture.id} />)
+    const inferred = (await screen.findByText('추정으로 보완한 내용')).closest(
+      'li',
+    )!
+    const observed = screen.getByText('일반 미확인 내용').closest('li')!
+    expect(
+      within(inferred).getByText('추정 보완 정보 · 실제 교육내용 확인 필요'),
+    ).toBeTruthy()
+    expect(
+      within(observed).queryByText('추정 보완 정보 · 실제 교육내용 확인 필요'),
+    ).toBeNull()
+  })
+
+  it('출처 확인 시각이 없으면 날짜를 만들지 않고 미확인으로 표시한다', async () => {
+    respond({
+      ...courseDetailFixture,
+      evidence: courseDetailFixture.evidence.map((item) => ({
+        ...item,
+        checked_at: null,
+      })),
+    })
+    render(<CourseDetails courseId={courseDetailFixture.id} />)
+    await screen.findByRole('heading', { name: courseDetailFixture.name })
+    expect(screen.getByText('kmooc · observed · 미확인')).toBeTruthy()
+    expect(screen.queryByText(/kmooc · observed · 2026/)).toBeNull()
+  })
+
   it('상세 성공 응답의 출처와 미확인 조건을 보존한다', async () => {
-    const fetch = respond(courseDetailFixture)
+    const fetch = respond({
+      ...courseDetailFixture,
+      missing_fields: [
+        'offerings.internal-uuid.tuition_krw',
+        'offerings.another-uuid.tuition_krw',
+        'description',
+        'description',
+        'unrecognized.technical_path',
+        'toString',
+      ],
+    })
     render(<CourseDetails courseId={courseDetailFixture.id} />)
 
     await screen.findByRole('heading', { name: courseDetailFixture.name })
@@ -38,7 +89,12 @@ describe('교육 조회의 공통 계약 샘플', () => {
     expect(fetch.mock.calls[0][1].credentials).toBe('include')
     expect(screen.getByText('교육기관 미확인')).toBeTruthy()
     expect(screen.getByText('교육 설명 미확인')).toBeTruthy()
-    expect(screen.getByText('미확인 항목: tuition_krw, schedule')).toBeTruthy()
+    expect(
+      screen.getByText('미확인 항목: 회차 교육비, 교육 설명, 기타 정보'),
+    ).toBeTruthy()
+    expect(
+      screen.queryByText(/internal-uuid|another-uuid|technical_path/),
+    ).toBeNull()
     expect(screen.getByText('합성 자료의 교육명')).toBeTruthy()
     expect(screen.getByText(/kmooc · observed · 2026-11-01/)).toBeTruthy()
     expect(

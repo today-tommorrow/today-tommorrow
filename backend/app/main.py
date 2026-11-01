@@ -8,6 +8,9 @@ from sqlalchemy.orm import Session
 
 from app.auth.routes import AuthError, auth_error_handler
 from app.auth.routes import router as auth_router
+from app.courses.errors import CourseError
+from app.courses.routes import course_error_handler
+from app.courses.routes import router as course_router
 from app.db import get_session
 from app.intake.question_routes import question_error_handler
 from app.intake.question_routes import router as question_router
@@ -29,6 +32,8 @@ app.add_exception_handler(QuestionServiceError, question_error_handler)
 app.include_router(question_router)
 app.add_exception_handler(JobHTTPError, job_error_handler)
 app.include_router(jobs_router)
+app.add_exception_handler(CourseError, course_error_handler)
+app.include_router(course_router)
 app.add_exception_handler(RecommendationServiceError, recommendation_error_handler)
 app.include_router(recommendation_router)
 
