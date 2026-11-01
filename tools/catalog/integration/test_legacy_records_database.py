@@ -31,6 +31,7 @@ class LegacyRecordsDatabaseTests(unittest.TestCase):
             conn.execute("CREATE EXTENSION IF NOT EXISTS vector")
             register_vector(conn)
             conn.execute((CATALOG / "schema.sql").read_text(), prepare=False)
+            conn.execute((CATALOG / "snapshot_schema.sql").read_text(), prepare=False)
             self.assertEqual(conn.execute("SELECT count(*) FROM work24_bge.dataset_snapshot").fetchone()[0], 0,
                              "requires a fresh owned disposable database")
             conn.execute("INSERT INTO work24_bge.embedding_profile(profile_id,config) VALUES(%s,%s)",

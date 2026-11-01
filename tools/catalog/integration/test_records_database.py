@@ -41,6 +41,7 @@ class RecordsDatabaseTests(unittest.TestCase):
             artifacts = load_artifacts(supplied, pinned=False)
             parent = artifacts[0]["dataset_id"]
             conn.execute((CATALOG / "schema.sql").read_text(), prepare=False)
+            conn.execute((CATALOG / "snapshot_schema.sql").read_text(), prepare=False)
             self.assertEqual(conn.execute("SELECT count(*) FROM work24_bge.dataset_snapshot").fetchone()[0], 0,
                              "the test requires a fresh disposable database")
             conn.execute("CREATE ROLE today_app; CREATE ROLE today_migrator", prepare=False)
