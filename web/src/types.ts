@@ -305,6 +305,7 @@ export type Job = {
   id: string
   kind:
     | 'document_processing'
+    | 'document_analysis'
     | 'intake_interpretation'
     | 'recommendation'
     | 'intake_question'
@@ -314,6 +315,7 @@ export type Job = {
     | 'queued'
     | 'fetching'
     | 'extracting'
+    | 'analyzing'
     | 'interpreting'
     | 'freezing'
     | 'profiling'

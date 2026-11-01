@@ -178,6 +178,7 @@ const phases: Record<Job['phase'], string> = {
   queued: '작업을 기다리고 있어요',
   fetching: '자료를 가져오고 있어요',
   extracting: '자료를 읽고 있어요',
+  analyzing: '자료의 근거와 학습 내용을 분석하고 있어요',
   interpreting: '입력 내용을 해석하고 있어요',
   freezing: '확인한 입력을 저장하고 있어요',
   profiling: '학습 목표를 확인하고 있어요',
@@ -271,6 +272,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
   const pendingJobRef = useRef(pendingJob)
   pendingJobRef.current = pendingJob
   const active = useRef<AbortController | null>(null)
+  const attemptedDocumentJobs = useRef(new Set<string>())
   const keys = useRef(new Map<string, string>())
   const interpretationInput = useRef<{
     jobId: string
@@ -393,6 +395,7 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     expectedRevision?: number,
   ) {
     if (signal.aborted) return
+    attemptedDocumentJobs.current.add(id)
     rememberJob(id)
     let terminalFailure = false
     const result = await waitForJob(
@@ -509,6 +512,23 @@ export function Intake({ profile, onProfile, onRun }: Props) {
     }
     rememberJob(null)
   }
+
+  useEffect(() => {
+    if (busy || active.current || pendingDocument || pendingDeletion) return
+    const document = profile.documents.find(
+      (item) =>
+        (item.status === 'queued' || item.status === 'processing') &&
+        item.job_id &&
+        !attemptedDocumentJobs.current.has(item.job_id),
+    )
+    if (!document?.job_id) return
+    if (pendingJob && pendingJob !== document.job_id) return
+    const jobId = document.job_id
+    const timer = window.setTimeout(() => {
+      if (!active.current) void perform((signal) => finishJob(jobId, signal))
+    }, 0)
+    return () => window.clearTimeout(timer)
+  }, [profile.documents, busy, pendingDocument, pendingDeletion, pendingJob])
 
   useEffect(() => {
     const controller = new AbortController()

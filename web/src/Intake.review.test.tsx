@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { StrictMode, useState } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   act,
@@ -536,6 +536,60 @@ describe('추출 내용 원문 대조와 저장', () => {
 })
 
 describe('실패 자료 재시도', () => {
+  it('다시 연 처리 중 자료의 분석 작업을 자동 조회하고 완료된 원문과 항목을 불러온다', async () => {
+    const processing: Document = {
+      ...source,
+      status: 'processing',
+      review_confirmed: false,
+      extracted_preview: null,
+      error_code: null,
+      job_id: jobId,
+    }
+    const complete: Profile = {
+      ...readyProfile(3),
+      documents: [
+        {
+          ...processing,
+          status: 'ready',
+          extracted_preview: '완료된 자료 원문',
+        },
+      ],
+      reviewed_items: [items[0]],
+    }
+    let jobReads = 0
+    const fetch = serve((endpoint, init) => {
+      expect(init.method).toBe('GET')
+      if (endpoint === `/api/jobs/${jobId}`) {
+        jobReads += 1
+        return Response.json({
+          ...job,
+          kind: 'document_analysis',
+          status: jobReads === 1 ? 'running' : 'succeeded',
+          phase: jobReads === 1 ? 'analyzing' : 'completed',
+        } satisfies Job)
+      }
+      expect(endpoint).toBe(path)
+      return Response.json(complete)
+    })
+    render(
+      <StrictMode>
+        <Harness
+          initial={{ ...profile, documents: [processing], reviewed_items: [] }}
+        />
+      </StrictMode>,
+    )
+    await screen.findByText('자료의 근거와 학습 내용을 분석하고 있어요')
+    expect(screen.queryByText(items[0].evidence_quote!)).toBeNull()
+    await screen.findByText('완료된 자료 원문', {}, { timeout: 4000 })
+    expect(screen.getByText(items[0].evidence_quote!)).toBeTruthy()
+    expect(within(reviewGroup()).getByText('원문 위치: text:1')).toBeTruthy()
+    expect(button('확인하고 교육 추천 받기').disabled).toBe(true)
+    expect(jobReads).toBe(2)
+    expect(writes(fetch)).toHaveLength(0)
+    expect(sessionStorage.getItem(storageKey)).toBeNull()
+    expect(changed).toHaveBeenLastCalledWith(complete)
+  })
+
   it('재시도 접수 뒤 조회 실패는 job을 보존하고 POST 없이 복구한다', async () => {
     const processing: Document = {
       ...source,
