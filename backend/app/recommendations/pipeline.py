@@ -313,6 +313,8 @@ def assessments(output: JsonObject, views: list[JsonObject], *, experience_known
         goal = axes["goal"]
         if item["goal_basis"] != "unrelated" and goal["value"] not in (.5, 1):
             raise RecommendationError("invalid_model_grounding")
+        if item["goal_basis"] == "unrelated" and goal["value"] in (.5, 1):
+            raise RecommendationError("invalid_model_grounding")
         if item["goal_basis"] == "content_supported" and not any(
             sources[str(eid)]["kind"] == "content" for eid in array_value(goal["evidence_ids"])
         ):

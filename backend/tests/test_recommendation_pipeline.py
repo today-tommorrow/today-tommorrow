@@ -176,6 +176,18 @@ class RecommendationPipelineTests(unittest.TestCase):
             pipeline.run(snapshot(pipeline), lambda _: None)
         self.assertEqual([stage for stage, _ in model.calls].count("explaining"), 2)
 
+    def test_unrelated_positive_goal_contradiction_repairs_then_fails(self):
+        pipeline, _, model = self.make_pipeline()
+        def contradictory(stage, result):
+            if stage == "assessing":
+                result["assessments"][0]["goal_basis"] = "unrelated"
+            return result
+        model.mutate = contradictory
+        with self.assertRaisesRegex(RecommendationError, "invalid_model_grounding"):
+            pipeline.run(snapshot(pipeline), lambda _: None)
+        self.assertEqual([stage for stage, _ in model.calls].count("assessing"), 2)
+        self.assertNotIn("explaining", [stage for stage, _ in model.calls])
+
     def test_phase_fence_interrupts_after_model_before_next_stage(self):
         pipeline, _, model = self.make_pipeline()
         def report(stage):
