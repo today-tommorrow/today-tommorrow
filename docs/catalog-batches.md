@@ -2,7 +2,26 @@
 
 Issue #24 adds a local operator flow for the existing public Work24 vector package. It does not collect K-MOOC or external NCS data, normalize Work24 records, infer missing values, or run models. Those adapter concerns remain outside this flow.
 
-Run `./setup` once to initialize the original 406-course/6,099-unit package. The bootstrap keeps its fixed archive checksum, counts, and read-only verification. It also creates an immutable baseline in `work24_bge.snapshot_course` and `snapshot_unit`. Subsequent setup runs preserve the active pointer. Application Alembic migrations still manage only `today_app`; education DDL remains in `tools/catalog/schema.sql` under the bootstrap role.
+Run `./setup` once to initialize the original 406-course/6,099-unit package. The bootstrap keeps its fixed archive checksum, counts, and read-only verification. It also creates an immutable baseline in `work24_bge.snapshot_course` and `snapshot_unit`. Subsequent setup runs preserve the active pointer. Application Alembic migrations still manage only `today_app`; education DDL remains in `tools/catalog/schema.sql` and `snapshot_schema.sql` under the bootstrap role.
+
+## Existing production catalog upgrade
+
+`tools/catalog/upgrade.py` is a separate, explicit path for an existing database containing only the original four catalog tables. It does not relax the local bootstrap target guard. Take and verify an external database backup before applying. Supply the existing pinned ZIP, the existing schema owner's connection through `CATALOG_UPGRADE_DATABASE_URL`, expected database/user/profile/dataset identities, and an existing unprivileged reader role. Absolute Unix socket paths support peer authentication without a database password; TCP connections require their own database password. Neither path reads SSH credentials.
+
+Run the following first without `--apply`. Replace the identity placeholders with the independently verified values. Keep reports outside the source ZIP and use a new report path for each invocation; existing files are never replaced.
+
+```sh
+python tools/catalog/upgrade.py --archive /path/to/work24-bge-m3-20261101.zip \
+  --expected-database work24 --expected-user ncloud \
+  --expected-profile-id "$CATALOG_PROFILE_ID" --expected-dataset-id "$CATALOG_DATASET_ID" \
+  --reader-role today_app --report /path/to/new-plan.json
+```
+
+The default transaction is enforced read-only. Review `plan.operations`, which lists tables and constraints, primary/HNSW indexes, identity sequences, exact baseline copy counts, initial pointer/history inserts, and table-specific reader grants. The deterministic `plan_sha256` binds the database identity, source state, pinned package, dataset, profile, shared DDL, and operations. To apply that reviewed plan, repeat the same command with a different report path and add `--apply --expected-plan-sha256 <reviewed-plan-hash>`.
+
+Apply obtains the existing loader advisory lock and locks the base tables before reading the latest committed rows. It compares every original metadata field and float32 vector byte, creates only the five snapshot/versioning tables and their indexes/sequences, copies the baseline, inserts the active pointer/history, and grants only `SELECT` on the five new tables. All changes share one transaction. Existing tables, views, roles, passwords, global/default privileges, and other schemas are preserved. Partial schemas, changed content, unexpected owners/ACLs, and incompatible columns/constraints/indexes fail closed.
+
+A completed upgrade is verified and returns `already_upgraded`, retaining any valid later active snapshot without another write; its old plan hash need not be supplied again. Exit `0` means success. Exit `1` means validation/database failure; the CLI does not emit a success report. Exit `2` means the requested report file could not be published: stdout retains the database result and explicitly says `committed_report_write_failed` after apply. A report-file error does not imply database rollback. Re-run the default read-only check to verify state.
 
 ## Incoming package
 

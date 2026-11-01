@@ -102,6 +102,7 @@ def load_catalog(conn, artifacts):
     manifest, courses, units, vectors, _query = artifacts
     profile, dataset = manifest["embedding_profile_id"], manifest["dataset_id"]
     conn.execute(Path(__file__).with_name("schema.sql").read_text(), prepare=False)
+    conn.execute(Path(__file__).with_name("snapshot_schema.sql").read_text(), prepare=False)
     previous = conn.execute("SELECT DISTINCT profile_id, dataset_id FROM work24_bge.course_unit").fetchall()
     require(all(row == (profile, dataset) for row in previous), "different_catalog_snapshot_present")
     conn.execute("CREATE TEMP TABLE stage_course (course_id text, tme text, metadata jsonb, PRIMARY KEY(course_id,tme)) ON COMMIT DROP")
